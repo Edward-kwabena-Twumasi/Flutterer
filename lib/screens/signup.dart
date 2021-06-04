@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 class SignupForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
-
+  int page = 0;
   TextEditingController controller = TextEditingController();
   TextEditingController controller1 = TextEditingController();
   TextEditingController controller2 = TextEditingController();
@@ -20,6 +20,7 @@ class SignupForm extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       child: PageView(
+        controller: pgecontroller,
         children: [
           Consumer<UserState>(
             builder: (context, value, child) => Form(
@@ -27,6 +28,8 @@ class SignupForm extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  Text("Register with email and password"),
+                  Text("1/2"),
                   InputFields("Enter email", controller1, Icon(Icons.email)),
                   SizedBox(
                     height: 4,
@@ -72,7 +75,8 @@ class SignupForm extends StatelessWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text("Fill this to complete the registration process"),
+              Text("This section takes details to help us serve you better"),
+              Text("2/2"),
               SizedBox(height: 5),
               Consumer<UserState>(
                 builder: (context, value, child) => Form(

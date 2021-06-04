@@ -14,11 +14,6 @@ enum userStates {
 }
 
 class UserState extends ChangeNotifier {
-  String setaction(String action) {
-    notifyListeners();
-    return action;
-  }
-
   userStates signinstate;
   userStates registedstate;
 
@@ -31,6 +26,7 @@ class UserState extends ChangeNotifier {
         print('User is currently signed out!');
       } else {
         signinstate = userStates.signedIn;
+
         print('User is signed in!');
       }
     });
@@ -82,6 +78,7 @@ class UserState extends ChangeNotifier {
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     // Call the user's CollectionReference to add a new user
+
     return users
         .add({
           'full_name': fullname, // John Doe

@@ -105,7 +105,8 @@ class MyApp extends StatelessWidget {
                 builder: (context, value, child) => Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    TextWidgets("Login", style, Icon(Icons.login)),
+                    TextWidgets(
+                        "Login / Signup Page", style, Icon(Icons.login)),
                     Padding(
                       padding: const EdgeInsets.all(28.0),
                       child: MyForm(),
@@ -189,6 +190,7 @@ class MyFormState extends State<MyForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  Text("Login and lets go"),
                   InputFields(
                       "Enter Username", myController, Icon(Icons.input)),
                   SizedBox(
