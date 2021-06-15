@@ -15,8 +15,9 @@ enum userStates {
 class UserState extends ChangeNotifier {
   userStates? signinstate;
   userStates? registedstate;
-  String? usermail = "";
-  String? username = "";
+  String? loggedInAs;
+  String? loggedinmail;
+  String? registedmail;
   userStates userState() {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? currentuser;
@@ -28,9 +29,7 @@ class UserState extends ChangeNotifier {
         print('User is currently signed out!');
       } else {
         signinstate = userStates.successful;
-        currentuser = auth.currentUser;
-        usermail = currentuser!.email;
-        username = currentuser!.displayName;
+        loggedinmail = currentuser!.email;
         //currentuser.getIdToken();
         print('User is signed in!');
       }
@@ -45,7 +44,10 @@ class UserState extends ChangeNotifier {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       signinstate = userStates.successful;
+
       print("we done");
+      loggedinmail = email;
+      print(loggedinmail);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');

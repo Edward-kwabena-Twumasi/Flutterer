@@ -5,6 +5,7 @@ import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -114,12 +115,51 @@ class TabBarDemo extends StatelessWidget {
                             shrinkWrap: true,
                             scrollDirection: Axis.horizontal,
                             children: [
-                              ElevatedButton(
-                                  onPressed: () {}, child: Text("Seats")),
-                              ElevatedButton(
-                                  onPressed: () {}, child: Text("Seats")),
-                              ElevatedButton(
-                                  onPressed: () {}, child: Text("Seats")),
+                              FloatingActionButton.extended(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Column(children: [
+                                            SearchLocs("from"),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            SearchLocs("to")
+                                          ]);
+                                        });
+                                  },
+                                  label: Text("Available Seats")),
+                              FloatingActionButton.extended(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Column(children: [
+                                            SearchLocs("from"),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            SearchLocs("to")
+                                          ]);
+                                        });
+                                  },
+                                  label: Text("Recent activity")),
+                              FloatingActionButton.extended(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Column(children: [
+                                            SearchLocs("from"),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            SearchLocs("to")
+                                          ]);
+                                        });
+                                  },
+                                  label: Text("Change")),
                             ],
                           ),
                         ),
@@ -130,10 +170,36 @@ class TabBarDemo extends StatelessWidget {
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
                               children: [
-                                ElevatedButton(
-                                    onPressed: () {}, child: Text("Seats")),
-                                ElevatedButton(
-                                    onPressed: () {}, child: Text("Seats")),
+                                FloatingActionButton.extended(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Find company")),
+                                FloatingActionButton.extended(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Contact")),
                               ],
                             )),
                         Container(
@@ -143,8 +209,21 @@ class TabBarDemo extends StatelessWidget {
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
                               children: [
-                                ElevatedButton(
-                                    onPressed: () {}, child: Text("Seats")),
+                                FloatingActionButton.extended(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Get advice")),
                               ],
                             )),
                       ],
@@ -250,6 +329,7 @@ class SearchLocsState extends State<SearchLocs> {
     formcontrol.addListener(() {
       suggestions = [];
       var query = formcontrol.text;
+      hideoverlay = false;
       if (query.isNotEmpty) {
         for (var i in places) {
           if (i.toLowerCase().contains(query.toLowerCase()) ||
@@ -295,6 +375,7 @@ class SearchLocsState extends State<SearchLocs> {
                     return ListTile(
                         key: Key(index.toString()),
                         onTap: () {
+                          myoverlay.remove();
                           print(suggestions[index]);
                           mytripobj[widget.direction] = suggestions[index];
                           print(mytripobj);
@@ -566,7 +647,27 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
   }
 }
 
-class UserInfoClass extends StatelessWidget {
+class UserInfoClass extends StatefulWidget {
+  @override
+  UserInfoClassState createState() => UserInfoClassState();
+}
+
+class UserInfoClassState extends State<UserInfoClass> {
+  String? setemail = "sign in";
+  String? setname = "yes sign in";
+  void initState() {
+    super.initState();
+  }
+  // if (UserState().userState() == userStates.successful) {
+  //     setState(() {
+  //       setemail = FirebaseAuth.instance.currentUser!.email;
+  //       setname = FirebaseAuth.instance.currentUser!.displayName;
+  //       print("you are logged in" + UserState().loddedInAs.toString());
+  //     });
+  //   } else
+  //     print("you gotta login");
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
       builder: (context, value, child) => Column(
@@ -590,7 +691,7 @@ class UserInfoClass extends StatelessWidget {
             elevation: 10,
             child: ListTile(
               title: Text("Name"),
-              subtitle: Text(value.username!),
+              subtitle: Text(value.loggedInAs.toString()),
               leading: CircleAvatar(
                 backgroundImage: NetworkImage("url"),
               ),
@@ -620,7 +721,7 @@ class UserInfoClass extends StatelessWidget {
             elevation: 10,
             child: ListTile(
               title: Text("Email"),
-              subtitle: Text(value.usermail!),
+              subtitle: Text(value.loggedinmail.toString()),
               leading: CircleAvatar(
                 backgroundImage: NetworkImage("url"),
               ),

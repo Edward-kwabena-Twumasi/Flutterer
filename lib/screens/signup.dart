@@ -6,9 +6,15 @@ import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:provider/provider.dart';
 
 //MyForm
-class SignupForm extends StatelessWidget {
+class SignupForm extends StatefulWidget {
+  SignupFormState createState() => SignupFormState();
+}
+
+class SignupFormState extends State<SignupForm> {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
+  String tonext = "";
+  String errors = "";
   int page = 0;
   TextEditingController email = TextEditingController();
   TextEditingController passwd = TextEditingController();
@@ -68,14 +74,27 @@ class SignupForm extends StatelessWidget {
                             // Navigator.pop(context);
                             value
                                 .registerwithMPass(email.text, passwd.text)
-                                .then((value) {
-                              if (value == userStates.successful) {
-                                Navigator.pushNamed(context, '/home');
-                              } else
+                                .then((rvalue) {
+                              if (rvalue == userStates.successful) {
+                                setState(() {
+                                  tonext = "Fill personal info";
+                                });
+
+                                value.registedmail = email.text;
+                                //Navigator.pushNamed(context, '/home');
+                              } else {
                                 print(value);
+                                setState(() {
+                                  errors = value.toString();
+                                });
+                              }
                             });
-                          } else
+                          } else {
                             print("Two passwords must match");
+                            setState(() {
+                              errors = "Two passwords must match";
+                            });
+                          }
                         },
                         child: Text('Register'),
                       ),
@@ -88,8 +107,9 @@ class SignupForm extends StatelessWidget {
                               curve: Curves.easeInOut);
                         }
                       },
-                      child: Text("Personal Information"),
+                      child: Text(tonext),
                     ),
+                    Text(errors)
                   ],
                 ),
               ),
@@ -158,8 +178,12 @@ class SignupForm extends StatelessWidget {
                                 if (_formKey2.currentState!.validate()) {
                                   // Proceed with registration process.
 
-                                  value.addUser(name.text, email.text,
-                                      phone.text, city.text, house.text);
+                                  value.addUser(
+                                      name.text,
+                                      value.registedmail.toString(),
+                                      phone.text,
+                                      city.text,
+                                      house.text);
                                 }
                               },
                               child: Text('Complete signup'),

@@ -179,6 +179,7 @@ class MyFormState extends State<MyForm> {
   // void _printLatestValue() {
   //   print('Second text field: ${myController.text}');
   // }
+  String? loginname;
 
   void checkStatus(userStates? state) {
     if (state == userStates.registerNow) {
@@ -262,10 +263,15 @@ class MyFormState extends State<MyForm> {
                             // the form is invalid.
 
                             if (_formKey.currentState!.validate()) {
+                              setState(() {
+                                loginname = username.text;
+                              });
                               signin(usermail.text, userpass.text)
-                                  .then((value) {
+                                  .then((rvalue) {
                                 print(value);
-                                if (value == userStates.successful) {
+                                if (rvalue == userStates.successful) {
+                                  value.loggedInAs = loginname;
+                                  value.loggedinmail = usermail.text;
                                   Navigator.pushNamed(context, "/home");
                                 }
                               });
