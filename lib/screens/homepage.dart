@@ -1,90 +1,175 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:myapp/components/AgentsList.dart';
-import 'package:myapp/components/text_inputwidgets.dart';
+import 'package:myapp/components/applicationwidgets.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/providersPool/userStateProvider.dart';
 
 void main() {
-  runApp(TabBarDemo());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(ChangeNotifierProvider(
+      create: (context) => UserState(), builder: (context, _) => ButtomNav()));
+}
+
+class ButtomNav extends StatefulWidget {
+  @override
+  ButtomNavState createState() => ButtomNavState();
+}
+
+class ButtomNavState extends State<ButtomNav> {
+  static List<Widget> pages = [
+    TabBarDemo(),
+    HelpClass(),
+    UserInfoClass(),
+  ];
+  int currentindx = 0;
+
+  void swithnav(int value) {
+    setState(() {
+      currentindx = value;
+    });
+  }
+
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      routes: {"/matchingtrips": (context) => Trips("Bus")},
+      home: Scaffold(
+          bottomNavigationBar: BottomNavigationBar(
+              currentIndex: currentindx,
+              backgroundColor: Colors.white,
+              selectedItemColor: Colors.black,
+              unselectedItemColor: Colors.grey,
+              elevation: 8,
+              onTap: swithnav,
+              items: [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
+                BottomNavigationBarItem(icon: Icon(Icons.help), label: "help"),
+                BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
+              ]),
+          appBar: AppBar(
+            title: Text("TravellersApp"),
+          ),
+          body: Center(
+            child: pages.elementAt(currentindx),
+          )),
+    );
+  }
 }
 
 class TabBarDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      routes: {
-        //'/search': (context) => MyFormApp(),
-      },
-      home: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-          bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: Colors.white,
-              selectedItemColor: Colors.lightGreen,
-              unselectedItemColor: Colors.grey,
-              elevation: 5,
-              items: [
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.ac_unit_outlined), label: "home"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.ac_unit_outlined), label: "history"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.ac_unit_outlined), label: "help"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.ac_unit_outlined), label: "Me"),
-              ]),
-          appBar: AppBar(
-            leading: Icon(Icons.menu),
-            actions: <Widget>[
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.search),
-                iconSize: 34,
-              )
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+            backgroundColor: Colors.white,
+            actions: [
+              IconButton(onPressed: () {}, icon: Icon(Icons.notifications))
             ],
             bottom: TabBar(
               tabs: [
-                Tab(icon: Icon(Icons.bus_alert_rounded)),
-                Tab(icon: Icon(Icons.train)),
-                Tab(icon: Icon(Icons.flight)),
+                Container(
+                    padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.red, width: 2),
+                        borderRadius: BorderRadius.circular(30),
+                        color: Colors.red[50]),
+                    child: Tab(
+                        icon: Icon(Icons.bus_alert_rounded,
+                            color: Colors.black))),
+                Container(
+                    padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.red, width: 2),
+                        borderRadius: BorderRadius.circular(30),
+                        color: Colors.red[50]),
+                    child: Tab(icon: Icon(Icons.train, color: Colors.black))),
+                Container(
+                    padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.red, width: 2),
+                      borderRadius: BorderRadius.circular(30),
+                      color: Colors.red[50],
+                    ),
+                    child: Tab(icon: Icon(Icons.flight, color: Colors.black))),
               ],
+            )),
+        body: TabBarView(
+          children: [
+            SafeArea(
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    locations(),
+                    Expanded(
+                        child: Column(
+                      children: [
+                        Container(
+                          height: 60,
+                          padding: EdgeInsets.all(5),
+                          child: ListView(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              ElevatedButton(
+                                  onPressed: () {}, child: Text("Seats")),
+                              ElevatedButton(
+                                  onPressed: () {}, child: Text("Seats")),
+                              ElevatedButton(
+                                  onPressed: () {}, child: Text("Seats")),
+                            ],
+                          ),
+                        ),
+                        Container(
+                            height: 60,
+                            padding: EdgeInsets.all(5),
+                            child: ListView(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                ElevatedButton(
+                                    onPressed: () {}, child: Text("Seats")),
+                                ElevatedButton(
+                                    onPressed: () {}, child: Text("Seats")),
+                              ],
+                            )),
+                        Container(
+                            height: 60,
+                            padding: EdgeInsets.all(5),
+                            child: ListView(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                ElevatedButton(
+                                    onPressed: () {}, child: Text("Seats")),
+                              ],
+                            )),
+                      ],
+                    ))
+                  ],
+                ),
+              ),
             ),
-            title: Text('Ready to travel'),
-          ),
-          body: TabBarView(
-            children: [
-              SafeArea(
-                child: Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      region(),
-                      locations(),
-                      Expanded(child: primaryactions()),
-                    ],
-                  ),
-                ),
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  locations(),
+                ],
               ),
-              Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    region(),
-                    locations(),
-                    Expanded(child: primaryactions()),
-                  ],
-                ),
+            ),
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  locations(),
+                ],
               ),
-              Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    region(),
-                    locations(),
-                    Expanded(child: primaryactions()),
-                  ],
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
@@ -93,22 +178,17 @@ class TabBarDemo extends StatelessWidget {
 
 Widget region() {
   TextEditingController mycontroller = TextEditingController();
-  return Card(
-    elevation: 3,
-    child: Container(
-        child: Center(
-          child: menuButton(),
-        ),
-        height: 81,
-        padding: EdgeInsets.all(8),
-        margin: EdgeInsets.all(15)),
-  );
+  return Container(
+      child: Center(),
+      height: 70,
+      padding: EdgeInsets.all(8),
+      margin: EdgeInsets.all(15));
 }
 
-Widget locations() {
-  return Card(
-    elevation: 3,
-    child: Container(
+class locations extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
         child: Center(
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -120,164 +200,37 @@ Widget locations() {
                 child: Center(
                     child: Row(
               mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 //add time chooser
-                TextButton(onPressed: () {}, child: Text("CHOOSE TIME")),
-                //add date chooser
-                TextButton(onPressed: () {}, child: Text("SELECT DATE")),
-                //proceed with boooking
-                ElevatedButton(onPressed: () {}, child: Text("Proceed"))
+                MyStatefulWidget(
+                  restorationId: "main",
+                ), //proceed with boooking
+                RawMaterialButton(
+                  fillColor: Colors.lightBlue,
+                  splashColor: Colors.white,
+                  shape: StadiumBorder(),
+                  onPressed: () {
+                    print("clicked");
+                    Navigator.pushNamed(context, "/matchingtrips");
+                  },
+                  child: Text("Search"),
+                )
               ],
             ))),
           ],
         )),
-        height: 160,
+        height: 180,
         padding: EdgeInsets.all(10),
-        margin: EdgeInsets.all(5)),
-  );
+        margin: EdgeInsets.all(8));
+
+    // TODO: implement build
+  }
 }
 
 //primary actions
-Widget primaryactions() {
-  return Card(
-    elevation: 3,
-    child: Stack(children: [
-      Container(
-          child: Center(
-            child: GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 4,
-              children: <Widget>[
-                useractions(Icons.ev_station, "station"),
-                useractions(Icons.chair, " seat"),
-                useractions(Icons.find_in_page, "Where am i"),
-                useractions(Icons.message, "message"),
-                useractions(Icons.lock_clock, "time matches"),
-              ],
-            ),
-          ),
-          padding: EdgeInsets.all(8),
-          margin: EdgeInsets.all(5)),
-      Positioned(
-        left: 50.0,
-        child: Padding(
-          padding: EdgeInsets.all(5),
-          child: Text(
-            "Help and Find",
-            style: TextStyle(
-              backgroundColor: Colors.black87,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    ]),
-  );
-}
-
-Widget buttonactions() {
-  return Container(
-    decoration: BoxDecoration(
-      shape: BoxShape.rectangle,
-      borderRadius: BorderRadius.circular(30),
-      color: Colors.transparent,
-    ),
-    height: 20,
-    padding: EdgeInsets.all(20),
-  );
-}
 
 /// This is the stateful widget that the main application instantiates.
-class menuButton extends StatefulWidget {
-  const menuButton({Key key}) : super(key: key);
-
-  @override
-  State<menuButton> createState() => _menuButtonState();
-}
-
-/// This is the private State class that goes with MyStatefulWidget.
-class _menuButtonState extends State<menuButton> {
-  void initState() {
-    super.initState();
-    searchcontrol.addListener(() {
-      searchcontrol.text = searchcontrol.text.toUpperCase();
-    });
-  }
-
-  String dropdownValue = 'ASHANTI';
-
-  var regions = [
-    'ASHANTI',
-    'CENTRAL',
-    'AHAFO',
-    'UPPER WEST',
-    'UPPER EAST',
-    'NORTHERN',
-    'WESTERN',
-    'OTI',
-    'VOLTA',
-    'EASTERN',
-    'GREATER ACCRA'
-  ];
-
-  TextEditingController searchcontrol = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-              color: Colors.white, width: 3.0, style: BorderStyle.solid)),
-      child: Row(
-        children: [
-          Expanded(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white),
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30)),
-              child: TextField(
-                decoration: InputDecoration(
-                    hintText: "AT WHICH REGION?",
-                    contentPadding: EdgeInsets.all(1)),
-                autocorrect: true,
-                controller: searchcontrol,
-              ),
-            ),
-          ),
-          SizedBox(
-            child: DropdownButton<String>(
-              value: dropdownValue,
-              icon: const Icon(Icons.arrow_drop_down),
-              iconSize: 24,
-              elevation: 16,
-              style: const TextStyle(color: Colors.black),
-              underline: Container(
-                height: 2,
-                color: Colors.deepPurpleAccent,
-              ),
-              onChanged: (String newValue) {
-                setState(() {
-                  dropdownValue = newValue;
-                  searchcontrol.text = dropdownValue;
-                });
-              },
-              items: regions.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class SearchLocs extends StatefulWidget {
   SearchLocs(this.direction);
@@ -287,8 +240,9 @@ class SearchLocs extends StatefulWidget {
 }
 
 class SearchLocsState extends State<SearchLocs> {
-  OverlayEntry myoverlay;
-
+  late OverlayEntry myoverlay;
+  late bool hideoverlay;
+  var mytripobj = {};
   @override
   void initState() {
     // TODO: implement initState
@@ -301,28 +255,29 @@ class SearchLocsState extends State<SearchLocs> {
           if (i.toLowerCase().contains(query.toLowerCase()) ||
               i.toLowerCase().startsWith(query)) {
             suggestions.add(i);
-            this.myoverlay = this.createOverlay();
-            Overlay.of(context).insert(this.myoverlay);
+            if (!hideoverlay) {
+              this.myoverlay = this.createOverlay();
+              Overlay.of(context)!.insert(this.myoverlay);
+            } else
+              myoverlay.remove();
           }
         }
 
         setState(() {
           suggestions.toList();
-          height = 35.0;
-          height = height * suggestions.length;
+          hideoverlay = false;
         });
       } else {
         print(formcontrol.text);
         setState(() {
-          suggestions = [];
-          height = 35.0;
+          hideoverlay = true;
         });
       }
     });
   }
 
   OverlayEntry createOverlay() {
-    RenderBox renderBox = context.findRenderObject();
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
     var size = renderBox.size;
     var offset = renderBox.localToGlobal(Offset.zero);
 
@@ -341,6 +296,11 @@ class SearchLocsState extends State<SearchLocs> {
                         key: Key(index.toString()),
                         onTap: () {
                           print(suggestions[index]);
+                          mytripobj[widget.direction] = suggestions[index];
+                          print(mytripobj);
+                          setState(() {
+                            hideoverlay = true;
+                          });
                         },
                         title: Text(
                           suggestions[index],
@@ -359,56 +319,315 @@ class SearchLocsState extends State<SearchLocs> {
     super.dispose();
   }
 
-  List<String> places = ["kumasi", "obuasi", "accra", "Accra", "place5"];
+  List<String> places = [
+    "kumasi",
+    "obuasi",
+    "accra",
+    "Accra",
+    "Kasoa",
+    "Mankessim"
+  ];
   List<String> suggestions = [];
-  var height = 35.0;
+
   TextEditingController formcontrol = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      Row(
-        children: [
-          SizedBox(width: 40, child: Text(widget.direction)),
-          Expanded(
+      Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Ink(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.pink[300]),
+                child: Icon(Icons.arrow_right)),
+            Expanded(
               child: TextFormField(
-            controller: formcontrol,
-          )),
-          DecoratedBox(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.white,
-                      blurRadius: 0.0,
-                      offset: Offset(3.0, 3.0)),
-                ]),
-            child: IconButton(
-                color: Colors.white,
-                padding: EdgeInsets.all(8),
-                onPressed: () {},
-                icon: Icon(
-                  Icons.location_city,
-                  color: Colors.red,
-                )),
-          )
-        ],
+                decoration: InputDecoration(
+                    labelText: "Travel From",
+                    fillColor: Colors.pink,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30))),
+                controller: formcontrol,
+              ),
+            ),
+          ],
+        ),
       ),
     ]);
   }
 }
 
-Widget useractions(IconData icondata, String text) {
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(30),
-    child: IconButton(
-      constraints: BoxConstraints(maxHeight: 40.0, maxWidth: 40.0),
-      enableFeedback: true,
-      tooltip: "do this",
-      icon: Icon(icondata),
-      iconSize: 35,
-      color: Colors.deepPurple,
-      onPressed: () {},
-    ),
+class Trips extends StatefulWidget {
+  String triptype;
+  Trips(this.triptype);
+  @override
+  TripsState createState() => TripsState();
+}
+
+class TripsState extends State<Trips> {
+  // String gttriptype ;
+  List<TripClass> list = [
+    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal"),
+    TripClass("Kumasi", "Accra", "10:00", "20 10 2021", "normal"),
+    TripClass("Kumasi", "Sunyani", "10:00", "20 10 2021", "normal"),
+    TripClass("Accra", "Obuasi", "10:00", "20 10 2021", "normal"),
+    TripClass("Mankessim", "Obuasi", "10:00", "20 10 2021", "normal"),
+    TripClass("Ho", "Obuasi", "10:00", "20 10 2021", "normal"),
+    TripClass("Kumasi", "Kasoa", "10:00", "20 10 2021", "normal"),
+    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal"),
+  ];
+
+  bool isLoading = true;
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: "All trips for this location",
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text("All trips for this location"),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(children: [
+              Container(
+                height: 150,
+                margin: EdgeInsets.all(20),
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    Container(
+                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                        child: nicebuttons(Icons.all_out, "All")),
+                    Container(
+                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                        child: nicebuttons(Icons.all_out, "vvip")),
+                    Container(
+                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                        child: nicebuttons(Icons.all_out, "oa travels")),
+                    Container(
+                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
+                        child: nicebuttons(Icons.all_out, "mmt")),
+                  ],
+                ),
+              ),
+              SingleChildScrollView(
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: list.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                          child: ListTile(
+                        leading: Icon(Icons.travel_explore),
+                        title: Text("From " +
+                            list[index].fromLoc +
+                            " To " +
+                            list[index].toLoc),
+                        subtitle:
+                            Text(list[index].date + " - " + list[index].time),
+                      ));
+                    }),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TripClass {
+  String fromLoc;
+  String toLoc;
+  String time;
+  String date;
+  String tripclass;
+
+  TripClass(this.fromLoc, this.toLoc, this.time, this.date, this.tripclass);
+}
+
+class HelpClass extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () {},
+            label: Text("Make a cheap travel"),
+            icon: Icon(Icons.money),
+          ),
+          SizedBox(height: 40),
+          FloatingActionButton.extended(
+              onPressed: () {},
+              label: Text("Where am i?"),
+              icon: Icon(Icons.location_on)),
+          SizedBox(height: 40),
+          FloatingActionButton.extended(
+            onPressed: () {},
+            label: Text("Report a matter"),
+            icon: Icon(Icons.report_problem),
+          ),
+          SizedBox(height: 40),
+          FloatingActionButton.extended(
+            onPressed: () {},
+            label: Text("My Health"),
+            icon: Icon(Icons.health_and_safety),
+          ),
+        ]);
+  }
+}
+
+class MyStatefulWidget extends StatefulWidget {
+  const MyStatefulWidget({Key? key, this.restorationId}) : super(key: key);
+
+  final String? restorationId;
+
+  @override
+  _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
+}
+
+/// This is the private State class that goes with MyStatefulWidget.
+/// RestorationProperty objects can be used because of RestorationMixin.
+class _MyStatefulWidgetState extends State<MyStatefulWidget>
+    with RestorationMixin {
+  // In this example, the restoration ID for the mixin is passed in through
+  // the [StatefulWidget]'s constructor.
+  @override
+  String? get restorationId => widget.restorationId;
+
+  final RestorableDateTime _selectedDate = RestorableDateTime(DateTime(2021));
+  late final RestorableRouteFuture<DateTime?> _restorableDatePickerRouteFuture =
+      RestorableRouteFuture<DateTime?>(
+    onComplete: _selectDate,
+    onPresent: (NavigatorState navigator, Object? arguments) {
+      return navigator.restorablePush(
+        _datePickerRoute,
+        arguments: _selectedDate.value.millisecondsSinceEpoch,
+      );
+    },
   );
+
+  static Route<DateTime> _datePickerRoute(
+    BuildContext context,
+    Object? arguments,
+  ) {
+    return DialogRoute<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        return DatePickerDialog(
+          restorationId: 'date_picker_dialog',
+          initialEntryMode: DatePickerEntryMode.calendarOnly,
+          initialDate: DateTime.fromMillisecondsSinceEpoch(arguments! as int),
+          firstDate: DateTime(2021, 1, 1),
+          lastDate: DateTime(2022, 1, 1),
+        );
+      },
+    );
+  }
+
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_selectedDate, 'selected_date');
+    registerForRestoration(
+        _restorableDatePickerRouteFuture, 'date_picker_route_future');
+  }
+
+  void _selectDate(DateTime? newSelectedDate) {
+    if (newSelectedDate != null) {
+      setState(() {
+        _selectedDate.value = newSelectedDate;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Selected: ${_selectedDate.value.day}/${_selectedDate.value.month}/${_selectedDate.value.year}'),
+        ));
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: FloatingActionButton.extended(
+      onPressed: () {
+        _restorableDatePickerRouteFuture.present();
+      },
+      label: const Text('Travel date'),
+      icon: Icon(Icons.calendar_today),
+    ));
+  }
+}
+
+class UserInfoClass extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Consumer<UserState>(
+      builder: (context, value, child) => Column(
+        children: [
+          Container(
+            margin: EdgeInsets.all(30),
+            child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(35)),
+                elevation: 10,
+                child: Image.asset(
+                  "images/bus2.png",
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.cover,
+                )),
+          ),
+          Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 10,
+            child: ListTile(
+              title: Text("Name"),
+              subtitle: Text(value.username!),
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage("url"),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 15,
+          ),
+          Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 10,
+            child: ListTile(
+              title: Text("Phone"),
+              subtitle: Text("0552489602"),
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage("url"),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 15,
+          ),
+          Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 10,
+            child: ListTile(
+              title: Text("Email"),
+              subtitle: Text(value.usermail!),
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage("url"),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
 }

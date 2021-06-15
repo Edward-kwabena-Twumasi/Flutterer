@@ -1,33 +1,22 @@
+import 'dart:html';
+import 'dart:js';
+
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
-import 'package:myapp/screens/agentlogin.dart';
 import 'package:myapp/screens/homepage.dart';
-import 'package:myapp/screens/signup.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
-
-enum userStates {
-  signedIn,
-  signedOut,
-  isRegistered,
-  registerNow,
-  wrongPassword,
-  weakpassword,
-  successful
-}
+import 'package:myapp/screens/companysignup.dart';
 
 //irebase
 
 // Import the firebase_core plugin
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(ChangeNotifierProvider(
-      create: (context) => UserState(), builder: (context, _) => App()));
+      create: (context) => UserState(), builder: (context, _) => AgentApp()));
 }
 
 /// We are using a StatefulWidget such that we only create the [Future] once,
@@ -35,13 +24,13 @@ void main() {
 /// If we used a [StatelessWidget], in the event where [App] is rebuilt, that
 /// would re-initialize FlutterFire and make our application re-enter loading state,
 /// which is undesired.
-class App extends StatefulWidget {
+class AgentApp extends StatefulWidget {
   // Create the initialization Future outside of `build`:
   @override
-  _AppState createState() => _AppState();
+  _AgentAppState createState() => _AgentAppState();
 }
 
-class _AppState extends State<App> {
+class _AgentAppState extends State<AgentApp> {
   /// The future is part of the state of our widget. We should not call `initializeApp`
   /// directly inside [build].
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
@@ -94,12 +83,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      routes: {
-        "/home": (context) => ButtomNav(),
-        "/agentlogin": (context) => AgentApp()
-      },
-      title: 'Flutter layout demo',
-      theme: new ThemeData.dark(),
+      routes: {"/home": (context) => ButtomNav()},
+      title: 'Login as Agent',
+      darkTheme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
           title: Text('Travellers Mobile App'),
@@ -118,15 +104,9 @@ class MyApp extends StatelessWidget {
               color: Colors.white,
               child: Consumer<UserState>(
                 builder: (context, value, child) => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    MyForm(),
-                    FloatingActionButton.extended(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/agentlogin');
-                      },
-                      label: Text("Agents Sign In"),
-                    )
+                    AgentForm(),
                   ],
                 ),
               ),
@@ -139,11 +119,11 @@ class MyApp extends StatelessWidget {
 }
 
 //MyForm
-class MyForm extends StatefulWidget {
-  MyFormState createState() => MyFormState();
+class AgentForm extends StatefulWidget {
+  AgentFormState createState() => AgentFormState();
 }
 
-class MyFormState extends State<MyForm> {
+class AgentFormState extends State<AgentForm> {
   final _formKey = GlobalKey<FormState>();
   bool allowlogin = false;
   bool retry = true;
@@ -156,9 +136,9 @@ class MyFormState extends State<MyForm> {
   // MyFormState(this.hint, this.hint1, this.hint2, this.controller,
   //     this.controller1, this.controller2);
 
-  final username = TextEditingController();
-  final usermail = TextEditingController();
-  final userpass = TextEditingController();
+  final name = TextEditingController();
+  final email = TextEditingController();
+  final password = TextEditingController();
 
   @override
   void initState() {
@@ -172,7 +152,7 @@ class MyFormState extends State<MyForm> {
   void dispose() {
     // Clean up the controller when the widget is removed from the widget tree.
     // This also removes the _printLatestValue listener.
-    userpass.dispose();
+    name.dispose();
     super.dispose();
   }
 
@@ -183,90 +163,68 @@ class MyFormState extends State<MyForm> {
   void checkStatus(userStates? state) {
     if (state == userStates.registerNow) {
       setState(() {
-        retry = false;
+        // retry = false;
         correctLogin = "You are not a registered user!";
       });
     } else if (state == userStates.wrongPassword) {
       setState(() {
         correctLogin = "You entered wrong password for this account";
       });
-    } else if (state == userStates.successful) {
+    } else {
       setState(() {
         allowlogin = true;
       });
     }
   }
 
-  userStates? signinstate;
-  userStates? registedstate;
-  Future<userStates?> signin(String email, String password) async {
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      signinstate = userStates.successful;
-      print("we done");
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        print('No user found for that email.');
-        signinstate = userStates.registerNow;
-        setState(() {
-          correctLogin = "Email not found.Register now";
-        });
-      } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
-        signinstate = userStates.wrongPassword;
-        setState(() {
-          correctLogin = "incorrect password";
-        });
-      } else {
-        print("This email is invalid" + e.code);
-        setState(() {
-          correctLogin = "This email is invalid";
-        });
-      }
-    }
-    return signinstate;
-  }
-
   @override
   Widget build(BuildContext context) {
     return retry
         ? Consumer<UserState>(
-            builder: (context, value, child) => Form(
-              key: _formKey,
-              child: SingleChildScrollView(
+            builder: (context, value, child) => Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(35),
+              ),
+              elevation: 8,
+              child: Form(
+                key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Text("Login"),
-                    InputFields(
-                        " Username", username, Icons.input, TextInputType.name),
-                    SizedBox(
-                      height: 7,
-                    ),
-                    InputFields(" Email", usermail, Icons.email,
+                    Text("Login here"),
+                    SizedBox(height: 20),
+                    InputFields("Company Email", email, Icons.email,
                         TextInputType.emailAddress),
                     SizedBox(
                       height: 7,
                     ),
-                    InputFields(" Password", userpass, Icons.password_sharp,
+                    InputFields("Enter Password", password, Icons.password,
                         TextInputType.text),
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: OutlinedButton(
+                        child: RawMaterialButton(
+                          fillColor: Colors.white,
                           //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                           onPressed: () {
                             // Validate will return true if the form is valid, or false if
                             // the form is invalid.
 
                             if (_formKey.currentState!.validate()) {
-                              signin(usermail.text, userpass.text)
-                                  .then((value) {
-                                print(value);
-                                if (value == userStates.successful) {
-                                  Navigator.pushNamed(context, "/home");
+                              // if (checkStatus(myController1.text)) {
+                              //   Navigator.push(context, MaterialPageRoute(
+                              //     builder: (context) {
+                              //       return TabBarDemo();
+                              //     },
+                              //   ));
+                              // }
+                              value
+                                  .signInWithMPass(email.text, password.text)
+                                  .then((registedstate) {
+                                checkStatus(registedstate);
+                                if (allowlogin) {
+                                  Navigator.pushNamed(context, '/home');
                                 }
                               });
                             }
@@ -274,7 +232,7 @@ class MyFormState extends State<MyForm> {
 
                           child: Padding(
                               padding: EdgeInsets.all(10),
-                              child: Text('Sign In',
+                              child: Text('Login to dashbord',
                                   style: TextStyle(
                                       color: Colors.green,
                                       fontWeight: FontWeight.bold,
@@ -284,7 +242,7 @@ class MyFormState extends State<MyForm> {
                     ),
                     Row(
                       children: [
-                        Text("Dont have an account?"),
+                        Text("I am not registered!"),
                         TextButton(
                           onPressed: () {
                             // value.setaction("Signup");
@@ -297,8 +255,9 @@ class MyFormState extends State<MyForm> {
                         ),
                       ],
                     ),
+                    //dsiplay any login errors here
                     Padding(
-                      padding: EdgeInsets.all(7),
+                      padding: EdgeInsets.all(10),
                       child: Text(
                         correctLogin,
                         style: TextStyle(
@@ -308,7 +267,7 @@ class MyFormState extends State<MyForm> {
                       ),
                     ),
                     TextButton(
-                        child: Text("go home"),
+                        child: Text("See dashboard"),
                         onPressed: () {
                           Navigator.pushNamed(context, '/home');
                         }),
@@ -317,6 +276,6 @@ class MyFormState extends State<MyForm> {
               ),
             ),
           )
-        : SignupForm();
+        : CompanySignupForm();
   }
 }

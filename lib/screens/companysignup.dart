@@ -6,7 +6,7 @@ import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:provider/provider.dart';
 
 //MyForm
-class SignupForm extends StatelessWidget {
+class CompanySignupForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   int page = 0;
@@ -15,7 +15,7 @@ class SignupForm extends StatelessWidget {
   TextEditingController passwd1 = TextEditingController();
   TextEditingController name = TextEditingController();
   TextEditingController phone = TextEditingController();
-  TextEditingController house = TextEditingController();
+  TextEditingController aptmnt = TextEditingController();
   TextEditingController city = TextEditingController();
   PageController pgecontroller = PageController();
   @override
@@ -39,7 +39,7 @@ class SignupForm extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           fontFamily: "Verdana"),
                     ),
-                    InputFields("Registeration Email", email, Icons.email,
+                    InputFields("Company Email", email, Icons.email,
                         TextInputType.emailAddress),
                     SizedBox(
                       height: 4,
@@ -88,7 +88,7 @@ class SignupForm extends StatelessWidget {
                               curve: Curves.easeInOut);
                         }
                       },
-                      child: Text("Personal Information"),
+                      child: Text("Company Information"),
                     ),
                   ],
                 ),
@@ -107,14 +107,14 @@ class SignupForm extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Text("Please fill your personal Info",
+                          Text("Please fill company info below",
                               style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w700)),
                           SizedBox(
                             height: 7,
                           ),
-                          InputFields("Full Name", name, Icons.input,
+                          InputFields("Registered Name", name, Icons.input,
                               TextInputType.name),
                           SizedBox(
                             height: 3,
@@ -128,7 +128,7 @@ class SignupForm extends StatelessWidget {
                               margin: EdgeInsets.all(10),
                               child: Column(
                                 children: [
-                                  Text("Your Location Address",
+                                  Text("HQ Location Address",
                                       style: TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.w700)),
@@ -145,8 +145,11 @@ class SignupForm extends StatelessWidget {
                                   SizedBox(
                                     height: 3,
                                   ),
-                                  InputFields("House Address... ", house,
+                                  InputFields("Apt Address... ", aptmnt,
                                       Icons.phone, TextInputType.streetAddress),
+                                  SizedBox(
+                                    height: 5,
+                                  ),
                                 ],
                               )),
                           Padding(
@@ -159,7 +162,7 @@ class SignupForm extends StatelessWidget {
                                   // Proceed with registration process.
 
                                   value.addUser(name.text, email.text,
-                                      phone.text, city.text, house.text);
+                                      phone.text, city.text, aptmnt.text);
                                 }
                               },
                               child: Text('Complete signup'),
