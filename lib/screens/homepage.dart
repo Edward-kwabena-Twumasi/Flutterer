@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
@@ -335,11 +336,9 @@ class SearchLocsState extends State<SearchLocs> {
           if (i.toLowerCase().contains(query.toLowerCase()) ||
               i.toLowerCase().startsWith(query)) {
             suggestions.add(i);
-            if (!hideoverlay) {
-              this.myoverlay = this.createOverlay();
-              Overlay.of(context)!.insert(this.myoverlay);
-            } else
-              myoverlay.remove();
+
+            this.myoverlay = this.createOverlay();
+            Overlay.of(context)!.insert(this.myoverlay);
           }
         }
 
@@ -375,9 +374,13 @@ class SearchLocsState extends State<SearchLocs> {
                     return ListTile(
                         key: Key(index.toString()),
                         onTap: () {
-                          myoverlay.remove();
+                          if (myoverlay.mounted) {
+                            myoverlay.remove();
+                          }
+
                           print(suggestions[index]);
                           mytripobj[widget.direction] = suggestions[index];
+                          formcontrol.text = suggestions[index];
                           print(mytripobj);
                           setState(() {
                             hideoverlay = true;
@@ -482,46 +485,66 @@ class TripsState extends State<Trips> {
               Container(
                 height: 150,
                 margin: EdgeInsets.all(20),
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    Container(
-                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
-                        child: nicebuttons(Icons.all_out, "All")),
-                    Container(
-                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
-                        child: nicebuttons(Icons.all_out, "vvip")),
-                    Container(
-                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
-                        child: nicebuttons(Icons.all_out, "oa travels")),
-                    Container(
-                        margin: EdgeInsets.fromLTRB(8, 2, 8, 2),
-                        child: nicebuttons(Icons.all_out, "mmt")),
-                  ],
+                child: Center(
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      Container(
+                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                          child: niceChips(
+                            Icons.all_out,
+                            "All",
+                          )),
+                      Container(
+                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                          child: niceChips(
+                            Icons.all_out,
+                            "VVIP",
+                          )),
+                      Container(
+                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                          child: niceChips(
+                            Icons.all_out,
+                            "STC",
+                          )),
+                      Container(
+                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                          child: niceChips(
+                            Icons.all_out,
+                            "METRO MASS",
+                          )),
+                    ],
+                  ),
                 ),
               ),
               SingleChildScrollView(
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                          child: ListTile(
-                        leading: Icon(Icons.travel_explore),
-                        title: Text("From " +
-                            list[index].fromLoc +
-                            " To " +
-                            list[index].toLoc),
-                        subtitle:
-                            Text(list[index].date + " - " + list[index].time),
-                      ));
-                    }),
-              ),
+                  child: FutureBuilder(
+                      future:
+                          FirebaseFirestore.instance.collection('trips').get(),
+                      builder: builder)),
             ]),
           ),
         ),
       ),
     );
+  }
+
+  Widget builder(BuildContext context, AsyncSnapshot snapshot) {
+    // final List<DocumentSnapshot> documents = snapshot.data.documents;
+    if (!snapshot.hasData) {
+      return Center(child: CircularProgressIndicator());
+    } else if (snapshot.hasError) {
+      print(snapshot.error);
+    }
+    return ListView(
+        children: snapshot.data.documents
+            .map((doc) => Card(
+                  elevation: 5,
+                  child: ListTile(
+                    title: Text(doc['from'] + " -->" + doc['to']),
+                  ),
+                ))
+            .toList());
   }
 }
 

@@ -12,6 +12,8 @@ enum userStates {
   successful
 }
 
+enum userAdded { successful, failed }
+
 class UserState extends ChangeNotifier {
   userStates? signinstate;
   userStates? registedstate;
@@ -83,22 +85,24 @@ class UserState extends ChangeNotifier {
     return registedstate;
   }
 
+  userAdded isadded = userAdded.successful;
   Future<void> addUser(
       String fullname, String email, String phone, String city, String house) {
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     // Call the user's CollectionReference to add a new user
 
-    return users
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({
-          'full_name': fullname,
-          'email': email, // John Doe
-          'phone': phone, // Stokes and Sons
-          'city': city,
-          'house': house // 42
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
+    return users.doc(FirebaseAuth.instance.currentUser!.uid).set({
+      'full_name': fullname,
+      'email': email, // John Doe
+      'phone': phone, // Stokes and Sons
+      'city': city,
+      'house': house // 42
+    }).then((value) {
+      print("User Added");
+    }).catchError((error) {
+      isadded = userAdded.failed;
+      print("Failed to add user: $error");
+    });
   } //adduser
 } //end class

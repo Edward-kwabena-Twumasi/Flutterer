@@ -59,44 +59,6 @@ class InputFields extends StatelessWidget {
   }
 }
 
-Widget primaryactions() {
-  return Stack(children: [
-    Container(
-        decoration: BoxDecoration(boxShadow: [
-          //   BoxShadow(
-          //       color: Colors.grey, blurRadius: 3.0, offset: Offset(1.0, 1.0))
-        ]),
-        child: Center(
-          child: GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 4,
-            children: <Widget>[
-              nicebuttons(Icons.ev_station, "station"),
-              nicebuttons(Icons.chair, " seat"),
-              nicebuttons(Icons.find_in_page, "Where am i"),
-              nicebuttons(Icons.message, "message"),
-            ],
-          ),
-        ),
-        padding: EdgeInsets.all(8),
-        margin: EdgeInsets.all(5)),
-    Positioned(
-      left: 150.0,
-      top: 15.0,
-      child: Padding(
-        padding: EdgeInsets.all(15),
-        child: Text(
-          "Help and Find",
-          style: TextStyle(
-            backgroundColor: Colors.black87,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    ),
-  ]);
-}
-
 Widget buttonactions() {
   return Container(
     decoration: BoxDecoration(
@@ -132,20 +94,14 @@ Widget useractions(IconData icondata, String text) {
   );
 }
 
-Widget nicebuttons(IconData icondata, String text) {
-  return RawMaterialButton(
+Widget niceChips(
+  IconData icondata,
+  String text,
+) {
+  return ActionChip(
+    label: Text(text),
+    avatar: Icon(icondata),
     onPressed: () {},
-    fillColor: Colors.yellow[200],
-    splashColor: Colors.yellow[100],
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(onPressed: () {}, icon: Icon(icondata)),
-        Text(text)
-      ],
-    ),
-    shape: StadiumBorder(),
   );
 }
 
