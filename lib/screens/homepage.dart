@@ -375,7 +375,7 @@ class SearchLocsState extends State<SearchLocs> {
                         key: Key(index.toString()),
                         onTap: () {
                           if (myoverlay.mounted) {
-                            myoverlay.remove();
+                            createOverlay().remove();
                           }
 
                           print(suggestions[index]);
@@ -450,6 +450,7 @@ class SearchLocsState extends State<SearchLocs> {
   }
 }
 
+//trips class to list trips serached for
 class Trips extends StatefulWidget {
   String triptype;
   Trips(this.triptype);
@@ -518,10 +519,35 @@ class TripsState extends State<Trips> {
                 ),
               ),
               SingleChildScrollView(
-                  child: FutureBuilder(
-                      future:
-                          FirebaseFirestore.instance.collection('trips').get(),
-                      builder: builder)),
+                  child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('trips')
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(
+                              child: Card(
+                                  elevation: 8,
+                                  child: CircularProgressIndicator()));
+                        } else if (snapshot.hasError) {
+                          print(snapshot.error);
+                        } else {
+                          print(snapshot.connectionState);
+                          print(snapshot.data!.size);
+                        }
+                        return ListView(
+                            shrinkWrap: true,
+                            children: snapshot.data!.docs
+                                .map((doc) => Card(
+                                      elevation: 5,
+                                      child: ListTile(
+                                        title: Text(
+                                            doc['from'] + " -->" + doc['to']),
+                                      ),
+                                    ))
+                                .toList());
+                      })),
             ]),
           ),
         ),
@@ -529,23 +555,23 @@ class TripsState extends State<Trips> {
     );
   }
 
-  Widget builder(BuildContext context, AsyncSnapshot snapshot) {
-    // final List<DocumentSnapshot> documents = snapshot.data.documents;
-    if (!snapshot.hasData) {
-      return Center(child: CircularProgressIndicator());
-    } else if (snapshot.hasError) {
-      print(snapshot.error);
-    }
-    return ListView(
-        children: snapshot.data.documents
-            .map((doc) => Card(
-                  elevation: 5,
-                  child: ListTile(
-                    title: Text(doc['from'] + " -->" + doc['to']),
-                  ),
-                ))
-            .toList());
-  }
+//   Widget builder(BuildContext context, AsyncSnapshot snapshot) {
+
+//     if (!snapshot.hasData) {
+//       return Center(child: CircularProgressIndicator());
+//     } else if (snapshot.hasError) {
+//       print(snapshot.error);
+//     }
+//     return ListView(
+//         children:snapshot.data
+//             .map((doc) => Card(
+//                   elevation: 5,
+//                   child: ListTile(
+//                     title: Text(doc['from'] + " -->" + doc['to']),
+//                   ),
+//                 ))
+//             .toList());
+//   }
 }
 
 class TripClass {

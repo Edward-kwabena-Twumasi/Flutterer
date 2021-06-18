@@ -107,7 +107,7 @@ class MyApp extends StatelessWidget {
         ),
         body: Center(
           child: Container(
-            height: 920,
+            height: 900,
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
             width: 500,
@@ -117,8 +117,8 @@ class MyApp extends StatelessWidget {
               elevation: 3.6,
               color: Colors.white,
               child: Consumer<UserState>(
-                builder: (context, value, child) => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                builder: (context, value, child) => ListView(
+                  physics: ScrollPhysics(),
                   children: [
                     MyForm(),
                     FloatingActionButton.extended(

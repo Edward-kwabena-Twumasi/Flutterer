@@ -99,6 +99,8 @@ Widget niceChips(
   String text,
 ) {
   return ActionChip(
+    labelPadding: EdgeInsets.all(5),
+    backgroundColor: Colors.amberAccent,
     label: Text(text),
     avatar: Icon(icondata),
     onPressed: () {},
