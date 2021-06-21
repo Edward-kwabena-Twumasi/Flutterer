@@ -33,9 +33,12 @@ class ButtomNavState extends State<ButtomNav> {
     });
   }
 
+  TripClass onetrip =
+      TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal");
+
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {"/matchingtrips": (context) => Trips("Bus")},
+      routes: {"/matchingtrips": (context) => Trips(onetrip)},
       home: Scaffold(
           bottomNavigationBar: BottomNavigationBar(
               currentIndex: currentindx,
@@ -117,6 +120,7 @@ class TabBarDemo extends StatelessWidget {
                             scrollDirection: Axis.horizontal,
                             children: [
                               FloatingActionButton.extended(
+                                  heroTag: "5",
                                   onPressed: () {
                                     showModalBottomSheet(
                                         context: context,
@@ -132,6 +136,7 @@ class TabBarDemo extends StatelessWidget {
                                   },
                                   label: Text("Available Seats")),
                               FloatingActionButton.extended(
+                                  heroTag: "4",
                                   onPressed: () {
                                     showModalBottomSheet(
                                         context: context,
@@ -147,6 +152,7 @@ class TabBarDemo extends StatelessWidget {
                                   },
                                   label: Text("Recent activity")),
                               FloatingActionButton.extended(
+                                  heroTag: "3",
                                   onPressed: () {
                                     showModalBottomSheet(
                                         context: context,
@@ -172,6 +178,7 @@ class TabBarDemo extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
                               children: [
                                 FloatingActionButton.extended(
+                                    heroTag: "1",
                                     onPressed: () {
                                       showModalBottomSheet(
                                           context: context,
@@ -187,6 +194,7 @@ class TabBarDemo extends StatelessWidget {
                                     },
                                     label: Text("Find company")),
                                 FloatingActionButton.extended(
+                                    heroTag: "2",
                                     onPressed: () {
                                       showModalBottomSheet(
                                           context: context,
@@ -452,8 +460,8 @@ class SearchLocsState extends State<SearchLocs> {
 
 //trips class to list trips serached for
 class Trips extends StatefulWidget {
-  String triptype;
-  Trips(this.triptype);
+  TripClass _tripdata;
+  Trips(this._tripdata);
   @override
   TripsState createState() => TripsState();
 }
@@ -525,7 +533,9 @@ class TripsState extends State<Trips> {
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (!snapshot.hasData) {
+                        if (!snapshot.hasData &&
+                            !(snapshot.connectionState ==
+                                ConnectionState.done)) {
                           return Center(
                               child: Card(
                                   elevation: 8,
@@ -540,15 +550,56 @@ class TripsState extends State<Trips> {
                             shrinkWrap: true,
                             children: snapshot.data!.docs
                                 .map((doc) => Card(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                       elevation: 5,
-                                      child: ListTile(
-                                          title: Text(
-                                              doc['from'] + " -->" + doc['to']),
-                                          subtitle: ListView.builder(
-                                              itemCount: doc['date'].size,
-                                              itemBuilder: (context, index) {
-                                                return Text(doc['date'][index]);
-                                              })),
+                                      child: Column(
+                                        children: [
+                                          ListTile(
+                                              title: Row(
+                                                children: [
+                                                  Text(doc['from'],
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          backgroundColor:
+                                                              Colors.amber,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  Text("to   "),
+                                                  Text(doc['to'],
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          backgroundColor:
+                                                              Colors.blueGrey,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ],
+                                              ),
+                                              subtitle: ListView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount: doc['date'].length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    return Text(doc['date']
+                                                            [index]
+                                                        .toString());
+                                                  })),
+                                          Divider(
+                                            thickness: 0.8,
+                                            color: Colors.blueGrey,
+                                          ),
+                                          ListTile(
+                                              leading: Icon(
+                                                Icons.chair,
+                                                size: 40,
+                                              ),
+                                              title: Text(
+                                                  doc['seats'].toString() +
+                                                      " Available"),
+                                              subtitle: Text("Choose seat"))
+                                        ],
+                                      ),
                                     ))
                                 .toList());
                       })),
@@ -595,23 +646,27 @@ class HelpClass extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         children: [
           FloatingActionButton.extended(
+            heroTag: "cheap",
             onPressed: () {},
             label: Text("Make a cheap travel"),
             icon: Icon(Icons.money),
           ),
           SizedBox(height: 40),
           FloatingActionButton.extended(
+              heroTag: "where",
               onPressed: () {},
               label: Text("Where am i?"),
               icon: Icon(Icons.location_on)),
           SizedBox(height: 40),
           FloatingActionButton.extended(
+            heroTag: "report",
             onPressed: () {},
             label: Text("Report a matter"),
             icon: Icon(Icons.report_problem),
           ),
           SizedBox(height: 40),
           FloatingActionButton.extended(
+            heroTag: "health",
             onPressed: () {},
             label: Text("My Health"),
             icon: Icon(Icons.health_and_safety),
@@ -691,6 +746,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
   Widget build(BuildContext context) {
     return Center(
         child: FloatingActionButton.extended(
+      heroTag: "date",
       onPressed: () {
         _restorableDatePickerRouteFuture.present();
       },
