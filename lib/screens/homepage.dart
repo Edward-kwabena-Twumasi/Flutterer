@@ -542,9 +542,13 @@ class TripsState extends State<Trips> {
                                 .map((doc) => Card(
                                       elevation: 5,
                                       child: ListTile(
-                                        title: Text(
-                                            doc['from'] + " -->" + doc['to']),
-                                      ),
+                                          title: Text(
+                                              doc['from'] + " -->" + doc['to']),
+                                          subtitle: ListView.builder(
+                                              itemCount: doc['date'].size,
+                                              itemBuilder: (context, index) {
+                                                return Text(doc['date'][index]);
+                                              })),
                                     ))
                                 .toList());
                       })),
