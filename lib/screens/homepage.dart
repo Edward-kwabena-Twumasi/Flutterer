@@ -382,9 +382,7 @@ class SearchLocsState extends State<SearchLocs> {
                     return ListTile(
                         key: Key(index.toString()),
                         onTap: () {
-                          if (myoverlay.mounted) {
-                            createOverlay().remove();
-                          }
+                          createOverlay().remove();
 
                           print(suggestions[index]);
                           mytripobj[widget.direction] = suggestions[index];
@@ -561,15 +559,15 @@ class TripsState extends State<Trips> {
                                                 children: [
                                                   Text(doc['from'],
                                                       style: TextStyle(
-                                                          color: Colors.white,
+                                                          color: Colors.black,
                                                           backgroundColor:
                                                               Colors.amber,
                                                           fontWeight:
                                                               FontWeight.bold)),
-                                                  Text("to   "),
+                                                  Text("  to   "),
                                                   Text(doc['to'],
                                                       style: TextStyle(
-                                                          color: Colors.white,
+                                                          color: Colors.black,
                                                           backgroundColor:
                                                               Colors.blueGrey,
                                                           fontWeight:
