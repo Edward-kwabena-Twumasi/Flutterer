@@ -83,7 +83,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      routes: {"/home": (context) => ButtomNav()},
+      routes: {
+        "/home": (context) => ButtomNav(),
+        "/companyinfo": (context) => ButtomNav()
+      },
       title: 'Login as Agent',
       darkTheme: ThemeData.dark(),
       home: Scaffold(
@@ -222,8 +225,7 @@ class AgentFormState extends State<AgentForm> {
                               value
                                   .signInWithMPass(email.text, password.text)
                                   .then((registedstate) {
-                                checkStatus(registedstate);
-                                if (allowlogin) {
+                                if (registedstate == userStates.successful) {
                                   Navigator.pushNamed(context, '/home');
                                 }
                               });

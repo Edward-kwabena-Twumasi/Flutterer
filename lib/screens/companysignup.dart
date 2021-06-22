@@ -14,6 +14,8 @@ class CompanySignupForm extends StatefulWidget {
 class CompanySignupFormState extends State<CompanySignupForm> {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
+  String companytype = "";
+  String errormesg = "";
   int currentstep = 0;
   bool tonext = false;
   TextEditingController email = TextEditingController();
@@ -34,6 +36,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
         onStepContinue: () {
           setState(() {
             currentstep < 1 ? currentstep++ : null;
+            // tonext == true ? currentstep++ : null;
           });
         },
         onStepTapped: (int step) {
@@ -85,11 +88,15 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                               // Navigator.pop(context);
                               value
                                   .registerwithMPass(email.text, passwd.text)
-                                  .then((value) {
-                                if (value == userStates.successful) {
-                                  Navigator.pushNamed(context, '/home');
+                                  .then((rvalue) {
+                                if (rvalue == userStates.successful) {
+                                  //Navigator.pushNamed(context, '/home');
+                                  setState(() {
+                                    tonext = true;
+                                    errormesg = "Register successful";
+                                  });
                                 } else
-                                  print(value);
+                                  print(rvalue);
                               });
                             } else
                               print("Two passwords must match");
@@ -97,6 +104,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                           child: Text('Register'),
                         ),
                       ),
+                      Text(errormesg),
                     ],
                   ),
                 ),
@@ -121,6 +129,54 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                 style: TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w700)),
+                            SizedBox(
+                              height: 7,
+                            ),
+                            Text("Company type..."),
+                            SizedBox(
+                              height: 7,
+                            ),
+                            Row(
+                              children: [
+                                InputChip(
+                                  labelPadding: EdgeInsets.all(5),
+                                  selectedColor: Colors.green,
+                                  onPressed: () {
+                                    setState(() {
+                                      companytype = "Bus";
+                                    });
+                                  },
+                                  label: Text("Bus"),
+                                  avatar: CircleAvatar(
+                                    child: Text("B"),
+                                  ),
+                                ),
+                                InputChip(
+                                    labelPadding: EdgeInsets.all(5),
+                                    selectedColor: Colors.green,
+                                    onPressed: () {
+                                      setState(() {
+                                        companytype = "Flight";
+                                      });
+                                    },
+                                    label: Text("Flight"),
+                                    avatar: CircleAvatar(
+                                      child: Text("F"),
+                                    )),
+                                InputChip(
+                                    labelPadding: EdgeInsets.all(5),
+                                    selectedColor: Colors.green,
+                                    onPressed: () {
+                                      setState(() {
+                                        companytype = "Train";
+                                      });
+                                    },
+                                    label: Text("Train"),
+                                    avatar: CircleAvatar(
+                                      child: Text("T"),
+                                    )),
+                              ],
+                            ),
                             SizedBox(
                               height: 7,
                             ),

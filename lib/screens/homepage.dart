@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
@@ -347,6 +348,9 @@ class SearchLocsState extends State<SearchLocs> {
 
             this.myoverlay = this.createOverlay();
             Overlay.of(context)!.insert(this.myoverlay);
+            myoverlay.addListener(() {
+              print("overlaay");
+            });
           }
         }
 
@@ -382,11 +386,12 @@ class SearchLocsState extends State<SearchLocs> {
                     return ListTile(
                         key: Key(index.toString()),
                         onTap: () {
-                          createOverlay().remove();
+                          this.myoverlay.mounted ? myoverlay.remove() : null;
 
-                          print(suggestions[index]);
+                          print(index);
                           mytripobj[widget.direction] = suggestions[index];
                           formcontrol.text = suggestions[index];
+                          suggestions = [];
                           print(mytripobj);
                           setState(() {
                             hideoverlay = true;
@@ -537,7 +542,15 @@ class TripsState extends State<Trips> {
                           return Center(
                               child: Card(
                                   elevation: 8,
-                                  child: CircularProgressIndicator()));
+                                  child: Column(
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text("Loading ...")
+                                    ],
+                                  )));
                         } else if (snapshot.hasError) {
                           print(snapshot.error);
                         } else {
@@ -588,14 +601,34 @@ class TripsState extends State<Trips> {
                                             color: Colors.blueGrey,
                                           ),
                                           ListTile(
+                                              trailing: Text(
+                                                  doc['fare'].toString(),
+                                                  style: TextStyle(
+                                                      fontSize: 30,
+                                                      color: Colors.lightBlue)),
                                               leading: Icon(
                                                 Icons.chair,
                                                 size: 40,
                                               ),
-                                              title: Text(
-                                                  doc['seats'].toString() +
-                                                      " Available"),
-                                              subtitle: Text("Choose seat"))
+                                              title: Text(doc['seats']
+                                                      .toString() +
+                                                  " Available"),
+                                              subtitle:
+                                                  FloatingActionButton.extended(
+                                                      onPressed: () {
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection('trips')
+                                                            .doc(doc.id)
+                                                            .update({
+                                                          "seats":
+                                                              (doc['seats'] - 1)
+                                                        });
+                                                      },
+                                                      label: Text(
+                                                          "Book seat - " +
+                                                              doc.id
+                                                                  .toString())))
                                         ],
                                       ),
                                     ))

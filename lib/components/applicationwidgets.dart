@@ -151,6 +151,7 @@ class _menuButtonState extends State<menuButton> {
           setState(() {
             dropdownValue = newValue;
           });
+          print(dropdownValue);
         },
         items: regions.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
