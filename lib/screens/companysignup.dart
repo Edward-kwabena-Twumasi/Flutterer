@@ -137,6 +137,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                               height: 7,
                             ),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 InputChip(
                                   labelPadding: EdgeInsets.all(5),
@@ -144,6 +145,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                   onPressed: () {
                                     setState(() {
                                       companytype = "Bus";
+                                      print(companytype);
                                     });
                                   },
                                   label: Text("Bus"),

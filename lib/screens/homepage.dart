@@ -320,6 +320,8 @@ class locations extends StatelessWidget {
 //primary actions
 
 /// This is the stateful widget that the main application instantiates.
+TripClass onetrip =
+    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal");
 
 class SearchLocs extends StatefulWidget {
   SearchLocs(this.direction);
@@ -348,9 +350,10 @@ class SearchLocsState extends State<SearchLocs> {
 
             this.myoverlay = this.createOverlay();
             Overlay.of(context)!.insert(this.myoverlay);
-            myoverlay.addListener(() {
-              print("overlaay");
-            });
+
+            // myoverlay.addListener(() {
+            //   print("overlaay");
+            // });
           }
         }
 
@@ -391,6 +394,7 @@ class SearchLocsState extends State<SearchLocs> {
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
                           formcontrol.text = suggestions[index];
+
                           suggestions = [];
                           print(mytripobj);
                           setState(() {
@@ -533,6 +537,7 @@ class TripsState extends State<Trips> {
                   child: StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('trips')
+                          .where("from", isEqualTo: widget._tripdata.toLoc)
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
