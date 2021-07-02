@@ -271,9 +271,9 @@ class AgentFormState extends State<AgentForm> {
                           ),
                         ),
                         TextButton(
-                            child: Text("See dashboard"),
+                            child: Text("View dashboard"),
                             onPressed: () {
-                              Navigator.pushNamed(context, '/home');
+                              Navigator.pushNamed(context, '/companyinfo');
                             }),
                       ],
                     ),

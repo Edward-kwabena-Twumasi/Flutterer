@@ -89,7 +89,8 @@ class CompanyState extends ChangeNotifier {
     // Call the user's CollectionReference to add a new user
 
     return companies
-        .add({
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({
           'type': comptype,
           'registered_name': compname, // John Doe
           'phone': phone, // Stokes and Sons

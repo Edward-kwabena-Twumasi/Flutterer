@@ -20,7 +20,18 @@ class DashApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Dash-Board",
-      home: Scaffold(body: Center(child: Text("Hello registered company"))),
+      home: Scaffold(
+          floatingActionButton: Stack(
+            children: [
+              FloatingActionButton.extended(
+                  onPressed: () {}, label: Text("Add region")),
+              FloatingActionButton.extended(
+                  onPressed: () {}, label: Text("Add Station")),
+              FloatingActionButton.extended(
+                  onPressed: () {}, label: Text("Schedule Trip"))
+            ],
+          ),
+          body: Center(child: Text("Hello registered company"))),
     );
   }
 }
