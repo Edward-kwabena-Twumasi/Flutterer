@@ -171,7 +171,10 @@ class SignupFormState extends State<SignupForm> {
                                     SizedBox(
                                       height: 3,
                                     ),
-                                    InputFields("City... ", city, Icons.phone,
+                                    InputFields(
+                                        "City... ",
+                                        city,
+                                        Icons.location_city,
                                         TextInputType.streetAddress),
                                     SizedBox(
                                       height: 3,
@@ -179,7 +182,7 @@ class SignupFormState extends State<SignupForm> {
                                     InputFields(
                                         "House Address... ",
                                         house,
-                                        Icons.phone,
+                                        Icons.home_filled,
                                         TextInputType.streetAddress),
                                   ],
                                 )),

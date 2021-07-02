@@ -117,18 +117,20 @@ class MyApp extends StatelessWidget {
               elevation: 3.6,
               color: Colors.white,
               child: Consumer<UserState>(
-                builder: (context, value, child) => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    MyForm(),
-                    FloatingActionButton.extended(
-                      heroTag: "agents",
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/agentlogin');
-                      },
-                      label: Text("Agents Sign In"),
-                    )
-                  ],
+                builder: (context, value, child) => SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      MyForm(),
+                      FloatingActionButton.extended(
+                        heroTag: "agents",
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/agentlogin');
+                        },
+                        label: Text("Agents Sign In"),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -239,7 +241,7 @@ class MyFormState extends State<MyForm> {
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text("Login"),
                     InputFields(

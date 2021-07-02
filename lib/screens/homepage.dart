@@ -599,6 +599,7 @@ class TripsState extends State<Trips> {
                                                       (context, index) {
                                                     return Text(doc['date']
                                                             [index]
+                                                        .toDate()
                                                         .toString());
                                                   })),
                                           Divider(
@@ -615,9 +616,9 @@ class TripsState extends State<Trips> {
                                                 Icons.chair,
                                                 size: 40,
                                               ),
-                                              title: Text(doc['seats']
-                                                      .toString() +
-                                                  " Available"),
+                                              title: Text(
+                                                  doc['seats'].toString() +
+                                                      " Available"),
                                               subtitle:
                                                   FloatingActionButton.extended(
                                                       onPressed: () {
@@ -630,10 +631,8 @@ class TripsState extends State<Trips> {
                                                               (doc['seats'] - 1)
                                                         });
                                                       },
-                                                      label: Text(
-                                                          "Book seat - " +
-                                                              doc.id
-                                                                  .toString())))
+                                                      label:
+                                                          Text("Book seat  ")))
                                         ],
                                       ),
                                     ))

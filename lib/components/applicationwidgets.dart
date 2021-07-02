@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:myapp/providersPool/userStateProvider.dart';
 
 //text widget
 class TextWidgets extends StatelessWidget {
@@ -41,8 +43,8 @@ class InputFields extends StatelessWidget {
             const Radius.circular(30.0),
           ),
         ),
-        filled: true,
-        hintStyle: new TextStyle(color: Colors.grey),
+        //filled: true,
+        hintStyle: new TextStyle(color: Colors.black),
         hintText: hintext,
         labelText: hintext,
         helperText: "Fill these correctly for Us",
@@ -110,11 +112,13 @@ class menuButton extends StatefulWidget {
   final TextEditingController? regioncontroller;
 
   @override
-  State<menuButton> createState() => _menuButtonState();
+  State<menuButton> createState() => _menuButtonState(regioncontroller);
 }
 
 /// This is the private State class that goes with MyStatefulWidget.
 class _menuButtonState extends State<menuButton> {
+  final TextEditingController? regioncontroller;
+  _menuButtonState(this.regioncontroller);
   void initState() {
     super.initState();
   }
@@ -138,35 +142,38 @@ class _menuButtonState extends State<menuButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      child: Row(
-        children: [
-          InputFields("Region", widget.regioncontroller!, Icons.place,
-              TextInputType.text),
-          DropdownButton<String>(
-            value: dropdownValue,
-            icon: const Icon(Icons.arrow_drop_down),
-            iconSize: 34,
-            elevation: 16,
-            style: const TextStyle(color: Colors.lightBlue),
-            underline: Container(
-              height: 2,
-              color: Colors.red,
+      child: Consumer<UserState>(
+        builder: (context, value, child) => Row(
+          children: [
+            // InputFields("Region", widget.regioncontroller!, Icons.place,
+            //     TextInputType.text),
+            DropdownButton<String>(
+              value: dropdownValue,
+              icon: const Icon(Icons.arrow_drop_down),
+              iconSize: 34,
+              elevation: 16,
+              style: const TextStyle(color: Colors.lightBlue),
+              underline: Container(
+                height: 2,
+                color: Colors.red,
+              ),
+              onChanged: (String? newValue) {
+                // widget.regioncontroller!.text = newValue!;
+                setState(() {
+                  dropdownValue = newValue;
+                });
+                value.selectregion = dropdownValue;
+                print(value.selectregion);
+              },
+              items: regions.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
             ),
-            onChanged: (String? newValue) {
-              widget.regioncontroller!.text = newValue!;
-              setState(() {
-                dropdownValue = newValue;
-              });
-              print(dropdownValue);
-            },
-            items: regions.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

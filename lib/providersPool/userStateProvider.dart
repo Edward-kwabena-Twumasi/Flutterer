@@ -17,6 +17,7 @@ enum userAdded { successful, failed }
 class UserState extends ChangeNotifier {
   userStates? signinstate;
   userStates? registedstate;
+  String? selectregion;
   String? loggedInAs;
   String? loggedinmail;
   String? registedmail;

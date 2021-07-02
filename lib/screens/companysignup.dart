@@ -12,6 +12,7 @@ class CompanySignupForm extends StatefulWidget {
 }
 
 class CompanySignupFormState extends State<CompanySignupForm> {
+  TextEditingController? chooseregion;
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   String companytype = "";
@@ -159,6 +160,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                     onPressed: () {
                                       setState(() {
                                         companytype = "Flight";
+                                        print(companytype);
                                       });
                                     },
                                     label: Text("Flight"),
@@ -171,6 +173,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                     onPressed: () {
                                       setState(() {
                                         companytype = "Train";
+                                        print(companytype);
                                       });
                                     },
                                     label: Text("Train"),
@@ -208,7 +211,10 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                     SizedBox(
                                       height: 3,
                                     ),
-                                    InputFields("City... ", city, Icons.phone,
+                                    InputFields(
+                                        "City... ",
+                                        city,
+                                        Icons.location_city,
                                         TextInputType.streetAddress),
                                     SizedBox(
                                       height: 3,
@@ -216,7 +222,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                     InputFields(
                                         "Apt Address... ",
                                         aptmnt,
-                                        Icons.phone,
+                                        Icons.home_filled,
                                         TextInputType.streetAddress),
                                     SizedBox(
                                       height: 5,

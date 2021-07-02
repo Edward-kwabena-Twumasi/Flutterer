@@ -100,18 +100,12 @@ class MyApp extends StatelessWidget {
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
             width: 500,
-            child: Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              elevation: 3.6,
-              color: Colors.white,
-              child: Consumer<UserState>(
-                builder: (context, value, child) => Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    AgentForm(),
-                  ],
-                ),
+            child: Consumer<UserState>(
+              builder: (context, value, child) => Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  AgentForm(),
+                ],
               ),
             ),
           ),
@@ -189,91 +183,100 @@ class AgentFormState extends State<AgentForm> {
                 borderRadius: BorderRadius.circular(35),
               ),
               elevation: 8,
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Text("Login here"),
-                    SizedBox(height: 20),
-                    InputFields("Company Email", email, Icons.email,
-                        TextInputType.emailAddress),
-                    SizedBox(
-                      height: 7,
-                    ),
-                    InputFields("Enter Password", password, Icons.password,
-                        TextInputType.text),
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: RawMaterialButton(
-                          fillColor: Colors.white,
-                          //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                          onPressed: () {
-                            // Validate will return true if the form is valid, or false if
-                            // the form is invalid.
-
-                            if (_formKey.currentState!.validate()) {
-                              // if (checkStatus(myController1.text)) {
-                              //   Navigator.push(context, MaterialPageRoute(
-                              //     builder: (context) {
-                              //       return TabBarDemo();
-                              //     },
-                              //   ));
-                              // }
-                              value
-                                  .signInWithMPass(email.text, password.text)
-                                  .then((registedstate) {
-                                if (registedstate == userStates.successful) {
-                                  Navigator.pushNamed(context, '/home');
-                                }
-                              });
-                            }
-                          },
-
+              child: Container(
+                decoration: BoxDecoration(),
+                height: 900,
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text("Login here"),
+                        SizedBox(height: 20),
+                        InputFields("Company Email", email, Icons.email,
+                            TextInputType.emailAddress),
+                        SizedBox(
+                          height: 7,
+                        ),
+                        InputFields("Enter Password", password, Icons.password,
+                            TextInputType.text),
+                        Center(
                           child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Text('Login to dashbord',
-                                  style: TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 25))),
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: RawMaterialButton(
+                              shape: StadiumBorder(),
+                              fillColor: Colors.white,
+                              //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                              onPressed: () {
+                                // Validate will return true if the form is valid, or false if
+                                // the form is invalid.
+
+                                if (_formKey.currentState!.validate()) {
+                                  // if (checkStatus(myController1.text)) {
+                                  //   Navigator.push(context, MaterialPageRoute(
+                                  //     builder: (context) {
+                                  //       return TabBarDemo();
+                                  //     },
+                                  //   ));
+                                  // }
+                                  value
+                                      .signInWithMPass(
+                                          email.text, password.text)
+                                      .then((registedstate) {
+                                    if (registedstate ==
+                                        userStates.successful) {
+                                      Navigator.pushNamed(context, '/home');
+                                    }
+                                  });
+                                }
+                              },
+
+                              child: Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text('Login ',
+                                      style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 25))),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Text("I am not registered!"),
+                        Row(
+                          children: [
+                            Text("I am not registered!"),
+                            TextButton(
+                              onPressed: () {
+                                // value.setaction("Signup");
+                                setState(() {
+                                  allowlogin = false;
+                                  retry = false;
+                                });
+                              },
+                              child: Text('Sign Up Instead'),
+                            ),
+                          ],
+                        ),
+                        //dsiplay any login errors here
+                        Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            correctLogin,
+                            style: TextStyle(
+                                backgroundColor: Colors.white,
+                                color: Colors.red,
+                                fontWeight: FontWeight.w300),
+                          ),
+                        ),
                         TextButton(
-                          onPressed: () {
-                            // value.setaction("Signup");
-                            setState(() {
-                              allowlogin = false;
-                              retry = false;
-                            });
-                          },
-                          child: Text('Sign Up Instead'),
-                        ),
+                            child: Text("See dashboard"),
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/home');
+                            }),
                       ],
                     ),
-                    //dsiplay any login errors here
-                    Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        correctLogin,
-                        style: TextStyle(
-                            backgroundColor: Colors.white,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w300),
-                      ),
-                    ),
-                    TextButton(
-                        child: Text("See dashboard"),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/home');
-                        }),
-                  ],
+                  ),
                 ),
               ),
             ),
