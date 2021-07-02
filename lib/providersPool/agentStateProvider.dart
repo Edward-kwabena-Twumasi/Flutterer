@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-enum userStates {
+enum companyStates {
   signedIn,
   signedOut,
   isRegistered,
@@ -13,9 +13,9 @@ enum userStates {
   successful
 }
 
-class UserState extends ChangeNotifier {
-  userStates? signinstate;
-  userStates? registedstate;
+class CompanyState extends ChangeNotifier {
+  companyStates? signinstate;
+  companyStates? registedstate;
 
   Future<User?> userState() async {
     FirebaseAuth auth = FirebaseAuth.instance;
@@ -23,11 +23,11 @@ class UserState extends ChangeNotifier {
 
     auth.authStateChanges().listen((User? user) {
       if (user == null) {
-        signinstate = userStates.signedOut;
+        signinstate = companyStates.signedOut;
 
         print('User is currently signed out!');
       } else {
-        signinstate = userStates.successful;
+        signinstate = companyStates.successful;
         currentuser = auth.currentUser;
 
         //currentuser.getIdToken();
@@ -39,37 +39,38 @@ class UserState extends ChangeNotifier {
     return currentuser;
   }
 
-  Future<userStates?> signInWithMPass(String email, String password) async {
+  Future<companyStates?> signInWithMPass(String email, String password) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      signinstate = userStates.successful;
+      signinstate = companyStates.successful;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
-        signinstate = userStates.registerNow;
+        signinstate = companyStates.registerNow;
         print(registedstate);
       } else if (e.code == 'wrong-password') {
         print('Wrong password provided for that user.');
-        signinstate = userStates.wrongPassword;
+        signinstate = companyStates.wrongPassword;
       }
     }
     notifyListeners();
     return signinstate;
   }
 
-  Future<userStates?> registerwithMPass(String email, String password) async {
+  Future<companyStates?> registerwithMPass(
+      String email, String password) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      registedstate = userStates.successful;
+      registedstate = companyStates.successful;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');
-        registedstate = userStates.weakpassword;
+        registedstate = companyStates.weakpassword;
       } else if (e.code == 'email-already-in-use') {
         print('The account already exists for that email.');
-        registedstate = userStates.isRegistered;
+        registedstate = companyStates.isRegistered;
       }
     } catch (e) {
       print(e);
@@ -78,16 +79,25 @@ class UserState extends ChangeNotifier {
     return registedstate;
   }
 
-  Future<void> addUser(String fullname, String phone, String location) {
+  Future<void> addCompany(String comptype, String compname, String phone,
+      String region, String city, String apartment) {
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
+    CollectionReference companies = FirebaseFirestore.instance
+        .collection('companies')
+        .doc(comptype)
+        .collection("Registered Companies");
     // Call the user's CollectionReference to add a new user
 
-    return users
+    return companies
         .add({
-          'full_name': fullname, // John Doe
+          'type': comptype,
+          'registered_name': compname, // John Doe
           'phone': phone, // Stokes and Sons
-          'address': location // 42
+          'address': {
+            'region': region,
+            'city': city,
+            'apartment': apartment
+          } // 42
         })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

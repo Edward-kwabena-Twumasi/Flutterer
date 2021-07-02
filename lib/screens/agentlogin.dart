@@ -3,7 +3,8 @@ import 'dart:js';
 
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
-import 'package:myapp/providersPool/userStateProvider.dart';
+import 'package:myapp/providersPool/agentStateProvider.dart';
+import 'package:myapp/screens/dashboard.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:myapp/screens/companysignup.dart';
 
@@ -16,7 +17,8 @@ import 'package:provider/provider.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(ChangeNotifierProvider(
-      create: (context) => UserState(), builder: (context, _) => AgentApp()));
+      create: (context) => CompanyState(),
+      builder: (context, _) => AgentApp()));
 }
 
 /// We are using a StatefulWidget such that we only create the [Future] once,
@@ -85,7 +87,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         "/home": (context) => ButtomNav(),
-        "/companyinfo": (context) => ButtomNav()
+        "/companyinfo": (context) => DashApp()
       },
       title: 'Login as Agent',
       darkTheme: ThemeData.dark(),
@@ -100,7 +102,7 @@ class MyApp extends StatelessWidget {
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
             width: 500,
-            child: Consumer<UserState>(
+            child: Consumer<CompanyState>(
               builder: (context, value, child) => Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -157,13 +159,13 @@ class AgentFormState extends State<AgentForm> {
   //   print('Second text field: ${myController.text}');
   // }
 
-  void checkStatus(userStates? state) {
-    if (state == userStates.registerNow) {
+  void checkStatus(companyStates? state) {
+    if (state == companyStates.registerNow) {
       setState(() {
         // retry = false;
         correctLogin = "You are not a registered user!";
       });
-    } else if (state == userStates.wrongPassword) {
+    } else if (state == companyStates.wrongPassword) {
       setState(() {
         correctLogin = "You entered wrong password for this account";
       });
@@ -177,21 +179,19 @@ class AgentFormState extends State<AgentForm> {
   @override
   Widget build(BuildContext context) {
     return retry
-        ? Consumer<UserState>(
+        ? Consumer<CompanyState>(
             builder: (context, value, child) => Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(35),
               ),
               elevation: 8,
-              child: Container(
-                decoration: BoxDecoration(),
-                height: 900,
+              child: SingleChildScrollView(
                 child: Form(
                   key: _formKey,
-                  child: SingleChildScrollView(
+                  child: Container(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Text("Login here"),
                         SizedBox(height: 20),
@@ -226,8 +226,9 @@ class AgentFormState extends State<AgentForm> {
                                           email.text, password.text)
                                       .then((registedstate) {
                                     if (registedstate ==
-                                        userStates.successful) {
-                                      Navigator.pushNamed(context, '/home');
+                                        companyStates.successful) {
+                                      Navigator.pushNamed(
+                                          context, '/companyinfo');
                                     }
                                   });
                                 }
