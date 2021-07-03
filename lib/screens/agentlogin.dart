@@ -16,9 +16,7 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(ChangeNotifierProvider(
-      create: (context) => CompanyState(),
-      builder: (context, _) => AgentApp()));
+  runApp(MyCompApp());
 }
 
 /// We are using a StatefulWidget such that we only create the [Future] once,
@@ -26,49 +24,14 @@ void main() {
 /// If we used a [StatelessWidget], in the event where [App] is rebuilt, that
 /// would re-initialize FlutterFire and make our application re-enter loading state,
 /// which is undesired.
-class AgentApp extends StatefulWidget {
-  // Create the initialization Future outside of `build`:
-  @override
-  _AgentAppState createState() => _AgentAppState();
-}
 
-class _AgentAppState extends State<AgentApp> {
-  /// The future is part of the state of our widget. We should not call `initializeApp`
-  /// directly inside [build].
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      // Initialize FlutterFire:
-      future: _initialization,
-      builder: (context, snapshot) {
-        // Check for errors
-        if (snapshot.hasError) {
-          return MaterialApp(
-              home: Container(
-                  child: Text(snapshot.error.toString() +
-                      "App encountering some network errors.Please call 0552489602 for assistance")));
-        }
-
-        // Once complete, show your application
-        if (snapshot.connectionState == ConnectionState.done) {
-          return MyApp();
-        }
-
-        // Otherwise, show something whilst waiting for initialization to complete
-        return Container(width: 10.0, height: 10.0);
-      },
-    );
-  }
-}
 //firebase
 
 // void main() {
 //   runApp(MyApp());
 // }
 
-class MyApp extends StatelessWidget {
+class MyCompApp extends StatelessWidget {
   var style = TextStyle(
     color: Colors.blueAccent,
     fontWeight: FontWeight.w500,
@@ -77,11 +40,7 @@ class MyApp extends StatelessWidget {
     fontSize: 30,
   );
 
-  // var input =
-  // final controller = TextEditingController();
-  // final controller1 = TextEditingController();
-  // final controller2 = TextEditingController();
-  // @override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -97,20 +56,7 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
         body: Center(
-          child: Container(
-            height: 920,
-            margin: EdgeInsets.all(10),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-            width: 500,
-            child: Consumer<CompanyState>(
-              builder: (context, value, child) => Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  AgentForm(),
-                ],
-              ),
-            ),
-          ),
+          child: AgentForm(),
         ),
       ),
     );
@@ -127,13 +73,6 @@ class AgentFormState extends State<AgentForm> {
   bool allowlogin = false;
   bool retry = true;
   var correctLogin = "";
-
-  // final String hint, hint1, hint2;
-  // final TextEditingController controller;
-  // final TextEditingController controller1;
-  // final TextEditingController controller2;
-  // MyFormState(this.hint, this.hint1, this.hint2, this.controller,
-  //     this.controller1, this.controller2);
 
   final name = TextEditingController();
   final email = TextEditingController();
@@ -185,7 +124,7 @@ class AgentFormState extends State<AgentForm> {
                 borderRadius: BorderRadius.circular(35),
               ),
               elevation: 8,
-              child: SingleChildScrollView(
+              child: Container(
                 child: Form(
                   key: _formKey,
                   child: Container(

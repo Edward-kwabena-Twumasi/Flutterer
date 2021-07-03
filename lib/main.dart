@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/providersPool/agentStateProvider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/screens/agentlogin.dart';
 import 'package:myapp/screens/homepage.dart';
@@ -26,8 +27,10 @@ enum userStates {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(ChangeNotifierProvider(
-      create: (context) => UserState(), builder: (context, _) => App()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider<UserState>(create: (_) => UserState()),
+    ChangeNotifierProvider<CompanyState>(create: (_) => CompanyState()),
+  ], child: App()));
 }
 
 /// We are using a StatefulWidget such that we only create the [Future] once,
@@ -96,7 +99,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         "/home": (context) => ButtomNav(),
-        "/agentlogin": (context) => AgentApp()
+        "/agentlogin": (context) => MyCompApp()
       },
       title: 'Flutter layout demo',
       theme: new ThemeData.dark(),
@@ -115,11 +118,10 @@ class MyApp extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               elevation: 3.6,
-              color: Colors.white,
               child: Consumer<UserState>(
                 builder: (context, value, child) => SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: ListView(
+                    shrinkWrap: true,
                     children: [
                       MyForm(),
                       FloatingActionButton.extended(

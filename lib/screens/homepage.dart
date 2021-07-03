@@ -15,6 +15,9 @@ void main() {
       create: (context) => UserState(), builder: (context, _) => ButtomNav()));
 }
 
+TripClass onetrip =
+    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal");
+
 class ButtomNav extends StatefulWidget {
   @override
   ButtomNavState createState() => ButtomNavState();
@@ -33,9 +36,6 @@ class ButtomNavState extends State<ButtomNav> {
       currentindx = value;
     });
   }
-
-  TripClass onetrip =
-      TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal");
 
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -167,7 +167,7 @@ class TabBarDemo extends StatelessWidget {
                                           ]);
                                         });
                                   },
-                                  label: Text("Change")),
+                                  label: Text("Departures")),
                             ],
                           ),
                         ),
@@ -194,46 +194,6 @@ class TabBarDemo extends StatelessWidget {
                                           });
                                     },
                                     label: Text("Find company")),
-                                FloatingActionButton.extended(
-                                    heroTag: "2",
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs("to")
-                                            ]);
-                                          });
-                                    },
-                                    label: Text("Contact")),
-                              ],
-                            )),
-                        Container(
-                            height: 60,
-                            padding: EdgeInsets.all(5),
-                            child: ListView(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                FloatingActionButton.extended(
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs("to")
-                                            ]);
-                                          });
-                                    },
-                                    label: Text("Get advice")),
                               ],
                             )),
                       ],
@@ -320,8 +280,6 @@ class locations extends StatelessWidget {
 //primary actions
 
 /// This is the stateful widget that the main application instantiates.
-TripClass onetrip =
-    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal");
 
 class SearchLocs extends StatefulWidget {
   SearchLocs(this.direction);
@@ -394,7 +352,9 @@ class SearchLocsState extends State<SearchLocs> {
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
                           formcontrol.text = suggestions[index];
-
+                          widget.direction == "From"
+                              ? onetrip.fromLoc = formcontrol.text
+                              : onetrip.toLoc = formcontrol.text;
                           suggestions = [];
                           print(mytripobj);
                           setState(() {
@@ -475,16 +435,6 @@ class Trips extends StatefulWidget {
 
 class TripsState extends State<Trips> {
   // String gttriptype ;
-  List<TripClass> list = [
-    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal"),
-    TripClass("Kumasi", "Accra", "10:00", "20 10 2021", "normal"),
-    TripClass("Kumasi", "Sunyani", "10:00", "20 10 2021", "normal"),
-    TripClass("Accra", "Obuasi", "10:00", "20 10 2021", "normal"),
-    TripClass("Mankessim", "Obuasi", "10:00", "20 10 2021", "normal"),
-    TripClass("Ho", "Obuasi", "10:00", "20 10 2021", "normal"),
-    TripClass("Kumasi", "Kasoa", "10:00", "20 10 2021", "normal"),
-    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal"),
-  ];
 
   bool isLoading = true;
   @override
@@ -537,7 +487,7 @@ class TripsState extends State<Trips> {
                   child: StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('trips')
-                          .where("from", isEqualTo: widget._tripdata.toLoc)
+                          .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -644,24 +594,6 @@ class TripsState extends State<Trips> {
       ),
     );
   }
-
-//   Widget builder(BuildContext context, AsyncSnapshot snapshot) {
-
-//     if (!snapshot.hasData) {
-//       return Center(child: CircularProgressIndicator());
-//     } else if (snapshot.hasError) {
-//       print(snapshot.error);
-//     }
-//     return ListView(
-//         children:snapshot.data
-//             .map((doc) => Card(
-//                   elevation: 5,
-//                   child: ListTile(
-//                     title: Text(doc['from'] + " -->" + doc['to']),
-//                   ),
-//                 ))
-//             .toList());
-//   }
 }
 
 class TripClass {
@@ -750,8 +682,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
         return DatePickerDialog(
           restorationId: 'date_picker_dialog',
           initialEntryMode: DatePickerEntryMode.calendarOnly,
-          initialDate: DateTime.fromMillisecondsSinceEpoch(arguments! as int),
-          firstDate: DateTime(2021, 1, 1),
+          initialDate: DateTime.now(),
+          firstDate: DateTime.now(),
           lastDate: DateTime(2022, 1, 1),
         );
       },
@@ -769,6 +701,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     if (newSelectedDate != null) {
       setState(() {
         _selectedDate.value = newSelectedDate;
+        onetrip.date =
+            ' ${_selectedDate.value.day}/${_selectedDate.value.month}/${_selectedDate.value.year}';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Selected: ${_selectedDate.value.day}/${_selectedDate.value.month}/${_selectedDate.value.year}'),
