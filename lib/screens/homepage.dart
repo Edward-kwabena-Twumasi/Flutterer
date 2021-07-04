@@ -16,7 +16,7 @@ void main() {
 }
 
 TripClass onetrip =
-    TripClass("Kumasi", "Obuasi", "10:00", "20 10 2021", "normal");
+    TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
 
 class ButtomNav extends StatefulWidget {
   @override
@@ -111,7 +111,109 @@ class TabBarDemo extends StatelessWidget {
                   children: [
                     locations(),
                     Expanded(
-                        child: Column(
+                        child: Card(
+                      elevation: 5,
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 60,
+                            padding: EdgeInsets.all(5),
+                            child: ListView(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                FloatingActionButton.extended(
+                                    heroTag: "5",
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Available Seats")),
+                                FloatingActionButton.extended(
+                                    heroTag: "4",
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Recent activity")),
+                                FloatingActionButton.extended(
+                                    heroTag: "3",
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Departures")),
+                              ],
+                            ),
+                          ),
+                          Container(
+                              height: 60,
+                              padding: EdgeInsets.all(5),
+                              child: ListView(
+                                shrinkWrap: true,
+                                scrollDirection: Axis.horizontal,
+                                children: [
+                                  FloatingActionButton.extended(
+                                      heroTag: "1",
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return Column(children: [
+                                                SearchLocs("from"),
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+                                                SearchLocs("to")
+                                              ]);
+                                            });
+                                      },
+                                      label: Text("Find company")),
+                                ],
+                              )),
+                        ],
+                      ),
+                    ))
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  locations(),
+                  Expanded(
+                      child: Card(
+                    elevation: 5,
+                    child: Column(
                       children: [
                         Container(
                           height: 60,
@@ -121,7 +223,7 @@ class TabBarDemo extends StatelessWidget {
                             scrollDirection: Axis.horizontal,
                             children: [
                               FloatingActionButton.extended(
-                                  heroTag: "5",
+                                  heroTag: "avs2",
                                   onPressed: () {
                                     showModalBottomSheet(
                                         context: context,
@@ -137,7 +239,7 @@ class TabBarDemo extends StatelessWidget {
                                   },
                                   label: Text("Available Seats")),
                               FloatingActionButton.extended(
-                                  heroTag: "4",
+                                  heroTag: "recact2",
                                   onPressed: () {
                                     showModalBottomSheet(
                                         context: context,
@@ -153,7 +255,7 @@ class TabBarDemo extends StatelessWidget {
                                   },
                                   label: Text("Recent activity")),
                               FloatingActionButton.extended(
-                                  heroTag: "3",
+                                  heroTag: "dep2",
                                   onPressed: () {
                                     showModalBottomSheet(
                                         context: context,
@@ -179,7 +281,7 @@ class TabBarDemo extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
                               children: [
                                 FloatingActionButton.extended(
-                                    heroTag: "1",
+                                    heroTag: "fc2",
                                     onPressed: () {
                                       showModalBottomSheet(
                                           context: context,
@@ -197,16 +299,8 @@ class TabBarDemo extends StatelessWidget {
                               ],
                             )),
                       ],
-                    ))
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  locations(),
+                    ),
+                  ))
                 ],
               ),
             ),
@@ -215,6 +309,97 @@ class TabBarDemo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   locations(),
+                  Expanded(
+                      child: Card(
+                    elevation: 5,
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 60,
+                          padding: EdgeInsets.all(5),
+                          child: ListView(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              FloatingActionButton.extended(
+                                  heroTag: "avs3",
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Column(children: [
+                                            SearchLocs("from"),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            SearchLocs("to")
+                                          ]);
+                                        });
+                                  },
+                                  label: Text("Available Seats")),
+                              FloatingActionButton.extended(
+                                  heroTag: "recact3",
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Column(children: [
+                                            SearchLocs("from"),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            SearchLocs("to")
+                                          ]);
+                                        });
+                                  },
+                                  label: Text("Recent activity")),
+                              FloatingActionButton.extended(
+                                  heroTag: "dep3",
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Column(children: [
+                                            SearchLocs("from"),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            SearchLocs("to")
+                                          ]);
+                                        });
+                                  },
+                                  label: Text("Departures")),
+                            ],
+                          ),
+                        ),
+                        Container(
+                            height: 60,
+                            padding: EdgeInsets.all(5),
+                            child: ListView(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                FloatingActionButton.extended(
+                                    heroTag: "fc3",
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(children: [
+                                              SearchLocs("from"),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              SearchLocs("to")
+                                            ]);
+                                          });
+                                    },
+                                    label: Text("Find company")),
+                              ],
+                            )),
+                      ],
+                    ),
+                  ))
                 ],
               ),
             )
@@ -378,14 +563,7 @@ class SearchLocsState extends State<SearchLocs> {
     super.dispose();
   }
 
-  List<String> places = [
-    "kumasi",
-    "obuasi",
-    "accra",
-    "Accra",
-    "Kasoa",
-    "Mankessim"
-  ];
+  List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim"];
   List<String> suggestions = [];
 
   TextEditingController formcontrol = TextEditingController();
@@ -465,7 +643,7 @@ class TripsState extends State<Trips> {
                           margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
                           child: niceChips(
                             Icons.all_out,
-                            "VVIP",
+                            "VIP",
                           )),
                       Container(
                           margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
@@ -477,7 +655,7 @@ class TripsState extends State<Trips> {
                           margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
                           child: niceChips(
                             Icons.all_out,
-                            "METRO MASS",
+                            "Metro mass",
                           )),
                     ],
                   ),

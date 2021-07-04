@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         "/home": (context) => ButtomNav(),
-        "/agentlogin": (context) => AgentApp()
+        "/agentlogin": (context) => MyCompApp()
       },
       title: 'Flutter layout demo',
       theme: new ThemeData.dark(),

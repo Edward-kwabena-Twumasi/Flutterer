@@ -23,15 +23,52 @@ class DashApp extends StatelessWidget {
       home: Scaffold(
           floatingActionButton: Stack(
             children: [
-              FloatingActionButton.extended(
-                  onPressed: () {}, label: Text("Add region")),
-              FloatingActionButton.extended(
-                  onPressed: () {}, label: Text("Add Station")),
-              FloatingActionButton.extended(
-                  onPressed: () {}, label: Text("Schedule Trip"))
+              Positioned(
+                left: 0,
+                bottom: 5,
+                child: FloatingActionButton.extended(
+                    heroTag: "addregion",
+                    onPressed: () {},
+                    label: Text("Add region")),
+              ),
+              Positioned(
+                left: 20,
+                bottom: 5,
+                child: FloatingActionButton.extended(
+                    heroTag: "addstation",
+                    onPressed: () {},
+                    label: Text("Add Station")),
+              ),
+              Positioned(
+                left: 40,
+                bottom: 5,
+                child: FloatingActionButton.extended(
+                    heroTag: "schedule",
+                    onPressed: () {},
+                    label: Text("Schedule Trip")),
+              )
             ],
           ),
-          body: Center(child: Text("Hello registered company"))),
+          body: Center(
+            child: Container(
+              child: Column(
+                children: [
+                  Card(
+                    elevation: 5,
+                    child: ListTile(title: Text("Regional Locations")),
+                  ),
+                  Card(
+                    elevation: 5,
+                    child: ListTile(title: Text("Stations Country wide")),
+                  ),
+                  Card(
+                    elevation: 5,
+                    child: ListTile(title: Text("Recent schedules")),
+                  ),
+                ],
+              ),
+            ),
+          )),
     );
   }
 }

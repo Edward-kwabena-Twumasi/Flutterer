@@ -168,6 +168,17 @@ class AgentFormState extends State<AgentForm> {
                                         companyStates.successful) {
                                       Navigator.pushNamed(
                                           context, '/companyinfo');
+                                    } else if (registedstate ==
+                                        companyStates.registerNow) {
+                                      setState(() {
+                                        correctLogin = "You are not registered";
+                                      });
+                                    } else if (registedstate ==
+                                        companyStates.wrongPassword) {
+                                      setState(() {
+                                        correctLogin =
+                                            "You entered wrong password";
+                                      });
                                     }
                                   });
                                 }
@@ -183,6 +194,7 @@ class AgentFormState extends State<AgentForm> {
                             ),
                           ),
                         ),
+                        Text(correctLogin),
                         Row(
                           children: [
                             Text("I am not registered!"),
