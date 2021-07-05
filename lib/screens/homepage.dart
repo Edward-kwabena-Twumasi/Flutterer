@@ -3,11 +3,13 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/components/getlocation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +41,10 @@ class ButtomNavState extends State<ButtomNav> {
 
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {"/matchingtrips": (context) => Trips(onetrip)},
+      routes: {
+        "/matchingtrips": (context) => Trips(onetrip),
+        "/location": (context) => GeolocatorWidget()
+      },
       home: Scaffold(
           bottomNavigationBar: BottomNavigationBar(
               currentIndex: currentindx,
@@ -106,6 +111,11 @@ class TabBarDemo extends StatelessWidget {
           children: [
             SafeArea(
               child: Container(
+                constraints: BoxConstraints.expand(),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -127,14 +137,18 @@ class TabBarDemo extends StatelessWidget {
                                     onPressed: () {
                                       showModalBottomSheet(
                                           context: context,
+                                          isScrollControlled: true,
                                           builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs("to")
-                                            ]);
+                                            return FractionallySizedBox(
+                                              heightFactor: 0.8,
+                                              child: Column(children: [
+                                                SearchLocs("from"),
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+                                                SearchLocs("to")
+                                              ]),
+                                            );
                                           });
                                     },
                                     label: Text("Available Seats")),
@@ -143,14 +157,18 @@ class TabBarDemo extends StatelessWidget {
                                     onPressed: () {
                                       showModalBottomSheet(
                                           context: context,
+                                          isScrollControlled: true,
                                           builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs("to")
-                                            ]);
+                                            return FractionallySizedBox(
+                                              heightFactor: 0.9,
+                                              child: Column(children: [
+                                                SearchLocs("from"),
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+                                                SearchLocs("to")
+                                              ]),
+                                            );
                                           });
                                     },
                                     label: Text("Recent activity")),
@@ -159,14 +177,18 @@ class TabBarDemo extends StatelessWidget {
                                     onPressed: () {
                                       showModalBottomSheet(
                                           context: context,
+                                          isScrollControlled: true,
                                           builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs("to")
-                                            ]);
+                                            return FractionallySizedBox(
+                                              heightFactor: 0.9,
+                                              child: Column(children: [
+                                                SearchLocs("from"),
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
+                                                SearchLocs("to")
+                                              ]),
+                                            );
                                           });
                                     },
                                     label: Text("Departures")),
@@ -206,6 +228,11 @@ class TabBarDemo extends StatelessWidget {
               ),
             ),
             Container(
+              constraints: BoxConstraints.expand(),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -305,6 +332,11 @@ class TabBarDemo extends StatelessWidget {
               ),
             ),
             Container(
+              constraints: BoxConstraints.expand(),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('images/train1.png'), fit: BoxFit.cover),
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -666,6 +698,7 @@ class TripsState extends State<Trips> {
                       stream: FirebaseFirestore.instance
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
+                          .where("seats", isGreaterThan: 0)
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -736,7 +769,8 @@ class TripsState extends State<Trips> {
                                           ),
                                           ListTile(
                                               trailing: Text(
-                                                  doc['fare'].toString(),
+                                                  doc['fare'].toString() +
+                                                      ' Cdz',
                                                   style: TextStyle(
                                                       fontSize: 30,
                                                       color: Colors.lightBlue)),
@@ -799,7 +833,9 @@ class HelpClass extends StatelessWidget {
           SizedBox(height: 40),
           FloatingActionButton.extended(
               heroTag: "where",
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushNamed(context, '/location');
+              },
               label: Text("Where am i?"),
               icon: Icon(Icons.location_on)),
           SizedBox(height: 40),
