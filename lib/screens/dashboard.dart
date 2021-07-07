@@ -24,7 +24,7 @@ class DashApp extends StatelessWidget {
           floatingActionButton: Stack(
             children: [
               Positioned(
-                left: 0,
+                left: 5,
                 bottom: 5,
                 child: FloatingActionButton.extended(
                     heroTag: "addregion",
@@ -32,15 +32,15 @@ class DashApp extends StatelessWidget {
                     label: Text("Add region")),
               ),
               Positioned(
-                left: 20,
-                bottom: 5,
+                left: 5,
+                bottom: 65,
                 child: FloatingActionButton.extended(
                     heroTag: "addstation",
                     onPressed: () {},
                     label: Text("Add Station")),
               ),
               Positioned(
-                left: 40,
+                right: 5,
                 bottom: 5,
                 child: FloatingActionButton.extended(
                     heroTag: "schedule",
@@ -55,15 +55,26 @@ class DashApp extends StatelessWidget {
                 children: [
                   Card(
                     elevation: 5,
-                    child: ListTile(title: Text("Regional Locations")),
-                  ),
-                  Card(
-                    elevation: 5,
-                    child: ListTile(title: Text("Stations Country wide")),
-                  ),
-                  Card(
-                    elevation: 5,
-                    child: ListTile(title: Text("Recent schedules")),
+                    child: ExpansionTile(
+                      title: Text("Ashanti Region"),
+                      subtitle: Text("Stations in regions"),
+                      children: [
+                        Card(
+                          elevation: 5,
+                          child: ListTile(
+                            title: Text("Asafo station"),
+                            subtitle: Text("Kumasi ,Asafo"),
+                          ),
+                        ),
+                        Card(
+                          elevation: 5,
+                          child: ListTile(
+                            title: Text("Abrepo station"),
+                            subtitle: Text("Kumasi ,Abrepo"),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

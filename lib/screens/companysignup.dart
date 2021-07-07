@@ -2,6 +2,7 @@ import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/providersPool/agentStateProvider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -119,7 +120,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   SizedBox(height: 5),
-                  Consumer<UserState>(
+                  Consumer<CompanyState>(
                     builder: (context, value, child) => Form(
                       key: _formKey2,
                       child: SingleChildScrollView(
@@ -239,8 +240,13 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                   if (_formKey2.currentState!.validate()) {
                                     // Proceed with registration process.
 
-                                    value.addUser(name.text, email.text,
-                                        phone.text, city.text, aptmnt.text);
+                                    value.addCompany(
+                                        companytype,
+                                        name.text,
+                                        email.text,
+                                        phone.text,
+                                        city.text,
+                                        aptmnt.text);
                                   }
                                 },
                                 child: Text('Complete signup'),

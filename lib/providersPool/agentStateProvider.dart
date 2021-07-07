@@ -94,11 +94,10 @@ class CompanyState extends ChangeNotifier {
           'type': comptype,
           'registered_name': compname, // John Doe
           'phone': phone, // Stokes and Sons
-          'address': {
-            'region': region,
-            'city': city,
-            'apartment': apartment
-          } // 42
+          'address': {'region': region, 'city': city, 'apartment': apartment},
+          'regions': [region],
+          'stations': []
+          // 42
         })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

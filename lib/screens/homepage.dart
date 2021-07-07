@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/screens/completebook.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -43,7 +44,8 @@ class ButtomNavState extends State<ButtomNav> {
     return MaterialApp(
       routes: {
         "/matchingtrips": (context) => Trips(onetrip),
-        "/location": (context) => GeolocatorWidget()
+        "/location": (context) => GeolocatorWidget(),
+        "/completebook": (context) => Booking()
       },
       home: Scaffold(
           bottomNavigationBar: BottomNavigationBar(
@@ -698,7 +700,7 @@ class TripsState extends State<Trips> {
                       stream: FirebaseFirestore.instance
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
-                          .where("seats", isGreaterThan: 0)
+                          //.where("seats", isGreaterThan: 0)
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -784,14 +786,17 @@ class TripsState extends State<Trips> {
                                               subtitle:
                                                   FloatingActionButton.extended(
                                                       onPressed: () {
-                                                        FirebaseFirestore
-                                                            .instance
-                                                            .collection('trips')
-                                                            .doc(doc.id)
-                                                            .update({
-                                                          "seats":
-                                                              (doc['seats'] - 1)
-                                                        });
+                                                        Navigator.pushNamed(
+                                                            context,
+                                                            "completebook");
+                                                        // FirebaseFirestore
+                                                        //     .instance
+                                                        //     .collection('trips')
+                                                        //     .doc(doc.id)
+                                                        //     .update({
+                                                        //   "seats":
+                                                        //       (doc['seats'] - 1)
+                                                        // });
                                                       },
                                                       label:
                                                           Text("Book seat  ")))
@@ -964,18 +969,18 @@ class UserInfoClassState extends State<UserInfoClass> {
     return Consumer<UserState>(
       builder: (context, value, child) => Column(
         children: [
+          Text("Welcome !",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40)),
           Container(
             margin: EdgeInsets.all(30),
-            child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(35)),
-                elevation: 10,
-                child: Image.asset(
-                  "images/bus2.png",
-                  width: 150,
-                  height: 150,
-                  fit: BoxFit.cover,
-                )),
+            child: CircleAvatar(
+              child: Image.asset(
+                "images/bus2.png",
+                width: 250,
+                height: 250,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
           Card(
             shape:
