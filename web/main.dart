@@ -93,74 +93,32 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
         body: Center(
-          child: Container(
-            height: 920,
-            margin: EdgeInsets.all(10),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-            width: 500,
-            child: Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              elevation: 3.6,
-              color: Colors.white,
-              child: Consumer<UserState>(
-                builder: (context, value, child) => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        RawMaterialButton(
-                          onPressed: () {},
-                          shape: StadiumBorder(),
-                          fillColor: Colors.blueGrey,
-                          splashColor: Colors.lightGreen,
-                          child: Padding(
-                            padding: EdgeInsets.all(7),
-                            child: Text("Login ",
-                                style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.w600)),
-                          ),
+          child: Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            elevation: 4,
+            color: Colors.white,
+            child: Consumer<UserState>(
+              builder: (context, value, child) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Stack(children: [
+                  MyForm(),
+                  Positioned(
+                      top: 0,
+                      right: 0,
+                      child: RawMaterialButton(
+                        fillColor: Colors.amber,
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/agentlogin');
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text("Companies",
+                              style: TextStyle(fontWeight: FontWeight.w700)),
                         ),
-                        RawMaterialButton(
-                          onPressed: () {},
-                          shape: StadiumBorder(),
-                          fillColor: Colors.green,
-                          child: Padding(
-                            padding: EdgeInsets.all(7),
-                            child: Text("Signup",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Stack(children: [
-                          MyForm(),
-                          Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: RawMaterialButton(
-                                fillColor: Colors.amber,
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/agentlogin');
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.all(10),
-                                  child: Text("Travel Agent Signin",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w700)),
-                                ),
-                                shape: StadiumBorder(),
-                              ))
-                        ])),
-                  ],
-                ),
+                        shape: StadiumBorder(),
+                      ))
+                ]),
               ),
             ),
           ),
@@ -240,16 +198,16 @@ class MyFormState extends State<MyForm> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
-                  Text("Login and lets go"),
+                  Text("Login  ", style: TextStyle(fontFamily: "serif")),
                   InputFields("Enter Username", username, Icons.input,
                       TextInputType.text),
                   SizedBox(
-                    height: 7,
+                    height: 5,
                   ),
                   InputFields("Enter Email", usermail, Icons.email,
                       TextInputType.emailAddress),
                   SizedBox(
-                    height: 7,
+                    height: 5,
                   ),
                   InputFields("Enter Password", userpass, Icons.password,
                       TextInputType.visiblePassword),
@@ -288,29 +246,35 @@ class MyFormState extends State<MyForm> {
                             padding: EdgeInsets.all(10),
                             child: Text('Sign In',
                                 style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 25))),
+                                    color: Colors.amber,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 25,
+                                    fontStyle: FontStyle.italic))),
                       ),
                     ),
                   ),
-                  Row(
-                    children: [
-                      Text("Dont have an account?"),
-                      TextButton(
-                        onPressed: () {
-                          // value.setaction("Signup");
-                          setState(() {
-                            allowlogin = false;
-                            retry = false;
-                          });
-                        },
-                        child: Text('Sign Up Instead'),
-                      ),
-                    ],
+                  Center(
+                    child: Row(
+                      children: [
+                        Text("Dont have an account?",
+                            style: TextStyle(
+                                color: Colors.amber,
+                                fontWeight: FontWeight.w100)),
+                        TextButton(
+                            onPressed: () {
+                              // value.setaction("Signup");
+                              setState(() {
+                                allowlogin = false;
+                                retry = false;
+                              });
+                            },
+                            child: Text(' Sign Up ',
+                                style: TextStyle(fontStyle: FontStyle.italic))),
+                      ],
+                    ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.all(8),
                     child: Text(
                       correctLogin,
                       style: TextStyle(

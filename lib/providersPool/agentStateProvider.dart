@@ -16,7 +16,7 @@ enum companyStates {
 class CompanyState extends ChangeNotifier {
   companyStates? signinstate;
   companyStates? registedstate;
-
+  String signupmsg = "";
   Future<User?> userState() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? currentuser;
@@ -88,18 +88,18 @@ class CompanyState extends ChangeNotifier {
         .collection("Registered Companies");
     // Call the user's CollectionReference to add a new user
 
-    return companies
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({
-          'type': comptype,
-          'registered_name': compname, // John Doe
-          'phone': phone, // Stokes and Sons
-          'address': {'region': region, 'city': city, 'apartment': apartment},
-          'regions': [region],
-          'stations': []
-          // 42
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
+    return companies.doc(FirebaseAuth.instance.currentUser!.uid).set({
+      'type': comptype,
+      'registered_name': compname, // John Doe
+      'phone': phone, // Stokes and Sons
+      'address': {'region': region, 'city': city, 'apartment': apartment},
+      'regions': [region],
+      'stations': [],
+      'id': FirebaseAuth.instance.currentUser!.uid
+      // 42
+    }).then((value) {
+      print("User Added");
+      signupmsg = "Registration completed successfully";
+    }).catchError((error) => print("Failed to add user: $error"));
   } //adduser
 } //end class

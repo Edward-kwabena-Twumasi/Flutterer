@@ -29,33 +29,30 @@ class InputFields extends StatelessWidget {
   const InputFields(
       this.hintext, this.controller, this.iconData, this.inputtype);
   Widget build(BuildContext context) {
-    return new TextFormField(
-      style: TextStyle(color: Colors.black),
-      keyboardType: inputtype,
-      decoration: new InputDecoration(
-        icon: Icon(
-          iconData,
-          color: Colors.black,
-          size: 33,
-        ),
-        border: new OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            const Radius.circular(30.0),
+    return ListTile(
+      leading: Icon(iconData),
+      title: TextFormField(
+        style: TextStyle(color: Colors.black),
+        keyboardType: inputtype,
+        decoration: new InputDecoration(
+          border: new OutlineInputBorder(
+            borderRadius: const BorderRadius.all(
+              const Radius.circular(30.0),
+            ),
           ),
+          hintStyle: new TextStyle(color: Colors.black),
+          hintText: hintext,
+          labelText: hintext,
+          helperText: "Fill these correctly for Us",
         ),
-        //filled: true,
-        hintStyle: new TextStyle(color: Colors.black),
-        hintText: hintext,
-        labelText: hintext,
-        helperText: "Fill these correctly for Us",
+        controller: controller,
+        validator: (value) {
+          if (value!.isEmpty) {
+            return 'Please enter $hintext';
+          }
+          return null;
+        },
       ),
-      controller: controller,
-      validator: (value) {
-        if (value!.isEmpty) {
-          return 'Please enter $hintext';
-        }
-        return null;
-      },
     );
   }
 }

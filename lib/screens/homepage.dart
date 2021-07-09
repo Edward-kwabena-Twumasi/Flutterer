@@ -788,7 +788,7 @@ class TripsState extends State<Trips> {
                                                       onPressed: () {
                                                         Navigator.pushNamed(
                                                             context,
-                                                            "completebook");
+                                                            "/completebook");
                                                         // FirebaseFirestore
                                                         //     .instance
                                                         //     .collection('trips')
@@ -798,8 +798,7 @@ class TripsState extends State<Trips> {
                                                         //       (doc['seats'] - 1)
                                                         // });
                                                       },
-                                                      label:
-                                                          Text("Book seat  ")))
+                                                      label: Text("Book seat")))
                                         ],
                                       ),
                                     ))

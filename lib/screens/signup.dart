@@ -108,7 +108,7 @@ class SignupFormState extends State<SignupForm> {
                               });
                             }
                           },
-                          child: Text('Register'),
+                          child: Text(' Submit '),
                         ),
                       ),
                       // OutlinedButton(
@@ -121,7 +121,7 @@ class SignupFormState extends State<SignupForm> {
                       //   },
                       //   child: Text(tonext),
                       // ),
-                      Text(errors)
+                      Center(child: Text(errors))
                     ],
                   ),
                 ),
@@ -130,96 +130,84 @@ class SignupFormState extends State<SignupForm> {
           ),
           Step(
             title: Text("Personal information"),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  SizedBox(height: 5),
-                  Consumer<UserState>(
-                    builder: (context, value, child) => Form(
-                      key: _formKey2,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SizedBox(
-                              height: 7,
-                            ),
-                            InputFields("Full Name", name, Icons.input,
-                                TextInputType.name),
-                            SizedBox(
-                              height: 3,
-                            ),
-                            InputFields("Phone ", phone, Icons.phone,
-                                TextInputType.phone),
-                            SizedBox(
-                              height: 3,
-                            ),
-                            Container(
-                                margin: EdgeInsets.all(10),
-                                child: Column(
-                                  children: [
-                                    Text("Your Location Address",
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w700)),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text("Region..."),
-                                    menuButton(),
-                                    SizedBox(
-                                      height: 3,
-                                    ),
-                                    InputFields(
-                                        "City... ",
-                                        city,
-                                        Icons.location_city,
-                                        TextInputType.streetAddress),
-                                    SizedBox(
-                                      height: 3,
-                                    ),
-                                    InputFields(
-                                        "House Address... ",
-                                        house,
-                                        Icons.home_filled,
-                                        TextInputType.streetAddress),
-                                  ],
-                                )),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16.0),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Validate will return true if the form is valid, or false if
-                                  // the form is invalid.
-                                  if (_formKey2.currentState!.validate()) {
-                                    // Proceed with registration process.
-
-                                    value
-                                        .addUser(
-                                            name.text,
-                                            value.registedmail.toString(),
-                                            phone.text,
-                                            city.text,
-                                            house.text)
-                                        .then((rvalue) {
-                                      if (value.isadded ==
-                                          userAdded.successful) {
-                                        Navigator.pushNamed(context, '/home');
-                                      }
-                                    });
-                                  }
-                                },
-                                child: Text('Complete signup'),
+            content: Consumer<UserState>(
+              builder: (context, value, child) => Form(
+                key: _formKey2,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 7,
+                      ),
+                      InputFields(
+                          "Full Name", name, Icons.input, TextInputType.name),
+                      SizedBox(
+                        height: 3,
+                      ),
+                      InputFields(
+                          "Phone ", phone, Icons.phone, TextInputType.phone),
+                      SizedBox(
+                        height: 3,
+                      ),
+                      Container(
+                          margin: EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(" Address ",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w700)),
+                              SizedBox(
+                                height: 10,
                               ),
-                            ),
-                          ],
+                              Text("Region..."),
+                              menuButton(),
+                              SizedBox(
+                                height: 3,
+                              ),
+                              InputFields("City... ", city, Icons.location_city,
+                                  TextInputType.streetAddress),
+                              SizedBox(
+                                height: 3,
+                              ),
+                              InputFields(
+                                  "House Address... ",
+                                  house,
+                                  Icons.home_filled,
+                                  TextInputType.streetAddress),
+                            ],
+                          )),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: TextButton(
+                          onPressed: () {
+                            // Validate will return true if the form is valid, or false if
+                            // the form is invalid.
+                            if (_formKey2.currentState!.validate()) {
+                              // Proceed with registration process.
+
+                              value
+                                  .addUser(
+                                      name.text,
+                                      value.registedmail.toString(),
+                                      phone.text,
+                                      city.text,
+                                      house.text)
+                                  .then((rvalue) {
+                                if (value.isadded == userAdded.successful) {
+                                  Navigator.pushNamed(context, '/home');
+                                }
+                              });
+                            }
+                          },
+                          child: Text('Complete signup'),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

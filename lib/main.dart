@@ -1,36 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
-import 'package:myapp/providersPool/agentStateProvider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/screens/agentlogin.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:myapp/screens/signup.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
-
-enum userStates {
-  signedIn,
-  signedOut,
-  isRegistered,
-  registerNow,
-  wrongPassword,
-  weakpassword,
-  successful
-}
-
 //irebase
 
 // Import the firebase_core plugin
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider<UserState>(create: (_) => UserState()),
-    ChangeNotifierProvider<CompanyState>(create: (_) => CompanyState()),
-  ], child: App()));
+  runApp(ChangeNotifierProvider(
+      create: (context) => UserState(), builder: (context, _) => App()));
 }
 
 /// We are using a StatefulWidget such that we only create the [Future] once,
@@ -109,31 +93,32 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
         body: Center(
-          child: Container(
-            height: 920,
-            margin: EdgeInsets.all(10),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-            width: 500,
-            child: Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              elevation: 3.6,
-              child: Consumer<UserState>(
-                builder: (context, value, child) => SingleChildScrollView(
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      MyForm(),
-                      FloatingActionButton.extended(
-                        heroTag: "agents",
+          child: Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            elevation: 4,
+            color: Colors.white,
+            child: Consumer<UserState>(
+              builder: (context, value, child) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Stack(children: [
+                  MyForm(),
+                  Positioned(
+                      top: 0,
+                      right: 0,
+                      child: RawMaterialButton(
+                        fillColor: Colors.amber,
                         onPressed: () {
                           Navigator.pushNamed(context, '/agentlogin');
                         },
-                        label: Text("Agents Sign In"),
-                      )
-                    ],
-                  ),
-                ),
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text("Companies",
+                              style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                        shape: StadiumBorder(),
+                      ))
+                ]),
               ),
             ),
           ),
@@ -184,9 +169,8 @@ class MyFormState extends State<MyForm> {
   // void _printLatestValue() {
   //   print('Second text field: ${myController.text}');
   // }
-  String? loginname;
 
-  void checkStatus(userStates? state) {
+  bool checkStatus(userStates? state) {
     if (state == userStates.registerNow) {
       setState(() {
         retry = false;
@@ -201,37 +185,7 @@ class MyFormState extends State<MyForm> {
         allowlogin = true;
       });
     }
-  }
-
-  userStates? signinstate;
-  userStates? registedstate;
-  Future<userStates?> signin(String email, String password) async {
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      signinstate = userStates.successful;
-      print("we done");
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        print('No user found for that email.');
-        signinstate = userStates.registerNow;
-        setState(() {
-          correctLogin = "Email not found.Register now";
-        });
-      } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
-        signinstate = userStates.wrongPassword;
-        setState(() {
-          correctLogin = "incorrect password";
-        });
-      } else {
-        print("This email is invalid" + e.code);
-        setState(() {
-          correctLogin = "This email is invalid";
-        });
-      }
-    }
-    return signinstate;
+    return allowlogin;
   }
 
   @override
@@ -240,91 +194,101 @@ class MyFormState extends State<MyForm> {
         ? Consumer<UserState>(
             builder: (context, value, child) => Form(
               key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text("Login"),
-                    InputFields(
-                        " Username", username, Icons.input, TextInputType.name),
-                    SizedBox(
-                      height: 7,
-                    ),
-                    InputFields(" Email", usermail, Icons.email,
-                        TextInputType.emailAddress),
-                    SizedBox(
-                      height: 7,
-                    ),
-                    InputFields(" Password", userpass, Icons.password_sharp,
-                        TextInputType.text),
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: OutlinedButton(
-                          //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                          onPressed: () {
-                            // Validate will return true if the form is valid, or false if
-                            // the form is invalid.
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Text("Login  ", style: TextStyle(fontFamily: "serif")),
+                  InputFields("Enter Username", username, Icons.input,
+                      TextInputType.text),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  InputFields("Enter Email", usermail, Icons.email,
+                      TextInputType.emailAddress),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  InputFields("Enter Password", userpass, Icons.password,
+                      TextInputType.visiblePassword),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: RawMaterialButton(
+                        fillColor: Colors.white,
+                        //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                        onPressed: () {
+                          // Validate will return true if the form is valid, or false if
+                          // the form is invalid.
 
-                            if (_formKey.currentState!.validate()) {
-                              setState(() {
-                                loginname = username.text;
-                              });
-                              signin(usermail.text, userpass.text)
-                                  .then((rvalue) {
-                                print(value);
-                                if (rvalue == userStates.successful) {
-                                  value.loggedInAs = loginname;
-                                  value.loggedinmail = usermail.text;
-                                  Navigator.pushNamed(context, "/home");
-                                }
-                              });
-                            }
-                          },
+                          if (_formKey.currentState!.validate()) {
+                            // if (checkStatus(myController1.text)) {
+                            //   Navigator.push(context, MaterialPageRoute(
+                            //     builder: (context) {
+                            //       return TabBarDemo();
+                            //     },
+                            //   ));
+                            // }
+                            print(value.signinstate);
+                            value
+                                .signInWithMPass(usermail.text, userpass.text)
+                                .then((registedstate) {
+                              checkStatus(registedstate);
+                            }).then((value) {
+                              if (allowlogin) {
+                                Navigator.pushNamed(context, '/home');
+                              }
+                            });
+                          }
+                        },
 
-                          child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Text('Sign In',
-                                  style: TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 25))),
-                        ),
+                        child: Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Text('Sign In',
+                                style: TextStyle(
+                                    color: Colors.amber,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 25,
+                                    fontStyle: FontStyle.italic))),
                       ),
                     ),
-                    Row(
+                  ),
+                  Center(
+                    child: Row(
                       children: [
-                        Text("Dont have an account?"),
+                        Text("Dont have an account?",
+                            style: TextStyle(
+                                color: Colors.amber,
+                                fontWeight: FontWeight.w100)),
                         TextButton(
-                          onPressed: () {
-                            // value.setaction("Signup");
-                            setState(() {
-                              allowlogin = false;
-                              retry = false;
-                            });
-                          },
-                          child: Text('Sign Up Instead'),
-                        ),
+                            onPressed: () {
+                              // value.setaction("Signup");
+                              setState(() {
+                                allowlogin = false;
+                                retry = false;
+                              });
+                            },
+                            child: Text(' Sign Up ',
+                                style: TextStyle(fontStyle: FontStyle.italic))),
                       ],
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(7),
-                      child: Text(
-                        correctLogin,
-                        style: TextStyle(
-                            backgroundColor: Colors.white,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w300),
-                      ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      correctLogin,
+                      style: TextStyle(
+                          backgroundColor: Colors.white,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w300),
                     ),
-                    TextButton(
-                        child: Text("go home"),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/home');
-                        }),
-                  ],
-                ),
+                  ),
+                  TextButton(
+                      child: Text("go home"),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/home');
+                      }),
+                ],
               ),
             ),
           )

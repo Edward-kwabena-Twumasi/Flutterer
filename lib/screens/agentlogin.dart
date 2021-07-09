@@ -30,6 +30,7 @@ void main() {
 // void main() {
 //   runApp(MyApp());
 // }
+TextEditingController? controller1, controller2;
 
 class MyCompApp extends StatelessWidget {
   var style = TextStyle(
@@ -46,7 +47,7 @@ class MyCompApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         "/home": (context) => ButtomNav(),
-        "/companyinfo": (context) => DashApp()
+        "/companyinfo": (context) => DashApp(controller1!, controller2!)
       },
       title: 'Login as Agent',
       darkTheme: ThemeData.dark(),
@@ -130,14 +131,13 @@ class AgentFormState extends State<AgentForm> {
                   child: Container(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
-                        Text("Login here"),
+                        Text(" Login "),
                         SizedBox(height: 20),
                         InputFields("Company Email", email, Icons.email,
                             TextInputType.emailAddress),
                         SizedBox(
-                          height: 7,
+                          height: 5,
                         ),
                         InputFields("Enter Password", password, Icons.password,
                             TextInputType.text),
@@ -186,10 +186,10 @@ class AgentFormState extends State<AgentForm> {
 
                               child: Padding(
                                   padding: EdgeInsets.all(10),
-                                  child: Text('Login ',
+                                  child: Text(' Login ',
                                       style: TextStyle(
                                           color: Colors.green,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.normal,
                                           fontSize: 25))),
                             ),
                           ),
@@ -197,7 +197,7 @@ class AgentFormState extends State<AgentForm> {
                         Text(correctLogin),
                         Row(
                           children: [
-                            Text("I am not registered!"),
+                            Text(" I am not registered! "),
                             TextButton(
                               onPressed: () {
                                 // value.setaction("Signup");
@@ -206,7 +206,7 @@ class AgentFormState extends State<AgentForm> {
                                   retry = false;
                                 });
                               },
-                              child: Text('Sign Up Instead'),
+                              child: Text('Sign Up'),
                             ),
                           ],
                         ),
