@@ -6,8 +6,8 @@ void main() {
 
 class Booking extends StatelessWidget {
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Book(),
+    return MaterialApp(
+      home: Book(),
     );
   }
 }
@@ -18,30 +18,32 @@ class Book extends StatefulWidget {
 
 class BookState extends State<Book> {
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 70,
-          child: Stack(
-            children: [
-              Positioned.fill(child: Image.asset("images/bus1")),
-              Positioned(top: 30, left: 2, child: Text("Obuasi")),
-              Positioned(top: 30, right: 2, child: Text("Kumasi"))
-            ],
+    return Scaffold(
+      body: Column(
+        children: [
+          Container(
+            height: 70,
+            child: Stack(
+              children: [
+                Positioned.fill(child: Image.asset("images/bus1")),
+                Positioned(top: 30, left: 2, child: Text("Obuasi")),
+                Positioned(top: 30, right: 2, child: Text("Kumasi"))
+              ],
+            ),
           ),
-        ),
-        TabBar(tabs: [
-          Tab(
-            child: Text("Seating"),
-          ),
-          Tab(
-            child: Text("Pick Up points"),
-          ),
-          Tab(
-            child: Text("Routes and Stops"),
-          )
-        ])
-      ],
+          TabBar(tabs: [
+            Tab(
+              child: Text("Seating"),
+            ),
+            Tab(
+              child: Text("Pick Up points"),
+            ),
+            Tab(
+              child: Text("Routes and Stops"),
+            )
+          ])
+        ],
+      ),
     );
   }
 }

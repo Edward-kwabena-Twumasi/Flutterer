@@ -17,6 +17,7 @@ class CompanyState extends ChangeNotifier {
   companyStates? signinstate;
   companyStates? registedstate;
   String signupmsg = "";
+  String? selectregion;
   Future<User?> userState() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? currentuser;
@@ -80,7 +81,7 @@ class CompanyState extends ChangeNotifier {
   }
 
   Future<void> addCompany(String comptype, String compname, String phone,
-      String region, String city, String apartment) {
+      String email, String region, String city, String apartment) {
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference companies = FirebaseFirestore.instance
         .collection('companies')
@@ -91,7 +92,7 @@ class CompanyState extends ChangeNotifier {
     return companies.doc(FirebaseAuth.instance.currentUser!.uid).set({
       'type': comptype,
       'registered_name': compname, // John Doe
-      'phone': phone, // Stokes and Sons
+      'contact': {'phone': phone, 'email': email}, // Stokes and Sons
       'address': {'region': region, 'city': city, 'apartment': apartment},
       'regions': [region],
       'stations': [],

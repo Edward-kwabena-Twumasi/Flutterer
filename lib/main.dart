@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
+import 'package:myapp/providersPool/agentStateProvider.dart';
 import 'package:myapp/screens/agentlogin.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:myapp/screens/signup.dart';
@@ -13,8 +14,14 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(ChangeNotifierProvider(
-      create: (context) => UserState(), builder: (context, _) => App()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(
+      create: (context) => UserState(),
+    ),
+    ChangeNotifierProvider(
+      create: (context) => CompanyState(),
+    ),
+  ], child: App()));
 }
 
 /// We are using a StatefulWidget such that we only create the [Future] once,
@@ -80,48 +87,45 @@ class MyApp extends StatelessWidget {
   // @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      routes: {
-        "/home": (context) => ButtomNav(),
-        "/agentlogin": (context) => MyCompApp()
-      },
-      title: 'Flutter layout demo',
-      theme: new ThemeData.dark(),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Travellers Mobile App'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-            elevation: 4,
-            color: Colors.white,
-            child: Consumer<UserState>(
-              builder: (context, value, child) => Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Stack(children: [
-                  MyForm(),
-                  Positioned(
-                      top: 0,
-                      right: 0,
-                      child: RawMaterialButton(
-                        fillColor: Colors.amber,
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/agentlogin');
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Text("Companies",
-                              style: TextStyle(fontWeight: FontWeight.w700)),
-                        ),
-                        shape: StadiumBorder(),
-                      ))
-                ]),
-              ),
-            ),
-          ),
+        debugShowCheckedModeBanner: false,
+        routes: {
+          "/home": (context) => ButtomNav(),
+          "/agentlogin": (context) => MyCompApp()
+        },
+        title: 'Flutter layout demo',
+        theme: new ThemeData.dark(),
+        home: AppHome());
+  }
+}
+
+class AppHome extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Travellers Mobile App'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Container(
+          color: Colors.lightBlue,
+          child: Stack(overflow: Overflow.visible, children: [
+            MyForm(),
+            Positioned(
+                top: 0,
+                right: 0,
+                child: RawMaterialButton(
+                  fillColor: Colors.amber,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/agentlogin');
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Text("Companies",
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                  shape: StadiumBorder(),
+                ))
+          ]),
         ),
       ),
     );
@@ -215,6 +219,7 @@ class MyFormState extends State<MyForm> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: RawMaterialButton(
+                        shape: StadiumBorder(),
                         fillColor: Colors.white,
                         //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                         onPressed: () {
@@ -222,13 +227,6 @@ class MyFormState extends State<MyForm> {
                           // the form is invalid.
 
                           if (_formKey.currentState!.validate()) {
-                            // if (checkStatus(myController1.text)) {
-                            //   Navigator.push(context, MaterialPageRoute(
-                            //     builder: (context) {
-                            //       return TabBarDemo();
-                            //     },
-                            //   ));
-                            // }
                             print(value.signinstate);
                             value
                                 .signInWithMPass(usermail.text, userpass.text)
@@ -243,7 +241,7 @@ class MyFormState extends State<MyForm> {
                         },
 
                         child: Padding(
-                            padding: EdgeInsets.all(10),
+                            padding: EdgeInsets.all(7),
                             child: Text('Sign In',
                                 style: TextStyle(
                                     color: Colors.amber,
@@ -253,28 +251,30 @@ class MyFormState extends State<MyForm> {
                       ),
                     ),
                   ),
-                  Center(
+                  Align(
+                    alignment: Alignment.center,
                     child: Row(
                       children: [
-                        Text("Dont have an account?",
+                        Text("Dont have an account? ",
                             style: TextStyle(
                                 color: Colors.amber,
                                 fontWeight: FontWeight.w100)),
                         TextButton(
                             onPressed: () {
-                              // value.setaction("Signup");
                               setState(() {
                                 allowlogin = false;
                                 retry = false;
                               });
                             },
                             child: Text(' Sign Up ',
-                                style: TextStyle(fontStyle: FontStyle.italic))),
+                                style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.white))),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(8),
+                    padding: EdgeInsets.all(2),
                     child: Text(
                       correctLogin,
                       style: TextStyle(
@@ -284,7 +284,10 @@ class MyFormState extends State<MyForm> {
                     ),
                   ),
                   TextButton(
-                      child: Text("go home"),
+                      child: Text(
+                        "go home",
+                        style: TextStyle(color: Colors.white),
+                      ),
                       onPressed: () {
                         Navigator.pushNamed(context, '/home');
                       }),

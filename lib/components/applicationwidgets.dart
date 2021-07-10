@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/providersPool/agentStateProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 
@@ -40,6 +41,8 @@ class InputFields extends StatelessWidget {
               const Radius.circular(30.0),
             ),
           ),
+          filled: true,
+          fillColor: Colors.green[200],
           hintStyle: new TextStyle(color: Colors.black),
           hintText: hintext,
           labelText: hintext,
@@ -104,7 +107,8 @@ Widget niceChips(
 }
 
 class menuButton extends StatefulWidget {
-  const menuButton({Key? key, this.regioncontroller}) : super(key: key);
+  const menuButton({Key? key, required this.regioncontroller})
+      : super(key: key);
 
   final TextEditingController? regioncontroller;
 
@@ -169,6 +173,7 @@ class _menuButtonState extends State<menuButton> {
                 );
               }).toList(),
             ),
+            Expanded(child: TextField(controller: regioncontroller))
           ],
         ),
       ),

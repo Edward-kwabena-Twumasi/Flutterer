@@ -12,20 +12,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-TextEditingController? controller1, controller2;
+TextEditingController? controller1, controller2, controller3;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(ChangeNotifierProvider(
       create: (context) => CompanyState(),
-      builder: (context, _) => DashApp(controller1!, controller2!)));
+      builder: (context, _) =>
+          DashApp(controller1!, controller2!, controller3!)));
 }
 
 class DashApp extends StatelessWidget {
   final TextEditingController namecontroller, idcontroller;
-  const DashApp(this.idcontroller, this.namecontroller);
+  final TextEditingController regioncontroller;
+  const DashApp(this.idcontroller, this.namecontroller, this.regioncontroller);
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: "Dash-Board",
         home: Scaffold(
             floatingActionButton: Stack(
               children: [
@@ -41,7 +42,9 @@ class DashApp extends StatelessWidget {
                             builder: (BuildContext context) {
                               return FractionallySizedBox(
                                 heightFactor: 0.8,
-                                child: Column(children: [menuButton()]),
+                                child: Column(children: [
+                                  menuButton(regioncontroller: regioncontroller)
+                                ]),
                               );
                             });
                       },
@@ -63,7 +66,8 @@ class DashApp extends StatelessWidget {
                                   child: Column(children: [
                                     InputFields("name", namecontroller,
                                         Icons.input, TextInputType.text),
-                                    menuButton(),
+                                    menuButton(
+                                        regioncontroller: regioncontroller),
                                     SearchLocs("City"),
                                     InputFields("id", idcontroller, Icons.input,
                                         TextInputType.text),
@@ -91,7 +95,8 @@ class DashApp extends StatelessWidget {
                                   child: Column(children: [
                                     InputFields("name", namecontroller,
                                         Icons.input, TextInputType.text),
-                                    menuButton(),
+                                    menuButton(
+                                        regioncontroller: regioncontroller),
                                     SearchLocs("City"),
                                     InputFields("id", idcontroller, Icons.input,
                                         TextInputType.text),

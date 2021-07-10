@@ -27,6 +27,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
   TextEditingController phone = TextEditingController();
   TextEditingController aptmnt = TextEditingController();
   TextEditingController city = TextEditingController();
+  TextEditingController regioncontroller = TextEditingController();
   PageController pgecontroller = PageController();
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                 key: _formKey,
                 child: SingleChildScrollView(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Text(
                         "Sign Up",
@@ -119,7 +120,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                 key: _formKey2,
                 child: SingleChildScrollView(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Text("Please fill company info below",
                           style: TextStyle(
@@ -202,7 +203,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                 height: 10,
                               ),
                               Text("Region..."),
-                              menuButton(),
+                              menuButton(regioncontroller: regioncontroller),
                               SizedBox(
                                 height: 3,
                               ),
@@ -231,12 +232,14 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                               // Proceed with registration process.
 
                               value.addCompany(
-                                  companytype,
-                                  name.text,
-                                  email.text,
-                                  phone.text,
-                                  city.text,
-                                  aptmnt.text);
+                                companytype,
+                                name.text,
+                                phone.text,
+                                email.text,
+                                regioncontroller.text,
+                                city.text,
+                                aptmnt.text,
+                              );
                             }
                           },
                           child: Text('Complete signup'),

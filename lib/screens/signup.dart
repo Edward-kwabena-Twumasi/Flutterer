@@ -23,6 +23,7 @@ class SignupFormState extends State<SignupForm> {
   TextEditingController phone = TextEditingController();
   TextEditingController house = TextEditingController();
   TextEditingController city = TextEditingController();
+  TextEditingController regioncontroller = TextEditingController();
   PageController pgecontroller = PageController();
   @override
   Widget build(BuildContext context) {
@@ -163,7 +164,7 @@ class SignupFormState extends State<SignupForm> {
                                 height: 10,
                               ),
                               Text("Region..."),
-                              menuButton(),
+                              menuButton(regioncontroller: regioncontroller),
                               SizedBox(
                                 height: 3,
                               ),
@@ -194,7 +195,8 @@ class SignupFormState extends State<SignupForm> {
                                       value.registedmail.toString(),
                                       phone.text,
                                       city.text,
-                                      house.text)
+                                      house.text,
+                                      regioncontroller.text)
                                   .then((rvalue) {
                                 if (value.isadded == userAdded.successful) {
                                   Navigator.pushNamed(context, '/home');

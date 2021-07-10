@@ -60,9 +60,6 @@ class ButtomNavState extends State<ButtomNav> {
                 BottomNavigationBarItem(icon: Icon(Icons.help), label: "help"),
                 BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
               ]),
-          appBar: AppBar(
-            title: Text("TravellersApp"),
-          ),
           body: Center(
             child: pages.elementAt(currentindx),
           )),
@@ -122,8 +119,7 @@ class TabBarDemo extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     locations(),
-                    Expanded(
-                        child: Card(
+                    Card(
                       elevation: 5,
                       child: Column(
                         children: [
@@ -224,7 +220,7 @@ class TabBarDemo extends StatelessWidget {
                               )),
                         ],
                       ),
-                    ))
+                    )
                   ],
                 ),
               ),
@@ -239,8 +235,7 @@ class TabBarDemo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   locations(),
-                  Expanded(
-                      child: Card(
+                  Card(
                     elevation: 5,
                     child: Column(
                       children: [
@@ -329,7 +324,7 @@ class TabBarDemo extends StatelessWidget {
                             )),
                       ],
                     ),
-                  ))
+                  )
                 ],
               ),
             ),
@@ -343,8 +338,7 @@ class TabBarDemo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   locations(),
-                  Expanded(
-                      child: Card(
+                  Card(
                     elevation: 5,
                     child: Column(
                       children: [
@@ -433,7 +427,7 @@ class TabBarDemo extends StatelessWidget {
                             )),
                       ],
                     ),
-                  ))
+                  )
                 ],
               ),
             )
@@ -700,6 +694,7 @@ class TripsState extends State<Trips> {
                       stream: FirebaseFirestore.instance
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
+                          .where("to", isEqualTo: widget._tripdata.toLoc)
                           //.where("seats", isGreaterThan: 0)
                           .snapshots(),
                       builder: (BuildContext context,
@@ -721,9 +716,6 @@ class TripsState extends State<Trips> {
                                   )));
                         } else if (snapshot.hasError) {
                           print(snapshot.error);
-                        } else {
-                          print(snapshot.connectionState);
-                          print(snapshot.data!.size);
                         }
                         return ListView(
                             shrinkWrap: true,
@@ -783,22 +775,21 @@ class TripsState extends State<Trips> {
                                               title: Text(
                                                   doc['seats'].toString() +
                                                       " Available"),
-                                              subtitle:
-                                                  FloatingActionButton.extended(
-                                                      onPressed: () {
-                                                        Navigator.pushNamed(
-                                                            context,
-                                                            "/completebook");
-                                                        // FirebaseFirestore
-                                                        //     .instance
-                                                        //     .collection('trips')
-                                                        //     .doc(doc.id)
-                                                        //     .update({
-                                                        //   "seats":
-                                                        //       (doc['seats'] - 1)
-                                                        // });
-                                                      },
-                                                      label: Text("Book seat")))
+                                              subtitle: FloatingActionButton(
+                                                  onPressed: () {
+                                                    print('clicked');
+                                                    Navigator.pushNamed(context,
+                                                        "/completebook");
+                                                    // FirebaseFirestore
+                                                    //     .instance
+                                                    //     .collection('trips')
+                                                    //     .doc(doc.id)
+                                                    //     .update({
+                                                    //   "seats":
+                                                    //       (doc['seats'] - 1)
+                                                    // });
+                                                  },
+                                                  child: Text("Book")))
                                         ],
                                       ),
                                     ))

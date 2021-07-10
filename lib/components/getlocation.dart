@@ -58,33 +58,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
       floatingActionButton: Stack(
         children: <Widget>[
           Positioned(
-            bottom: 10.0,
-            right: 10.0,
-            child: FloatingActionButton.extended(
-              onPressed: () => setState(_positionItems.clear),
-              label: Text("clear"),
-            ),
-          ),
-          Positioned(
-            bottom: 80.0,
-            right: 10.0,
-            child: FloatingActionButton.extended(
-              onPressed: () async {
-                await Geolocator.getLastKnownPosition().then((value) => {
-                      _positionItems.add(_PositionItem(
-                          _PositionItemType.position, value.toString()))
-                    });
-
-                setState(
-                  () {},
-                );
-              },
-              label: Text("Last Position"),
-            ),
-          ),
-          Positioned(
             bottom: 150.0,
-            right: 10.0,
+            right: 150.0,
             child: FloatingActionButton.extended(
                 onPressed: () async {
                   await Geolocator.getCurrentPosition().then((value) => {
@@ -135,34 +110,6 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
                 }()),
                 backgroundColor: _determineLocationServiceButtonColor(),
               )),
-          Positioned(
-            bottom: 290.0,
-            right: 10.0,
-            child: FloatingActionButton.extended(
-              onPressed: () async {
-                await Geolocator.checkPermission().then((value) => {
-                      _positionItems.add(_PositionItem(
-                          _PositionItemType.permission, value.toString()))
-                    });
-                setState(() {});
-              },
-              label: Text("Check Permission"),
-            ),
-          ),
-          Positioned(
-            bottom: 360.0,
-            right: 10.0,
-            child: FloatingActionButton.extended(
-              onPressed: () async {
-                await Geolocator.requestPermission().then((value) => {
-                      _positionItems.add(_PositionItem(
-                          _PositionItemType.permission, value.toString()))
-                    });
-                setState(() {});
-              },
-              label: Text("Request Permission"),
-            ),
-          ),
         ],
       ),
     );
