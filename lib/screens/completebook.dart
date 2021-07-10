@@ -22,26 +22,32 @@ class BookState extends State<Book> {
       body: Column(
         children: [
           Container(
-            height: 70,
+            height: 80,
             child: Stack(
               children: [
-                Positioned.fill(child: Image.asset("images/bus1")),
+                Positioned.fill(child: Image.asset("images/bus1.png")),
                 Positioned(top: 30, left: 2, child: Text("Obuasi")),
                 Positioned(top: 30, right: 2, child: Text("Kumasi"))
               ],
             ),
           ),
-          TabBar(tabs: [
-            Tab(
-              child: Text("Seating"),
-            ),
-            Tab(
-              child: Text("Pick Up points"),
-            ),
-            Tab(
-              child: Text("Routes and Stops"),
-            )
-          ])
+          DefaultTabController(
+              length: 3,
+              child: TabBar(
+                tabs: [
+                  Tab(
+                    child:
+                        Text("seating", style: TextStyle(color: Colors.blue)),
+                  ),
+                  Tab(
+                    child: Text("pickup points",
+                        style: TextStyle(color: Colors.blue)),
+                  ),
+                  Tab(
+                      child: Text("routes and stops",
+                          style: TextStyle(color: Colors.blue))),
+                ],
+              ))
         ],
       ),
     );

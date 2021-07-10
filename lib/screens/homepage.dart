@@ -647,6 +647,7 @@ class TripsState extends State<Trips> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "All trips for this location",
+      routes: {"/completebook": (context) => Booking()},
       home: Scaffold(
         appBar: AppBar(
           title: Text("All trips for this location"),
@@ -780,6 +781,20 @@ class TripsState extends State<Trips> {
                                                     print('clicked');
                                                     Navigator.pushNamed(context,
                                                         "/completebook");
+                                                    // showModalBottomSheet(
+                                                    //     context: context,
+                                                    //     builder: (BuildContext
+                                                    //         context) {
+                                                    //       return Column(
+                                                    //           children: [
+                                                    //             SearchLocs(
+                                                    //                 "from"),
+                                                    //             SizedBox(
+                                                    //               height: 5,
+                                                    //             ),
+                                                    //             SearchLocs("to")
+                                                    //           ]);
+                                                    //     });
                                                     // FirebaseFirestore
                                                     //     .instance
                                                     //     .collection('trips')
@@ -860,12 +875,8 @@ class MyStatefulWidget extends StatefulWidget {
   _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
 }
 
-/// This is the private State class that goes with MyStatefulWidget.
-/// RestorationProperty objects can be used because of RestorationMixin.
 class _MyStatefulWidgetState extends State<MyStatefulWidget>
     with RestorationMixin {
-  // In this example, the restoration ID for the mixin is passed in through
-  // the [StatefulWidget]'s constructor.
   @override
   String? get restorationId => widget.restorationId;
 
@@ -945,14 +956,6 @@ class UserInfoClassState extends State<UserInfoClass> {
   void initState() {
     super.initState();
   }
-  // if (UserState().userState() == userStates.successful) {
-  //     setState(() {
-  //       setemail = FirebaseAuth.instance.currentUser!.email;
-  //       setname = FirebaseAuth.instance.currentUser!.displayName;
-  //       print("you are logged in" + UserState().loddedInAs.toString());
-  //     });
-  //   } else
-  //     print("you gotta login");
 
   @override
   Widget build(BuildContext context) {
