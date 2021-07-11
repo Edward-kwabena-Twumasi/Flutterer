@@ -12,7 +12,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-TextEditingController? controller1, controller2, controller3;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(ChangeNotifierProvider(
@@ -34,8 +33,8 @@ class DashAppState extends State<DashApp> {
             floatingActionButton: Stack(
               children: [
                 Positioned(
-                  right: 55,
-                  bottom: 5,
+                  right: 40,
+                  bottom: 2,
                   child: FloatingActionButton.extended(
                       heroTag: "addregion",
                       onPressed: () {
@@ -45,16 +44,32 @@ class DashAppState extends State<DashApp> {
                             builder: (BuildContext context) {
                               return FractionallySizedBox(
                                 heightFactor: 0.8,
-                                child: Column(children: [
-                                  menuButton(regioncontroller: regioncontroller)
-                                ]),
+                                child: Container(
+                                    child: GridView.count(
+                                  crossAxisCount: 3,
+                                  children: [
+                                    niceChips(Icons.select_all, "ASHANTI"),
+                                    niceChips(Icons.select_all, "OTI"),
+                                    niceChips(Icons.select_all, "AHAFO"),
+                                    niceChips(Icons.select_all, "CENTRAL"),
+                                    niceChips(Icons.select_all, "EASTERN"),
+                                    niceChips(Icons.select_all, "WESTERN"),
+                                    niceChips(
+                                        Icons.select_all, "GREATER ACCRA"),
+                                    niceChips(Icons.select_all, "ASHANTI"),
+                                    niceChips(Icons.select_all, "ASHANTI"),
+                                    niceChips(Icons.select_all, "ASHANTI"),
+                                    niceChips(Icons.select_all, "ASHANTI"),
+                                    niceChips(Icons.select_all, "ASHANTI"),
+                                  ],
+                                )),
                               );
                             });
                       },
                       label: Text("Add region")),
                 ),
                 Positioned(
-                  right: 25,
+                  right: 20,
                   bottom: 30,
                   child: FloatingActionButton.extended(
                       heroTag: "addstation",
@@ -69,12 +84,15 @@ class DashAppState extends State<DashApp> {
                                   child: Column(children: [
                                     InputFields("name", namecontroller,
                                         Icons.input, TextInputType.text),
+                                    Text("Region"),
                                     menuButton(
                                         regioncontroller: regioncontroller),
+                                    Text("city"),
                                     SearchLocs("City"),
                                     InputFields("id", idcontroller, Icons.input,
                                         TextInputType.text),
-                                    TextFormField()
+                                    InputFields("Destinations", idcontroller,
+                                        Icons.input, TextInputType.text),
                                   ]),
                                 ),
                               );
@@ -84,7 +102,7 @@ class DashAppState extends State<DashApp> {
                 ),
                 Positioned(
                   right: 5,
-                  bottom: 55,
+                  bottom: 60,
                   child: FloatingActionButton.extended(
                       heroTag: "schedule",
                       onPressed: () {
@@ -96,14 +114,20 @@ class DashAppState extends State<DashApp> {
                                 heightFactor: 0.8,
                                 child: Form(
                                   child: Column(children: [
-                                    InputFields("name", namecontroller,
+                                    SearchLocs("From"),
+                                    SearchLocs("To"),
+                                    InputFields("Trip id", idcontroller,
                                         Icons.input, TextInputType.text),
-                                    menuButton(
-                                        regioncontroller: regioncontroller),
-                                    SearchLocs("City"),
-                                    InputFields("id", idcontroller, Icons.input,
-                                        TextInputType.text),
-                                    TextFormField()
+                                    InputFields("Bus id", idcontroller,
+                                        Icons.input, TextInputType.text),
+                                    InputFields("distance/km", idcontroller,
+                                        Icons.input, TextInputType.number),
+                                    InputFields("Seats", idcontroller,
+                                        Icons.input, TextInputType.number),
+                                    InputFields("duration", idcontroller,
+                                        Icons.input, TextInputType.datetime),
+                                    InputFields("Driver Contact", idcontroller,
+                                        Icons.input, TextInputType.phone),
                                   ]),
                                 ),
                               );
@@ -168,4 +192,21 @@ class DashboardState extends State<Dashboard> {
                           .toList());
                 })));
   }
+}
+
+Widget stations(int howmany) {
+  List<TextEditingController> controls = [];
+  for (var i = 0; i < howmany; i++) {
+    controls.add("stcontrols" + i.toString() as TextEditingController);
+  }
+  return Center(
+    child: ListView.builder(
+        itemCount: howmany,
+        itemBuilder: (BuildContext, index) {
+          return Form(
+              child: Column(
+            children: [menuButton(regioncontroller: controls[index])],
+          ));
+        }),
+  );
 }

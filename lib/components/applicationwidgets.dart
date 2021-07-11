@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
+import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 
@@ -37,12 +38,13 @@ class InputFields extends StatelessWidget {
         keyboardType: inputtype,
         decoration: new InputDecoration(
           border: new OutlineInputBorder(
+            borderSide: BorderSide.none,
             borderRadius: const BorderRadius.all(
-              const Radius.circular(30.0),
+              const Radius.circular(10.0),
             ),
           ),
           filled: true,
-          fillColor: Colors.green[200],
+          fillColor: Colors.grey[200],
           hintStyle: new TextStyle(color: Colors.black),
           hintText: hintext,
           labelText: hintext,
@@ -60,48 +62,17 @@ class InputFields extends StatelessWidget {
   }
 }
 
-Widget buttonactions() {
-  return Container(
-    decoration: BoxDecoration(
-      shape: BoxShape.rectangle,
-      borderRadius: BorderRadius.circular(30),
-      color: Colors.transparent,
-    ),
-    height: 20,
-    padding: EdgeInsets.all(20),
-  );
-}
-
-Widget useractions(IconData icondata, String text) {
-  return Card(
-    elevation: 4.0,
-    color: Colors.transparent,
-    child: Container(
-      margin: EdgeInsets.all(5),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30), color: Colors.amberAccent),
-      child: IconButton(
-        enableFeedback: true,
-        tooltip: "do this",
-        icon: Icon(
-          icondata,
-          color: Colors.white,
-        ),
-        iconSize: 35,
-        color: Colors.deepPurple,
-        onPressed: () {},
-      ),
-    ),
-  );
-}
-
 Widget niceChips(
   IconData icondata,
   String text,
 ) {
-  return ActionChip(
+  return InputChip(
+    backgroundColor: Colors.lightBlue,
+    selected: false,
+    selectedColor: Colors.amber,
     label: Text(text),
     avatar: Icon(icondata),
+    labelPadding: EdgeInsets.all(8),
     onPressed: () {},
   );
 }
@@ -155,8 +126,7 @@ class _menuButtonState extends State<menuButton> {
               elevation: 16,
               style: const TextStyle(color: Colors.lightBlue),
               underline: Container(
-                height: 2,
-                color: Colors.red,
+                height: 1,
               ),
               onChanged: (String? newValue) {
                 // widget.regioncontroller!.text = newValue!;
@@ -179,16 +149,139 @@ class _menuButtonState extends State<menuButton> {
               controller: regioncontroller,
               decoration: new InputDecoration(
                 border: new OutlineInputBorder(
+                  borderSide: BorderSide.none,
                   borderRadius: const BorderRadius.all(
-                    const Radius.circular(30.0),
+                    const Radius.circular(10.0),
                   ),
                 ),
                 filled: true,
-                fillColor: Colors.green[200],
+                fillColor: Colors.grey[200],
               ),
             ))
           ],
         ),
+      ),
+    );
+  }
+}
+
+TripClass onetrip =
+    TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
+
+class SearchLocs extends StatefulWidget {
+  SearchLocs(this.direction);
+  String direction;
+
+  @override
+  SearchLocsState createState() => SearchLocsState();
+}
+
+class SearchLocsState extends State<SearchLocs> {
+  late OverlayEntry myoverlay;
+  late bool hideoverlay;
+  var mytripobj = {};
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    formcontrol.addListener(() {
+      suggestions = [];
+      var query = formcontrol.text;
+      hideoverlay = false;
+      if (query.isNotEmpty) {
+        for (var i in places) {
+          if (i.toLowerCase().contains(query.toLowerCase()) ||
+              i.toLowerCase().startsWith(query)) {
+            suggestions.add(i);
+
+            this.myoverlay = this.createOverlay();
+            Overlay.of(context)!.insert(this.myoverlay);
+
+            // myoverlay.addListener(() {
+            //   print("overlaay");
+            // });
+          }
+        }
+
+        setState(() {
+          suggestions.toList();
+          hideoverlay = false;
+        });
+      } else {
+        print(formcontrol.text);
+        setState(() {
+          hideoverlay = true;
+        });
+      }
+    });
+  }
+
+  OverlayEntry createOverlay() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+        builder: (context) => Positioned(
+              left: offset.dx,
+              top: offset.dy + size.height + 5.0,
+              width: size.width,
+              child: Material(
+                elevation: 4.0,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: suggestions.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                        key: Key(index.toString()),
+                        onTap: () {
+                          this.myoverlay.mounted ? myoverlay.remove() : null;
+
+                          print(index);
+                          mytripobj[widget.direction] = suggestions[index];
+                          formcontrol.text = suggestions[index];
+                          widget.direction == "From"
+                              ? onetrip.fromLoc = formcontrol.text
+                              : onetrip.toLoc = formcontrol.text;
+                          suggestions = [];
+                          print(mytripobj);
+                          setState(() {
+                            hideoverlay = true;
+                          });
+                        },
+                        title: Text(
+                          suggestions[index],
+                          style: TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w300),
+                        ));
+                  },
+                ),
+              ),
+            ));
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim"];
+  List<String> suggestions = [];
+
+  TextEditingController formcontrol = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.search),
+      title: TextFormField(
+        decoration: InputDecoration(
+            labelText: "Travel From",
+            fillColor: Colors.pink,
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(30))),
+        controller: formcontrol,
       ),
     );
   }

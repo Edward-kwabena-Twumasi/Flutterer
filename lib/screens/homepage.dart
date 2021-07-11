@@ -315,7 +315,9 @@ class TabBarDemo extends StatelessWidget {
                                               SizedBox(
                                                 height: 5,
                                               ),
-                                              SearchLocs("to")
+                                              SearchLocs(
+                                                "to",
+                                              )
                                             ]);
                                           });
                                     },
@@ -493,143 +495,6 @@ class locations extends StatelessWidget {
 //primary actions
 
 /// This is the stateful widget that the main application instantiates.
-
-class SearchLocs extends StatefulWidget {
-  SearchLocs(this.direction);
-  String direction;
-  @override
-  SearchLocsState createState() => SearchLocsState();
-}
-
-class SearchLocsState extends State<SearchLocs> {
-  late OverlayEntry myoverlay;
-  late bool hideoverlay;
-  var mytripobj = {};
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    formcontrol.addListener(() {
-      suggestions = [];
-      var query = formcontrol.text;
-      hideoverlay = false;
-      if (query.isNotEmpty) {
-        for (var i in places) {
-          if (i.toLowerCase().contains(query.toLowerCase()) ||
-              i.toLowerCase().startsWith(query)) {
-            suggestions.add(i);
-
-            this.myoverlay = this.createOverlay();
-            Overlay.of(context)!.insert(this.myoverlay);
-
-            // myoverlay.addListener(() {
-            //   print("overlaay");
-            // });
-          }
-        }
-
-        setState(() {
-          suggestions.toList();
-          hideoverlay = false;
-        });
-      } else {
-        print(formcontrol.text);
-        setState(() {
-          hideoverlay = true;
-        });
-      }
-    });
-  }
-
-  OverlayEntry createOverlay() {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
-    var size = renderBox.size;
-    var offset = renderBox.localToGlobal(Offset.zero);
-
-    return OverlayEntry(
-        builder: (context) => Positioned(
-              left: offset.dx,
-              top: offset.dy + size.height + 5.0,
-              width: size.width,
-              child: Material(
-                elevation: 4.0,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: suggestions.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                        key: Key(index.toString()),
-                        onTap: () {
-                          this.myoverlay.mounted ? myoverlay.remove() : null;
-
-                          print(index);
-                          mytripobj[widget.direction] = suggestions[index];
-                          formcontrol.text = suggestions[index];
-                          widget.direction == "From"
-                              ? onetrip.fromLoc = formcontrol.text
-                              : onetrip.toLoc = formcontrol.text;
-                          suggestions = [];
-                          print(mytripobj);
-                          setState(() {
-                            hideoverlay = true;
-                          });
-                        },
-                        title: Text(
-                          suggestions[index],
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w300),
-                        ));
-                  },
-                ),
-              ),
-            ));
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
-  List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim"];
-  List<String> suggestions = [];
-
-  TextEditingController formcontrol = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: [
-      Card(
-        elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Ink(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.pink[300]),
-                child: Icon(Icons.arrow_right)),
-            Expanded(
-              child: TextFormField(
-                decoration: InputDecoration(
-                    labelText: "Travel From",
-                    fillColor: Colors.pink,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30))),
-                controller: formcontrol,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ]);
-  }
-}
 
 //trips class to list trips serached for
 class Trips extends StatefulWidget {
