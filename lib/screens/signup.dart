@@ -94,6 +94,7 @@ class SignupFormState extends State<SignupForm> {
                                   setState(() {});
                                   tonext = true;
                                   value.registedmail = email.text;
+                                  print(value.registedmail);
                                   //Navigator.pushNamed(context, '/home');
                                 } else {
                                   print(value);

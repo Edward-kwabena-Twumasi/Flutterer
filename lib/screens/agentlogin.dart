@@ -34,7 +34,6 @@ void main() {
 // void main() {
 //   runApp(MyApp());
 // }
-TextEditingController? controller1, controller2, comtroller3;
 
 class MyCompApp extends StatelessWidget {
   var style = TextStyle(
@@ -51,8 +50,7 @@ class MyCompApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         "/home": (context) => ButtomNav(),
-        "/companyinfo": (context) =>
-            DashApp(controller1!, controller2!, controller3!)
+        "/companyinfo": (context) => DashApp()
       },
       title: 'Login as Agent',
       darkTheme: ThemeData.dark(),

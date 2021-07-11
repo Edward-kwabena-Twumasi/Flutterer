@@ -20,6 +20,9 @@ class CompanySignupFormState extends State<CompanySignupForm> {
   String errormesg = "";
   int currentstep = 0;
   bool tonext = false;
+  bool select2 = false;
+  bool select1 = false;
+  bool select3 = false;
   TextEditingController email = TextEditingController();
   TextEditingController passwd = TextEditingController();
   TextEditingController passwd1 = TextEditingController();
@@ -114,7 +117,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
             ),
           ),
           Step(
-            title: Text("Information about company"),
+            title: Text("Company info"),
             content: Consumer<CompanyState>(
               builder: (context, value, child) => Form(
                 key: _formKey2,
@@ -122,7 +125,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text("Please fill company info below",
+                      Text("Fill form below",
                           style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.w700)),
@@ -137,12 +140,16 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           InputChip(
+                            selected: select1,
                             labelPadding: EdgeInsets.all(5),
                             selectedColor: Colors.green,
                             onPressed: () {
                               setState(() {
                                 companytype = "Bus";
                                 print(companytype);
+                                select1 = true;
+                                select3 == true ? false : false;
+                                select2 == true ? false : false;
                               });
                             },
                             label: Text("Bus"),
@@ -151,12 +158,16 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                             ),
                           ),
                           InputChip(
+                              selected: select2,
                               labelPadding: EdgeInsets.all(5),
                               selectedColor: Colors.green,
                               onPressed: () {
                                 setState(() {
                                   companytype = "Flight";
                                   print(companytype);
+                                  select2 = true;
+                                  select1 == true ? false : false;
+                                  select3 == true ? false : false;
                                 });
                               },
                               label: Text("Flight"),
@@ -164,12 +175,16 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                 child: Text("F"),
                               )),
                           InputChip(
+                              selected: select3,
                               labelPadding: EdgeInsets.all(5),
                               selectedColor: Colors.green,
                               onPressed: () {
                                 setState(() {
                                   companytype = "Train";
                                   print(companytype);
+                                  select3 = true;
+                                  select1 == true ? false : false;
+                                  select2 == true ? false : false;
                                 });
                               },
                               label: Text("Train"),

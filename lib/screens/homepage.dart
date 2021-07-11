@@ -781,28 +781,6 @@ class TripsState extends State<Trips> {
                                                     print('clicked');
                                                     Navigator.pushNamed(context,
                                                         "/completebook");
-                                                    // showModalBottomSheet(
-                                                    //     context: context,
-                                                    //     builder: (BuildContext
-                                                    //         context) {
-                                                    //       return Column(
-                                                    //           children: [
-                                                    //             SearchLocs(
-                                                    //                 "from"),
-                                                    //             SizedBox(
-                                                    //               height: 5,
-                                                    //             ),
-                                                    //             SearchLocs("to")
-                                                    //           ]);
-                                                    //     });
-                                                    // FirebaseFirestore
-                                                    //     .instance
-                                                    //     .collection('trips')
-                                                    //     .doc(doc.id)
-                                                    //     .update({
-                                                    //   "seats":
-                                                    //       (doc['seats'] - 1)
-                                                    // });
                                                   },
                                                   child: Text("Book")))
                                         ],

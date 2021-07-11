@@ -16,22 +16,25 @@ TextEditingController? controller1, controller2, controller3;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(ChangeNotifierProvider(
-      create: (context) => CompanyState(),
-      builder: (context, _) =>
-          DashApp(controller1!, controller2!, controller3!)));
+      create: (context) => CompanyState(), builder: (context, _) => DashApp()));
 }
 
-class DashApp extends StatelessWidget {
-  final TextEditingController namecontroller, idcontroller;
-  final TextEditingController regioncontroller;
-  const DashApp(this.idcontroller, this.namecontroller, this.regioncontroller);
+class DashApp extends StatefulWidget {
+  DashAppState createState() => DashAppState();
+}
+
+class DashAppState extends State<DashApp> {
+  final namecontroller = TextEditingController(),
+      idcontroller = TextEditingController(),
+      regioncontroller = TextEditingController();
+
   Widget build(BuildContext context) {
     return MaterialApp(
         home: Scaffold(
             floatingActionButton: Stack(
               children: [
                 Positioned(
-                  left: 5,
+                  right: 55,
                   bottom: 5,
                   child: FloatingActionButton.extended(
                       heroTag: "addregion",
@@ -51,8 +54,8 @@ class DashApp extends StatelessWidget {
                       label: Text("Add region")),
                 ),
                 Positioned(
-                  left: 5,
-                  bottom: 65,
+                  right: 25,
+                  bottom: 30,
                   child: FloatingActionButton.extended(
                       heroTag: "addstation",
                       onPressed: () {
@@ -81,7 +84,7 @@ class DashApp extends StatelessWidget {
                 ),
                 Positioned(
                   right: 5,
-                  bottom: 5,
+                  bottom: 55,
                   child: FloatingActionButton.extended(
                       heroTag: "schedule",
                       onPressed: () {
@@ -125,6 +128,8 @@ class DashboardState extends State<Dashboard> {
             child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('companies')
+                    .doc('Bus')
+                    .collection('Registered Companies')
                     .where('id',
                         isEqualTo: FirebaseAuth.instance.currentUser!.uid)
                     .snapshots(),
@@ -151,22 +156,15 @@ class DashboardState extends State<Dashboard> {
                   return ListView(
                       shrinkWrap: true,
                       children: snapshot.data!.docs
-                          .map(
-                            (doc) => ExpansionTile(
-                                title: Text(doc['region']),
-                                subtitle: Text("Stations in this region"),
-                                children: [
-                                  ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: doc['stations'].length,
-                                      itemBuilder: (context, index) {
-                                        return Text("Hello");
-                                        //Text(doc['stations'][index]
-                                        //     .city()
-                                        //     .toString());
-                                      })
-                                ]),
-                          )
+                          .map((doc) => ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: doc['regions'].length,
+                              itemBuilder: (context, index) {
+                                return Text("Hello");
+                                //Text(doc['stations'][index]
+                                //     .city()
+                                //     .toString());
+                              }))
                           .toList());
                 })));
   }

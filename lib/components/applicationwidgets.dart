@@ -165,6 +165,7 @@ class _menuButtonState extends State<menuButton> {
                 });
                 value.selectregion = dropdownValue;
                 print(value.selectregion);
+                regioncontroller!.text = dropdownValue!;
               },
               items: regions.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
@@ -173,7 +174,19 @@ class _menuButtonState extends State<menuButton> {
                 );
               }).toList(),
             ),
-            Expanded(child: TextField(controller: regioncontroller))
+            Expanded(
+                child: TextField(
+              controller: regioncontroller,
+              decoration: new InputDecoration(
+                border: new OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(30.0),
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.green[200],
+              ),
+            ))
           ],
         ),
       ),
