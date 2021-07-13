@@ -143,13 +143,6 @@ class MyFormState extends State<MyForm> {
   bool retry = true;
   var correctLogin = "";
 
-  // final String hint, hint1, hint2;
-  // final TextEditingController controller;
-  // final TextEditingController controller1;
-  // final TextEditingController controller2;
-  // MyFormState(this.hint, this.hint1, this.hint2, this.controller,
-  //     this.controller1, this.controller2);
-
   final username = TextEditingController();
   final usermail = TextEditingController();
   final userpass = TextEditingController();

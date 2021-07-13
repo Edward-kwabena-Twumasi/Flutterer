@@ -62,10 +62,7 @@ class InputFields extends StatelessWidget {
   }
 }
 
-Widget niceChips(
-  IconData icondata,
-  String text,
-) {
+Widget niceChips(IconData icondata, String text, void Function() pressed) {
   return InputChip(
     backgroundColor: Colors.lightBlue,
     selected: false,
@@ -73,7 +70,7 @@ Widget niceChips(
     label: Text(text),
     avatar: Icon(icondata),
     labelPadding: EdgeInsets.all(8),
-    onPressed: () {},
+    onPressed: pressed,
   );
 }
 
@@ -121,10 +118,10 @@ class _menuButtonState extends State<menuButton> {
             //     TextInputType.text),
             DropdownButton<String>(
               value: dropdownValue,
-              icon: const Icon(Icons.arrow_drop_down),
+              icon: const Icon(Icons.pin_drop_outlined),
               iconSize: 34,
               elevation: 16,
-              style: const TextStyle(color: Colors.lightBlue),
+              style: const TextStyle(color: Colors.black),
               underline: Container(
                 height: 1,
               ),

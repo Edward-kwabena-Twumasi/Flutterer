@@ -1,3 +1,4 @@
+import 'dart:html';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,10 +8,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/screens/completebook.dart';
+import 'package:myapp/screens/reportscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/components/getlocation.dart';
+
+enum companyFilters { VIP, STC, MMT }
+enum queryFilters { isEqualTo }
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +23,8 @@ void main() {
       create: (context) => UserState(), builder: (context, _) => ButtomNav()));
 }
 
-TripClass onetrip =
-    TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
+// TripClass onetrip =
+//     TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
 
 class ButtomNav extends StatefulWidget {
   @override
@@ -45,7 +50,8 @@ class ButtomNavState extends State<ButtomNav> {
       routes: {
         "/matchingtrips": (context) => Trips(onetrip),
         "/location": (context) => GeolocatorWidget(),
-        "/completebook": (context) => Booking()
+        "/completebook": (context) => Booking(),
+        "/reports": (context) => Reporter()
       },
       home: Scaffold(
           bottomNavigationBar: BottomNavigationBar(
@@ -506,8 +512,33 @@ class Trips extends StatefulWidget {
 
 class TripsState extends State<Trips> {
   // String gttriptype ;
-
+  companyFilters filter = companyFilters.VIP;
   bool isLoading = true;
+  List filterquery = ["VIP", "STC", "MMT"];
+  void filterall() {
+    setState(() {
+      filterquery = ["VIP", "STC", "MMT"];
+    });
+  }
+
+  void filtervip() {
+    setState(() {
+      filterquery = ["VIP"];
+    });
+  }
+
+  void filterstc() {
+    setState(() {
+      filterquery = ["STC"];
+    });
+  }
+
+  void filtermmt() {
+    setState(() {
+      filterquery = ["MMT"];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -529,28 +560,17 @@ class TripsState extends State<Trips> {
                     children: [
                       Container(
                           margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(
-                            Icons.all_out,
-                            "All",
-                          )),
+                          child: niceChips(Icons.all_out, "All", filterall)),
+                      Container(
+                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                          child: niceChips(Icons.all_out, "VIP", filtervip)),
+                      Container(
+                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                          child: niceChips(Icons.all_out, "STC", filterstc)),
                       Container(
                           margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
                           child: niceChips(
-                            Icons.all_out,
-                            "VIP",
-                          )),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(
-                            Icons.all_out,
-                            "STC",
-                          )),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(
-                            Icons.all_out,
-                            "Metro mass",
-                          )),
+                              Icons.all_out, "Metro Mass", filtermmt)),
                     ],
                   ),
                 ),
@@ -561,6 +581,7 @@ class TripsState extends State<Trips> {
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
+                          .where("company", whereIn: filterquery)
                           //.where("seats", isGreaterThan: 0)
                           .snapshots(),
                       builder: (BuildContext context,
@@ -613,16 +634,7 @@ class TripsState extends State<Trips> {
                                                               FontWeight.bold)),
                                                 ],
                                               ),
-                                              subtitle: ListView.builder(
-                                                  shrinkWrap: true,
-                                                  itemCount: doc['date'].length,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    return Text(doc['date']
-                                                            [index]
-                                                        .toDate()
-                                                        .toString());
-                                                  })),
+                                              subtitle: Text(doc['company'])),
                                           Divider(
                                             thickness: 0.8,
                                             color: Colors.blueGrey,
@@ -694,7 +706,9 @@ class HelpClass extends StatelessWidget {
           SizedBox(height: 40),
           FloatingActionButton.extended(
             heroTag: "report",
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, "/reports");
+            },
             label: Text("Report a matter"),
             icon: Icon(Icons.report_problem),
           ),

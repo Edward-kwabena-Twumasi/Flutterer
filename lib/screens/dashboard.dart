@@ -26,6 +26,13 @@ class DashAppState extends State<DashApp> {
   final namecontroller = TextEditingController(),
       idcontroller = TextEditingController(),
       regioncontroller = TextEditingController();
+  final form1 = GlobalKey<FormState>();
+  final form2 = GlobalKey<FormState>();
+  var selectregions = [];
+  void pressed() {
+    selectregions.add("REGION");
+    return null;
+  }
 
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,8 +40,8 @@ class DashAppState extends State<DashApp> {
             floatingActionButton: Stack(
               children: [
                 Positioned(
-                  right: 40,
-                  bottom: 2,
+                  right: 25,
+                  bottom: 5,
                   child: FloatingActionButton.extended(
                       heroTag: "addregion",
                       onPressed: () {
@@ -44,23 +51,18 @@ class DashAppState extends State<DashApp> {
                             builder: (BuildContext context) {
                               return FractionallySizedBox(
                                 heightFactor: 0.8,
-                                child: Container(
-                                    child: GridView.count(
-                                  crossAxisCount: 3,
+                                child: SingleChildScrollView(
+                                    child: Column(
                                   children: [
-                                    niceChips(Icons.select_all, "ASHANTI"),
-                                    niceChips(Icons.select_all, "OTI"),
-                                    niceChips(Icons.select_all, "AHAFO"),
-                                    niceChips(Icons.select_all, "CENTRAL"),
-                                    niceChips(Icons.select_all, "EASTERN"),
-                                    niceChips(Icons.select_all, "WESTERN"),
-                                    niceChips(
-                                        Icons.select_all, "GREATER ACCRA"),
-                                    niceChips(Icons.select_all, "ASHANTI"),
-                                    niceChips(Icons.select_all, "ASHANTI"),
-                                    niceChips(Icons.select_all, "ASHANTI"),
-                                    niceChips(Icons.select_all, "ASHANTI"),
-                                    niceChips(Icons.select_all, "ASHANTI"),
+                                    menuButton(
+                                        regioncontroller: regioncontroller),
+                                    FloatingActionButton.extended(
+                                        onPressed: () {
+                                          selectregions
+                                              .add(regioncontroller.text);
+                                          print(selectregions);
+                                        },
+                                        label: Text("Submit"))
                                   ],
                                 )),
                               );
@@ -69,8 +71,8 @@ class DashAppState extends State<DashApp> {
                       label: Text("Add region")),
                 ),
                 Positioned(
-                  right: 20,
-                  bottom: 30,
+                  right: 15,
+                  bottom: 55,
                   child: FloatingActionButton.extended(
                       heroTag: "addstation",
                       onPressed: () {
@@ -81,6 +83,7 @@ class DashAppState extends State<DashApp> {
                               return FractionallySizedBox(
                                 heightFactor: 0.8,
                                 child: Form(
+                                  key: form1,
                                   child: Column(children: [
                                     InputFields("name", namecontroller,
                                         Icons.input, TextInputType.text),
@@ -93,6 +96,17 @@ class DashAppState extends State<DashApp> {
                                         TextInputType.text),
                                     InputFields("Destinations", idcontroller,
                                         Icons.input, TextInputType.text),
+                                    FloatingActionButton.extended(
+                                        onPressed: () {
+                                          if (form1.currentState!.validate()) {
+                                            print({
+                                              namecontroller.text,
+                                              regioncontroller.text,
+                                              idcontroller.text
+                                            });
+                                          }
+                                        },
+                                        label: Text("Submit"))
                                   ]),
                                 ),
                               );
@@ -102,7 +116,7 @@ class DashAppState extends State<DashApp> {
                 ),
                 Positioned(
                   right: 5,
-                  bottom: 60,
+                  bottom: 105,
                   child: FloatingActionButton.extended(
                       heroTag: "schedule",
                       onPressed: () {
@@ -113,22 +127,28 @@ class DashAppState extends State<DashApp> {
                               return FractionallySizedBox(
                                 heightFactor: 0.8,
                                 child: Form(
-                                  child: Column(children: [
-                                    SearchLocs("From"),
-                                    SearchLocs("To"),
-                                    InputFields("Trip id", idcontroller,
-                                        Icons.input, TextInputType.text),
-                                    InputFields("Bus id", idcontroller,
-                                        Icons.input, TextInputType.text),
-                                    InputFields("distance/km", idcontroller,
-                                        Icons.input, TextInputType.number),
-                                    InputFields("Seats", idcontroller,
-                                        Icons.input, TextInputType.number),
-                                    InputFields("duration", idcontroller,
-                                        Icons.input, TextInputType.datetime),
-                                    InputFields("Driver Contact", idcontroller,
-                                        Icons.input, TextInputType.phone),
-                                  ]),
+                                  key: form2,
+                                  child: SingleChildScrollView(
+                                    child: Column(children: [
+                                      SearchLocs("From"),
+                                      SearchLocs("To"),
+                                      InputFields("Trip id", idcontroller,
+                                          Icons.input, TextInputType.text),
+                                      InputFields("Bus id", idcontroller,
+                                          Icons.input, TextInputType.text),
+                                      InputFields("distance/km", idcontroller,
+                                          Icons.input, TextInputType.number),
+                                      InputFields("Seats", idcontroller,
+                                          Icons.input, TextInputType.number),
+                                      InputFields("duration", idcontroller,
+                                          Icons.input, TextInputType.datetime),
+                                      InputFields(
+                                          "Driver Contact",
+                                          idcontroller,
+                                          Icons.input,
+                                          TextInputType.phone),
+                                    ]),
+                                  ),
                                 ),
                               );
                             });
@@ -180,15 +200,19 @@ class DashboardState extends State<Dashboard> {
                   return ListView(
                       shrinkWrap: true,
                       children: snapshot.data!.docs
-                          .map((doc) => ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: doc['regions'].length,
-                              itemBuilder: (context, index) {
-                                return Text("Hello");
-                                //Text(doc['stations'][index]
-                                //     .city()
-                                //     .toString());
-                              }))
+                          .map((doc) => Container(
+                                child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: doc['regions'].length,
+                                    itemBuilder: (context, index) {
+                                      return ExpansionTile(
+                                          title: Text(doc['regions'][index]));
+                                      //Text(doc['stations'][inde
+                                      //x]
+                                      //     .city()
+                                      //     .toString());
+                                    }),
+                              ))
                           .toList());
                 })));
   }
