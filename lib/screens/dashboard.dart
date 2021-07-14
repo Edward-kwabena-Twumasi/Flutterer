@@ -15,10 +15,13 @@ import 'package:provider/provider.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(ChangeNotifierProvider(
-      create: (context) => CompanyState(), builder: (context, _) => DashApp()));
+      create: (context) => CompanyState(),
+      builder: (context, _) => DashApp(companytype: "Bus")));
 }
 
 class DashApp extends StatefulWidget {
+  String companytype;
+  DashApp({required this.companytype});
   DashAppState createState() => DashAppState();
 }
 
@@ -157,11 +160,13 @@ class DashAppState extends State<DashApp> {
                 )
               ],
             ),
-            body: Dashboard()));
+            body: Dashboard(companytype: widget.companytype)));
   }
 }
 
 class Dashboard extends StatefulWidget {
+  const Dashboard({Key? key, required this.companytype}) : super(key: key);
+  final String companytype;
   DashboardState createState() => DashboardState();
 }
 
@@ -172,7 +177,7 @@ class DashboardState extends State<Dashboard> {
             child: StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('companies')
-                    .doc('Bus')
+                    .doc(widget.companytype)
                     .collection('Registered Companies')
                     .where('id',
                         isEqualTo: FirebaseAuth.instance.currentUser!.uid)
@@ -200,18 +205,37 @@ class DashboardState extends State<Dashboard> {
                   return ListView(
                       shrinkWrap: true,
                       children: snapshot.data!.docs
-                          .map((doc) => Container(
-                                child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: doc['regions'].length,
-                                    itemBuilder: (context, index) {
-                                      return ExpansionTile(
-                                          title: Text(doc['regions'][index]));
-                                      //Text(doc['stations'][inde
-                                      //x]
-                                      //     .city()
-                                      //     .toString());
-                                    }),
+                          .map((doc) => Center(
+                                child: Column(
+                                  children: [
+                                    Text(doc['registered_name'],
+                                        style: TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.bold)),
+                                    ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: doc['regions'].length,
+                                        itemBuilder: (context, index) {
+                                          return ExpansionTile(
+                                              title:
+                                                  Text(doc['regions'][index]),
+                                              children: [
+                                                ListView.builder(
+                                                    shrinkWrap: true,
+                                                    itemCount:
+                                                        doc['regions'].length,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      return ListTile(
+                                                        title: Text(
+                                                            doc['regions']
+                                                                [index]),
+                                                      );
+                                                    })
+                                              ]);
+                                        }),
+                                  ],
+                                ),
                               ))
                           .toList());
                 })));

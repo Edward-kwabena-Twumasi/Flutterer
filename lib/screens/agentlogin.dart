@@ -34,6 +34,7 @@ void main() {
 // void main() {
 //   runApp(MyApp());
 // }
+String companytype = "";
 
 class MyCompApp extends StatelessWidget {
   var style = TextStyle(
@@ -50,13 +51,13 @@ class MyCompApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         "/home": (context) => ButtomNav(),
-        "/companyinfo": (context) => DashApp()
+        "/companyinfo": (context) => DashApp(companytype: companytype)
       },
       title: 'Login as Agent',
       darkTheme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Travellers Mobile App'),
+          title: Icon(Icons.login),
           centerTitle: true,
         ),
         body: Center(
@@ -77,6 +78,9 @@ class AgentFormState extends State<AgentForm> {
   bool allowlogin = false;
   bool retry = true;
   var correctLogin = "";
+  bool select2 = false;
+  bool select1 = false;
+  bool select3 = false;
 
   final name = TextEditingController();
   final email = TextEditingController();
@@ -130,7 +134,67 @@ class AgentFormState extends State<AgentForm> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text(" Login "),
+                    Text(" Login ",
+                        style: TextStyle(
+                            fontFamily: "serif", fontWeight: FontWeight.w400)),
+                    Text("company type"),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InputChip(
+                          selected: select1,
+                          labelPadding: EdgeInsets.all(5),
+                          selectedColor: Colors.green,
+                          onPressed: () {
+                            setState(() {
+                              companytype = "Bus";
+                              print(companytype);
+                              select1 = true;
+                              select3 = false;
+                              select2 = false;
+                            });
+                          },
+                          label: Text("Bus"),
+                          avatar: CircleAvatar(
+                            child: Text("B"),
+                          ),
+                        ),
+                        InputChip(
+                            selected: select2,
+                            labelPadding: EdgeInsets.all(5),
+                            selectedColor: Colors.green,
+                            onPressed: () {
+                              setState(() {
+                                companytype = "Flight";
+                                print(companytype);
+                                select2 = true;
+                                select1 = false;
+                                select3 = false;
+                              });
+                            },
+                            label: Text("Flight"),
+                            avatar: CircleAvatar(
+                              child: Text("F"),
+                            )),
+                        InputChip(
+                            selected: select3,
+                            labelPadding: EdgeInsets.all(5),
+                            selectedColor: Colors.green,
+                            onPressed: () {
+                              setState(() {
+                                companytype = "Train";
+                                print(companytype);
+                                select3 = true;
+                                select1 = false;
+                                select2 = false;
+                              });
+                            },
+                            label: Text("Train"),
+                            avatar: CircleAvatar(
+                              child: Text("T"),
+                            )),
+                      ],
+                    ),
                     SizedBox(height: 20),
                     InputFields("Company Email", email, Icons.email,
                         TextInputType.emailAddress),

@@ -148,8 +148,8 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                 companytype = "Bus";
                                 print(companytype);
                                 select1 = true;
-                                select3 == true ? false : false;
-                                select2 == true ? false : false;
+                                select3 = false;
+                                select2 = false;
                               });
                             },
                             label: Text("Bus"),
@@ -166,8 +166,8 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                   companytype = "Flight";
                                   print(companytype);
                                   select2 = true;
-                                  select1 == true ? false : false;
-                                  select3 == true ? false : false;
+                                  select1 = false;
+                                  select3 = false;
                                 });
                               },
                               label: Text("Flight"),
@@ -183,8 +183,8 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                   companytype = "Train";
                                   print(companytype);
                                   select3 = true;
-                                  select1 == true ? false : false;
-                                  select2 == true ? false : false;
+                                  select1 = false;
+                                  select2 = false;
                                 });
                               },
                               label: Text("Train"),
