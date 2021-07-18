@@ -4,6 +4,12 @@ import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 
+import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
+import 'package:image_picker/image_picker.dart';
+
 //text widget
 class TextWidgets extends StatelessWidget {
   final String text;
@@ -164,11 +170,12 @@ class _menuButtonState extends State<menuButton> {
 
 TripClass onetrip =
     TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
+List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 
 class SearchLocs extends StatefulWidget {
-  SearchLocs(this.direction);
+  SearchLocs({required this.direction, required this.locations});
   String direction;
-
+  List<String> locations;
   @override
   SearchLocsState createState() => SearchLocsState();
 }
@@ -176,10 +183,10 @@ class SearchLocs extends StatefulWidget {
 class SearchLocsState extends State<SearchLocs> {
   late OverlayEntry myoverlay;
   late bool hideoverlay;
+  bool foundinlist = false;
   var mytripobj = {};
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     formcontrol.addListener(() {
       suggestions = [];
@@ -193,21 +200,12 @@ class SearchLocsState extends State<SearchLocs> {
 
             this.myoverlay = this.createOverlay();
             Overlay.of(context)!.insert(this.myoverlay);
-
-            // myoverlay.addListener(() {
-            //   print("overlaay");
-            // });
           }
         }
 
         setState(() {
           suggestions.toList();
           hideoverlay = false;
-        });
-      } else {
-        print(formcontrol.text);
-        setState(() {
-          hideoverlay = true;
         });
       }
     });
@@ -243,7 +241,7 @@ class SearchLocsState extends State<SearchLocs> {
                           suggestions = [];
                           print(mytripobj);
                           setState(() {
-                            hideoverlay = true;
+                            foundinlist = true;
                           });
                         },
                         title: Text(
@@ -263,7 +261,6 @@ class SearchLocsState extends State<SearchLocs> {
     super.dispose();
   }
 
-  List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim"];
   List<String> suggestions = [];
 
   TextEditingController formcontrol = TextEditingController();
@@ -279,6 +276,53 @@ class SearchLocsState extends State<SearchLocs> {
             border:
                 OutlineInputBorder(borderRadius: BorderRadius.circular(30))),
         controller: formcontrol,
+      ),
+    );
+  }
+}
+
+//options menu
+class OptionButton extends StatefulWidget {
+  const OptionButton(
+      {Key? key,
+      required this.options,
+      required this.onchange,
+      required this.dropdownValue})
+      : super(key: key);
+  final List<String> options;
+  final String dropdownValue;
+  final void Function(String? change) onchange;
+  @override
+  State<OptionButton> createState() => _OptionButtonState();
+}
+
+/// This is the private State class that goes with MyStatefulWidget.
+class _OptionButtonState extends State<OptionButton> {
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      child: Consumer<UserState>(
+        builder: (context, value, child) => DropdownButton<String>(
+          value: widget.dropdownValue,
+          icon: const Icon(Icons.pin_drop_outlined),
+          iconSize: 34,
+          elevation: 16,
+          style: const TextStyle(color: Colors.black),
+          underline: Container(
+            height: 1,
+          ),
+          onChanged: widget.onchange,
+          items: widget.options.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

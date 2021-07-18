@@ -92,8 +92,7 @@ class MyApp extends StatelessWidget {
           "/home": (context) => ButtomNav(),
           "/agentlogin": (context) => MyCompApp()
         },
-        title: 'Flutter layout demo',
-        theme: new ThemeData.dark(),
+        title: 'Flutter Travel App',
         home: AppHome());
   }
 }
@@ -102,12 +101,15 @@ class AppHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Travellers Mobile App'),
+        title: Text(
+          'Travellers App',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.transparent,
         centerTitle: true,
       ),
       body: Center(
         child: Container(
-          color: Colors.lightBlue,
           child: Stack(overflow: Overflow.visible, children: [
             MyForm(),
             Positioned(
@@ -119,12 +121,40 @@ class AppHome extends StatelessWidget {
                     Navigator.pushNamed(context, '/agentlogin');
                   },
                   child: Padding(
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.all(6),
                     child: Text("Companies",
                         style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                   shape: StadiumBorder(),
-                ))
+                )),
+            Positioned(
+                top: 10,
+                left: 10,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(200),
+                  child: Image.asset(
+                    "images/bus1.png",
+                    height: 90,
+                    width: 90,
+                    fit: BoxFit.cover,
+                  ),
+                )),
+            Positioned(
+                bottom: 10,
+                left: 10,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(200),
+                  child: Image.asset("images/train1.png",
+                      height: 90, width: 90, fit: BoxFit.cover),
+                )),
+            Positioned(
+                bottom: 10,
+                right: 10,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(200),
+                  child: Image.asset("images/bus1.png",
+                      height: 90, width: 90, fit: BoxFit.cover),
+                )),
           ]),
         ),
       ),

@@ -25,6 +25,8 @@ void main() {
 
 // TripClass onetrip =
 //     TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
+List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
+Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid");
 
 class ButtomNav extends StatefulWidget {
   @override
@@ -35,6 +37,9 @@ class ButtomNavState extends State<ButtomNav> {
   static List<Widget> pages = [
     TabBarDemo(),
     HelpClass(),
+    Center(
+        child: Text("Notify",
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
     UserInfoClass(),
   ];
   int currentindx = 0;
@@ -64,6 +69,8 @@ class ButtomNavState extends State<ButtomNav> {
               items: [
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
                 BottomNavigationBarItem(icon: Icon(Icons.help), label: "help"),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.notifications), label: "Notify"),
                 BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
               ]),
           body: Center(
@@ -146,11 +153,17 @@ class TabBarDemo extends StatelessWidget {
                                             return FractionallySizedBox(
                                               heightFactor: 0.8,
                                               child: Column(children: [
-                                                SearchLocs("from"),
+                                                SearchLocs(
+                                                  direction: 'from',
+                                                  locations: places,
+                                                ),
                                                 SizedBox(
                                                   height: 5,
                                                 ),
-                                                SearchLocs("to")
+                                                SearchLocs(
+                                                  direction: 'to',
+                                                  locations: places,
+                                                )
                                               ]),
                                             );
                                           });
@@ -166,11 +179,17 @@ class TabBarDemo extends StatelessWidget {
                                             return FractionallySizedBox(
                                               heightFactor: 0.9,
                                               child: Column(children: [
-                                                SearchLocs("from"),
+                                                SearchLocs(
+                                                  direction: 'from',
+                                                  locations: places,
+                                                ),
                                                 SizedBox(
                                                   height: 5,
                                                 ),
-                                                SearchLocs("to")
+                                                SearchLocs(
+                                                  direction: 'to',
+                                                  locations: places,
+                                                )
                                               ]),
                                             );
                                           });
@@ -186,11 +205,17 @@ class TabBarDemo extends StatelessWidget {
                                             return FractionallySizedBox(
                                               heightFactor: 0.9,
                                               child: Column(children: [
-                                                SearchLocs("from"),
+                                                SearchLocs(
+                                                  direction: 'from',
+                                                  locations: places,
+                                                ),
                                                 SizedBox(
                                                   height: 5,
                                                 ),
-                                                SearchLocs("to")
+                                                SearchLocs(
+                                                  direction: 'to',
+                                                  locations: places,
+                                                )
                                               ]),
                                             );
                                           });
@@ -213,11 +238,17 @@ class TabBarDemo extends StatelessWidget {
                                             context: context,
                                             builder: (BuildContext context) {
                                               return Column(children: [
-                                                SearchLocs("from"),
+                                                SearchLocs(
+                                                  direction: 'from',
+                                                  locations: places,
+                                                ),
                                                 SizedBox(
                                                   height: 5,
                                                 ),
-                                                SearchLocs("to")
+                                                SearchLocs(
+                                                  direction: 'to',
+                                                  locations: places,
+                                                )
                                               ]);
                                             });
                                       },
@@ -259,11 +290,17 @@ class TabBarDemo extends StatelessWidget {
                                         context: context,
                                         builder: (BuildContext context) {
                                           return Column(children: [
-                                            SearchLocs("from"),
+                                            SearchLocs(
+                                              direction: 'from',
+                                              locations: places,
+                                            ),
                                             SizedBox(
                                               height: 5,
                                             ),
-                                            SearchLocs("to")
+                                            SearchLocs(
+                                              direction: 'to',
+                                              locations: places,
+                                            )
                                           ]);
                                         });
                                   },
@@ -275,11 +312,17 @@ class TabBarDemo extends StatelessWidget {
                                         context: context,
                                         builder: (BuildContext context) {
                                           return Column(children: [
-                                            SearchLocs("from"),
+                                            SearchLocs(
+                                              direction: 'to',
+                                              locations: places,
+                                            ),
                                             SizedBox(
                                               height: 5,
                                             ),
-                                            SearchLocs("to")
+                                            SearchLocs(
+                                              direction: 'to',
+                                              locations: places,
+                                            )
                                           ]);
                                         });
                                   },
@@ -290,13 +333,7 @@ class TabBarDemo extends StatelessWidget {
                                     showModalBottomSheet(
                                         context: context,
                                         builder: (BuildContext context) {
-                                          return Column(children: [
-                                            SearchLocs("from"),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            SearchLocs("to")
-                                          ]);
+                                          return Column(children: []);
                                         });
                                   },
                                   label: Text("Departures")),
@@ -316,15 +353,7 @@ class TabBarDemo extends StatelessWidget {
                                       showModalBottomSheet(
                                           context: context,
                                           builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs(
-                                                "to",
-                                              )
-                                            ]);
+                                            return Column(children: []);
                                           });
                                     },
                                     label: Text("Find company")),
@@ -363,13 +392,7 @@ class TabBarDemo extends StatelessWidget {
                                     showModalBottomSheet(
                                         context: context,
                                         builder: (BuildContext context) {
-                                          return Column(children: [
-                                            SearchLocs("from"),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            SearchLocs("to")
-                                          ]);
+                                          return Column(children: []);
                                         });
                                   },
                                   label: Text("Available Seats")),
@@ -379,13 +402,7 @@ class TabBarDemo extends StatelessWidget {
                                     showModalBottomSheet(
                                         context: context,
                                         builder: (BuildContext context) {
-                                          return Column(children: [
-                                            SearchLocs("from"),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            SearchLocs("to")
-                                          ]);
+                                          return Column(children: []);
                                         });
                                   },
                                   label: Text("Recent activity")),
@@ -395,13 +412,7 @@ class TabBarDemo extends StatelessWidget {
                                     showModalBottomSheet(
                                         context: context,
                                         builder: (BuildContext context) {
-                                          return Column(children: [
-                                            SearchLocs("from"),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            SearchLocs("to")
-                                          ]);
+                                          return Column(children: []);
                                         });
                                   },
                                   label: Text("Departures")),
@@ -421,13 +432,7 @@ class TabBarDemo extends StatelessWidget {
                                       showModalBottomSheet(
                                           context: context,
                                           builder: (BuildContext context) {
-                                            return Column(children: [
-                                              SearchLocs("from"),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              SearchLocs("to")
-                                            ]);
+                                            return Column(children: []);
                                           });
                                     },
                                     label: Text("Find company")),
@@ -463,9 +468,15 @@ class locations extends StatelessWidget {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            SearchLocs("From"),
+            SearchLocs(
+              direction: 'from',
+              locations: places,
+            ),
             SizedBox(height: 5),
-            SearchLocs("To"),
+            SearchLocs(
+              direction: 'to',
+              locations: places,
+            ),
             Expanded(
                 child: Center(
                     child: Row(
@@ -513,7 +524,7 @@ class Trips extends StatefulWidget {
 class TripsState extends State<Trips> {
   // String gttriptype ;
   companyFilters filter = companyFilters.VIP;
-  bool isLoading = true;
+  bool isfound = true;
   List filterquery = ["VIP", "STC", "MMT"];
   void filterall() {
     setState(() {
@@ -546,6 +557,11 @@ class TripsState extends State<Trips> {
       routes: {"/completebook": (context) => Booking()},
       home: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back_ios)),
           title: Text("All trips for this location"),
         ),
         body: SafeArea(
@@ -603,67 +619,96 @@ class TripsState extends State<Trips> {
                                   )));
                         } else if (snapshot.hasError) {
                           print(snapshot.error);
+                        } else if (snapshot.hasData) {
+                          // ignore: unnecessary_statements
+                          isfound = true;
+                        } else if (snapshot.connectionState ==
+                                ConnectionState.done &&
+                            !snapshot.hasData) {
+                          isfound = false;
                         }
-                        return ListView(
-                            shrinkWrap: true,
-                            children: snapshot.data!.docs
-                                .map((doc) => Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      elevation: 5,
-                                      child: Column(
-                                        children: [
-                                          ListTile(
-                                              title: Row(
-                                                children: [
-                                                  Text(doc['from'],
-                                                      style: TextStyle(
-                                                          color: Colors.black,
-                                                          backgroundColor:
-                                                              Colors.amber,
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                  Text("  to   "),
-                                                  Text(doc['to'],
-                                                      style: TextStyle(
-                                                          color: Colors.black,
-                                                          backgroundColor:
-                                                              Colors.blueGrey,
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ],
+                        return isfound
+                            ? ListView(
+                                shrinkWrap: true,
+                                children: snapshot.data!.docs
+                                    .map((doc) => Card(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
+                                          elevation: 5,
+                                          child: Column(
+                                            children: [
+                                              ListTile(
+                                                  title: Row(
+                                                    children: [
+                                                      Text(doc['from'],
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              backgroundColor:
+                                                                  Colors.amber,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                      Text("  to   "),
+                                                      Text(doc['to'],
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              backgroundColor:
+                                                                  Colors
+                                                                      .blueGrey,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                    ],
+                                                  ),
+                                                  subtitle:
+                                                      Text(doc['company'])),
+                                              Divider(
+                                                thickness: 0.8,
+                                                color: Colors.blueGrey,
                                               ),
-                                              subtitle: Text(doc['company'])),
-                                          Divider(
-                                            thickness: 0.8,
-                                            color: Colors.blueGrey,
+                                              ListTile(
+                                                  trailing: Text(
+                                                      doc['fare'].toString() +
+                                                          ' Cdz',
+                                                      style: TextStyle(
+                                                          fontSize: 30,
+                                                          color: Colors
+                                                              .lightBlue)),
+                                                  leading: Icon(
+                                                    Icons.chair,
+                                                    size: 40,
+                                                  ),
+                                                  title: Text(
+                                                      doc['seats'].toString() +
+                                                          " Available"),
+                                                  subtitle:
+                                                      FloatingActionButton(
+                                                          onPressed: () {
+                                                            seat.busnumber =
+                                                                doc["busnumber"];
+                                                            seat.from =
+                                                                doc["from"];
+                                                            seat.to = doc["to"];
+                                                            seat.seats =
+                                                                doc["seats"];
+                                                            seat.unitprice =
+                                                                doc["fare"];
+                                                            seat.tripid = doc.id
+                                                                .toString();
+                                                            print('clicked');
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                "/completebook");
+                                                          },
+                                                          child: Text("Book")))
+                                            ],
                                           ),
-                                          ListTile(
-                                              trailing: Text(
-                                                  doc['fare'].toString() +
-                                                      ' Cdz',
-                                                  style: TextStyle(
-                                                      fontSize: 30,
-                                                      color: Colors.lightBlue)),
-                                              leading: Icon(
-                                                Icons.chair,
-                                                size: 40,
-                                              ),
-                                              title: Text(
-                                                  doc['seats'].toString() +
-                                                      " Available"),
-                                              subtitle: FloatingActionButton(
-                                                  onPressed: () {
-                                                    print('clicked');
-                                                    Navigator.pushNamed(context,
-                                                        "/completebook");
-                                                  },
-                                                  child: Text("Book")))
-                                        ],
-                                      ),
-                                    ))
-                                .toList());
+                                        ))
+                                    .toList())
+                            : Text("Couldnt find matching search");
                       })),
             ]),
           ),
@@ -685,41 +730,51 @@ class TripClass {
 
 class HelpClass extends StatelessWidget {
   Widget build(BuildContext context) {
-    return Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: "cheap",
-            onPressed: () {},
-            label: Text("Make a cheap travel"),
-            icon: Icon(Icons.money),
-          ),
-          SizedBox(height: 40),
-          FloatingActionButton.extended(
-              heroTag: "where",
-              onPressed: () {
-                Navigator.pushNamed(context, '/location');
-              },
-              label: Text("Where am i?"),
-              icon: Icon(Icons.location_on)),
-          SizedBox(height: 40),
-          FloatingActionButton.extended(
-            heroTag: "report",
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, "/reports");
+              Navigator.pop(context);
             },
-            label: Text("Report a matter"),
-            icon: Icon(Icons.report_problem),
-          ),
-          SizedBox(height: 40),
-          FloatingActionButton.extended(
-            heroTag: "health",
-            onPressed: () {},
-            label: Text("My Health"),
-            icon: Icon(Icons.health_and_safety),
-          ),
-        ]);
+            icon: Icon(Icons.arrow_back_ios)),
+        title: Text("Find help"),
+      ),
+      body: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            FloatingActionButton.extended(
+              heroTag: "cheap",
+              onPressed: () {},
+              label: Text("Make a cheap travel"),
+              icon: Icon(Icons.money),
+            ),
+            SizedBox(height: 40),
+            FloatingActionButton.extended(
+                heroTag: "where",
+                onPressed: () {
+                  Navigator.pushNamed(context, '/location');
+                },
+                label: Text("Where am i?"),
+                icon: Icon(Icons.location_on)),
+            SizedBox(height: 40),
+            FloatingActionButton.extended(
+              heroTag: "report",
+              onPressed: () {
+                Navigator.pushNamed(context, "/reports");
+              },
+              label: Text("Report a matter"),
+              icon: Icon(Icons.report_problem),
+            ),
+            SizedBox(height: 40),
+            FloatingActionButton.extended(
+              heroTag: "health",
+              onPressed: () {},
+              label: Text("My Health"),
+              icon: Icon(Icons.health_and_safety),
+            ),
+          ]),
+    );
   }
 }
 
@@ -840,7 +895,7 @@ class UserInfoClassState extends State<UserInfoClass> {
               title: Text("Name"),
               subtitle: Text(value.loggedInAs.toString()),
               leading: CircleAvatar(
-                backgroundImage: NetworkImage("url"),
+                child: Image.asset("images/bus1.png"),
               ),
             ),
           ),
@@ -855,7 +910,7 @@ class UserInfoClassState extends State<UserInfoClass> {
               title: Text("Phone"),
               subtitle: Text("0552489602"),
               leading: CircleAvatar(
-                backgroundImage: NetworkImage("url"),
+                child: Image.asset("images/bus1.png"),
               ),
             ),
           ),
@@ -870,7 +925,7 @@ class UserInfoClassState extends State<UserInfoClass> {
               title: Text("Email"),
               subtitle: Text(value.loggedinmail.toString()),
               leading: CircleAvatar(
-                backgroundImage: NetworkImage("url"),
+                child: Image.asset("images/bus1.png"),
               ),
             ),
           )
@@ -878,4 +933,15 @@ class UserInfoClassState extends State<UserInfoClass> {
       ),
     );
   }
+}
+
+class Seat {
+  String busnumber;
+  int seats;
+  int unitprice;
+  String from;
+  String to;
+  String tripid;
+  Seat(this.busnumber, this.seats, this.unitprice, this.from, this.to,
+      this.tripid);
 }
