@@ -42,6 +42,18 @@ class ReporterState extends State<Reporter> {
     setState(() {
       initialval = value;
     });
+    if (value == options[0]) {
+      pgcontrol.animateToPage(0,
+          duration: Duration(milliseconds: 50), curve: Curves.easeIn);
+    }
+    if (value == options[1]) {
+      pgcontrol.animateToPage(1,
+          duration: Duration(milliseconds: 50), curve: Curves.easeIn);
+    }
+    if (value == options[2]) {
+      pgcontrol.animateToPage(2,
+          duration: Duration(milliseconds: 50), curve: Curves.easeIn);
+    }
   }
 
   @override
@@ -92,6 +104,7 @@ class ReporterState extends State<Reporter> {
                   Container(
                     height: 200,
                     child: PageView(
+                      controller: pgcontrol,
                       children: [
                         ListView(
                           shrinkWrap: true,

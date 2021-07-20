@@ -30,13 +30,13 @@ class DashApp extends StatefulWidget {
 }
 
 class DashAppState extends State<DashApp> {
+  List<TextEditingController> controls = [];
+  List<bool> valstate = [];
   Widget interroutes(int howmany) {
-    List<TextEditingController> controls = [];
-    List<bool> valstate = [];
     for (var i = 0; i < howmany; i++) {
       controls
           .add(new TextEditingController(text: "enter route " + i.toString()));
-      valstate.add(true);
+      valstate.add(false);
     }
     bool value = false;
     return Center(
@@ -44,37 +44,39 @@ class DashAppState extends State<DashApp> {
           shrinkWrap: true,
           itemCount: howmany,
           itemBuilder: (BuildContext, index) {
-            return Form(
-                child: Column(
-              children: [
-                TextFormField(
-                  controller: controls[index],
-                ),
-                SwitchListTile(
-                    title: Text("PIck up point"),
-                    // selected: valstate[index],
-                    value: valstate[index],
-                    onChanged: (bool val) {
-                      print(val);
-                      setState(() {
-                        valstate[index] = val;
-                        valstate;
-                      });
-                    }),
-                SwitchListTile(
-                    title: Text("Stop point"),
-                    // selected: valstate[index],
-                    value: valstate[index],
-                    onChanged: (bool val) {
-                      print(val);
-                      setState(() {
-                        valstate[index] = val;
-                        valstate;
-                      });
-                    }),
-                Divider(height: 4, indent: 3, color: Colors.lightBlue)
-              ],
-            ));
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: controls[index],
+                  ),
+                  SwitchListTile(
+                      title: Text("PIck up point"),
+                      subtitle: Text("switch on if a pickup point"),
+                      activeColor: Colors.lightBlue,
+                      value: valstate[index],
+                      onChanged: (bool val) {
+                        setState(() {
+                          valstate[index] = val;
+                        });
+                        print(valstate[index]);
+                      }),
+                  SwitchListTile(
+                      title: Text("Stop point"),
+                      subtitle: Text("switch on if a stop point"),
+                      value: valstate[index],
+                      onChanged: (bool val) {
+                        print(val);
+                        setState(() {
+                          valstate[index] = val;
+                          valstate;
+                        });
+                      }),
+                  Divider(height: 4, indent: 3, color: Colors.lightBlue)
+                ],
+              ),
+            );
           }),
     );
   }
@@ -102,10 +104,15 @@ class DashAppState extends State<DashApp> {
       citycontroller = TextEditingController(),
       destcontroller = TextEditingController(),
       routecontroller = TextEditingController();
+  TextEditingController searchfrom = TextEditingController();
+  TextEditingController searchto = TextEditingController();
+
   final form1 = GlobalKey<FormState>();
   final form2 = GlobalKey<FormState>();
   var selectregions = [];
+  var interoutes = [];
   String showregions = '';
+  int routenum = 0;
 
   void pressed() {
     selectregions.add("REGION");
@@ -117,15 +124,25 @@ class DashAppState extends State<DashApp> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
             drawer: Drawer(
+              elevation: 30,
               semanticLabel: "drawer",
-              child: Column(
+              child: ListView(
+                padding: EdgeInsets.zero,
                 children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                    ),
+                    child: Text('Drawer Header'),
+                  ),
                   IconButton(
                       tooltip: "register driver",
                       onPressed: () {
                         showModalBottomSheet(
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
@@ -156,7 +173,9 @@ class DashAppState extends State<DashApp> {
                       onPressed: () {
                         showModalBottomSheet(
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
@@ -190,7 +209,7 @@ class DashAppState extends State<DashApp> {
                     Navigator.pop(context);
                   },
                   icon: Icon(Icons.arrow_back_ios)),
-              title: Text(companyname),
+              title: Text(companyname + "  Dashboard"),
               actions: [],
             ),
             floatingActionButton: Stack(
@@ -203,7 +222,9 @@ class DashAppState extends State<DashApp> {
                       onPressed: () {
                         showModalBottomSheet(
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
@@ -260,7 +281,9 @@ class DashAppState extends State<DashApp> {
                       onPressed: () {
                         showModalBottomSheet(
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
@@ -342,7 +365,9 @@ class DashAppState extends State<DashApp> {
                       onPressed: () {
                         showModalBottomSheet(
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
@@ -360,14 +385,32 @@ class DashAppState extends State<DashApp> {
                                                   fontWeight:
                                                       FontWeight.bold))),
                                       SearchLocs(
-                                        direction: 'from',
-                                        locations: places,
-                                      ),
+                                          direction: 'from',
+                                          locations: places,
+                                          searchcontrol: searchfrom),
                                       SearchLocs(
                                         direction: 'to',
                                         locations: places,
+                                        searchcontrol: searchto,
                                       ),
-                                      interroutes(4),
+                                      Expanded(
+                                        child: Row(children: [
+                                          InputFields(
+                                              "how many inter routes?",
+                                              routecontroller,
+                                              Icons.input,
+                                              TextInputType.text),
+                                          TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  routenum = routecontroller
+                                                      .text as int;
+                                                });
+                                              },
+                                              child: Text("add them"))
+                                        ]),
+                                      ),
+                                      interroutes(routenum),
                                       InputFields("Bus id", idcontroller,
                                           Icons.input, TextInputType.text),
                                       Text("SELECT IMAGE"),
@@ -463,13 +506,22 @@ class DashboardState extends State<Dashboard> {
                                                 ListView.builder(
                                                     shrinkWrap: true,
                                                     itemCount:
-                                                        doc['regions'].length,
+                                                        doc['stations'].length,
                                                     itemBuilder:
                                                         (context, index) {
                                                       return ListTile(
                                                         title: Text(
-                                                            doc['regions']
-                                                                [index]),
+                                                            doc['stations']
+                                                                    [index]
+                                                                .name),
+                                                        subtitle: Text(
+                                                            doc['stations']
+                                                                        [index]
+                                                                    .region +
+                                                                " " +
+                                                                doc['stations']
+                                                                        [index]
+                                                                    .city),
                                                       );
                                                     })
                                               ]);

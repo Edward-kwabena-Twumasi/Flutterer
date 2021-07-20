@@ -173,9 +173,14 @@ TripClass onetrip =
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 
 class SearchLocs extends StatefulWidget {
-  SearchLocs({required this.direction, required this.locations});
-  String direction;
-  List<String> locations;
+  SearchLocs(
+      {required this.direction,
+      required this.locations,
+      required this.searchcontrol});
+  final TextEditingController searchcontrol;
+
+  final String direction;
+  final List<String> locations;
   @override
   SearchLocsState createState() => SearchLocsState();
 }
@@ -188,9 +193,9 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   void initState() {
     super.initState();
-    formcontrol.addListener(() {
+    widget.searchcontrol.addListener(() {
       suggestions = [];
-      var query = formcontrol.text;
+      var query = widget.searchcontrol.text;
       hideoverlay = false;
       if (query.isNotEmpty) {
         for (var i in places) {
@@ -234,10 +239,10 @@ class SearchLocsState extends State<SearchLocs> {
 
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
-                          formcontrol.text = suggestions[index];
+                          widget.searchcontrol.text = suggestions[index];
                           widget.direction == "From"
-                              ? onetrip.fromLoc = formcontrol.text
-                              : onetrip.toLoc = formcontrol.text;
+                              ? onetrip.fromLoc = widget.searchcontrol.text
+                              : onetrip.toLoc = widget.searchcontrol.text;
                           suggestions = [];
                           print(mytripobj);
                           setState(() {
@@ -263,8 +268,6 @@ class SearchLocsState extends State<SearchLocs> {
 
   List<String> suggestions = [];
 
-  TextEditingController formcontrol = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -275,7 +278,7 @@ class SearchLocsState extends State<SearchLocs> {
             fillColor: Colors.pink,
             border:
                 OutlineInputBorder(borderRadius: BorderRadius.circular(30))),
-        controller: formcontrol,
+        controller: widget.searchcontrol,
       ),
     );
   }

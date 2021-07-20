@@ -37,6 +37,8 @@ dependencies:
   geolocator: ^7.2.0+1
   image_picker: ^0.8.2
   flutter_paystack: ^1.0.5+1
+  web_socket_channel: ^2.1.0
+  firebase_storage: ^10.0.1
 
 dev_dependencies:
   flutter_test:

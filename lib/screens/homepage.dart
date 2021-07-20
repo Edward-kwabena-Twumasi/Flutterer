@@ -81,6 +81,8 @@ class ButtomNavState extends State<ButtomNav> {
 }
 
 class TabBarDemo extends StatelessWidget {
+  TextEditingController searchfrom = TextEditingController();
+  TextEditingController searchto = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -131,7 +133,7 @@ class TabBarDemo extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    locations(),
+                    Locations(),
                     Card(
                       elevation: 5,
                       child: Column(
@@ -156,6 +158,7 @@ class TabBarDemo extends StatelessWidget {
                                                 SearchLocs(
                                                   direction: 'from',
                                                   locations: places,
+                                                  searchcontrol: searchfrom,
                                                 ),
                                                 SizedBox(
                                                   height: 5,
@@ -163,6 +166,7 @@ class TabBarDemo extends StatelessWidget {
                                                 SearchLocs(
                                                   direction: 'to',
                                                   locations: places,
+                                                  searchcontrol: searchto,
                                                 )
                                               ]),
                                             );
@@ -180,16 +184,16 @@ class TabBarDemo extends StatelessWidget {
                                               heightFactor: 0.9,
                                               child: Column(children: [
                                                 SearchLocs(
-                                                  direction: 'from',
-                                                  locations: places,
-                                                ),
+                                                    direction: 'from',
+                                                    locations: places,
+                                                    searchcontrol: searchfrom),
                                                 SizedBox(
                                                   height: 5,
                                                 ),
                                                 SearchLocs(
-                                                  direction: 'to',
-                                                  locations: places,
-                                                )
+                                                    direction: 'to',
+                                                    locations: places,
+                                                    searchcontrol: searchto)
                                               ]),
                                             );
                                           });
@@ -206,16 +210,16 @@ class TabBarDemo extends StatelessWidget {
                                               heightFactor: 0.9,
                                               child: Column(children: [
                                                 SearchLocs(
-                                                  direction: 'from',
-                                                  locations: places,
-                                                ),
+                                                    direction: 'from',
+                                                    locations: places,
+                                                    searchcontrol: searchfrom),
                                                 SizedBox(
                                                   height: 5,
                                                 ),
                                                 SearchLocs(
-                                                  direction: 'to',
-                                                  locations: places,
-                                                )
+                                                    direction: 'to',
+                                                    locations: places,
+                                                    searchcontrol: searchto)
                                               ]),
                                             );
                                           });
@@ -237,19 +241,7 @@ class TabBarDemo extends StatelessWidget {
                                         showModalBottomSheet(
                                             context: context,
                                             builder: (BuildContext context) {
-                                              return Column(children: [
-                                                SearchLocs(
-                                                  direction: 'from',
-                                                  locations: places,
-                                                ),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                SearchLocs(
-                                                  direction: 'to',
-                                                  locations: places,
-                                                )
-                                              ]);
+                                              return Column();
                                             });
                                       },
                                       label: Text("Find company")),
@@ -262,6 +254,7 @@ class TabBarDemo extends StatelessWidget {
                 ),
               ),
             ),
+            //Block for Buses
             Container(
               constraints: BoxConstraints.expand(),
               decoration: BoxDecoration(
@@ -271,7 +264,7 @@ class TabBarDemo extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  locations(),
+                  Locations(),
                   Card(
                     elevation: 5,
                     child: Column(
@@ -293,14 +286,15 @@ class TabBarDemo extends StatelessWidget {
                                             SearchLocs(
                                               direction: 'from',
                                               locations: places,
+                                              searchcontrol: searchfrom,
                                             ),
                                             SizedBox(
                                               height: 5,
                                             ),
                                             SearchLocs(
-                                              direction: 'to',
-                                              locations: places,
-                                            )
+                                                direction: 'to',
+                                                locations: places,
+                                                searchcontrol: searchfrom)
                                           ]);
                                         });
                                   },
@@ -311,19 +305,7 @@ class TabBarDemo extends StatelessWidget {
                                     showModalBottomSheet(
                                         context: context,
                                         builder: (BuildContext context) {
-                                          return Column(children: [
-                                            SearchLocs(
-                                              direction: 'to',
-                                              locations: places,
-                                            ),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            SearchLocs(
-                                              direction: 'to',
-                                              locations: places,
-                                            )
-                                          ]);
+                                          return Column();
                                         });
                                   },
                                   label: Text("Recent activity")),
@@ -365,6 +347,7 @@ class TabBarDemo extends StatelessWidget {
                 ],
               ),
             ),
+            //Block for trains
             Container(
               constraints: BoxConstraints.expand(),
               decoration: BoxDecoration(
@@ -374,7 +357,7 @@ class TabBarDemo extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  locations(),
+                  Locations(),
                   Card(
                     elevation: 5,
                     child: Column(
@@ -460,7 +443,9 @@ Widget region() {
       margin: EdgeInsets.all(15));
 }
 
-class locations extends StatelessWidget {
+class Locations extends StatelessWidget {
+  TextEditingController from = TextEditingController();
+  TextEditingController to = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -469,13 +454,12 @@ class locations extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             SearchLocs(
-              direction: 'from',
-              locations: places,
-            ),
+                direction: 'from', locations: places, searchcontrol: from),
             SizedBox(height: 5),
             SearchLocs(
               direction: 'to',
               locations: places,
+              searchcontrol: to,
             ),
             Expanded(
                 child: Center(

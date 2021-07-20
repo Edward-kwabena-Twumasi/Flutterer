@@ -113,16 +113,6 @@ class SignupFormState extends State<SignupForm> {
                           child: Text(' Submit '),
                         ),
                       ),
-                      // OutlinedButton(
-                      //   onPressed: () {
-                      //     if (pgecontroller.hasClients) {
-                      //       pgecontroller.animateToPage(1,
-                      //           duration: const Duration(milliseconds: 400),
-                      //           curve: Curves.easeInOut);
-                      //     }
-                      //   },
-                      //   child: Text(tonext),
-                      // ),
                       Center(child: Text(errors))
                     ],
                   ),
