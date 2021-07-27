@@ -1,6 +1,3 @@
-import 'dart:html';
-import 'dart:js';
-
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
@@ -53,7 +50,7 @@ class MyCompApp extends StatelessWidget {
         "/home": (context) => ButtomNav(),
         "/companyinfo": (context) => DashApp(companytype: companytype)
       },
-      title: 'Login as Agent',
+      title: 'For companies',
       darkTheme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
@@ -138,11 +135,18 @@ class AgentFormState extends State<AgentForm> {
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text(" Login ",
+                    ListTile(
+                      subtitle: Text("Lets get to work!"),
+                      title: Text(" Login ",
                         style: TextStyle(
-                            fontFamily: "serif", fontWeight: FontWeight.w400)),
-                    Text("company type"),
+                            fontFamily: "serif", fontWeight: FontWeight.bold,fontSize: 30))
+                             ),
+                   ListTile(
+                     subtitle: Text("Select company type"),
+                     title:
+                  
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -200,6 +204,7 @@ class AgentFormState extends State<AgentForm> {
                             )),
                       ],
                     ),
+                     ),
                     SizedBox(height: 20),
                     InputFields("Company Email", email, Icons.email,
                         TextInputType.emailAddress),
@@ -260,7 +265,7 @@ class AgentFormState extends State<AgentForm> {
                     Text(correctLogin),
                     Row(
                       children: [
-                        Text(" I am not registered! "),
+                        Text(" No account ? "),
                         TextButton(
                           onPressed: () {
                             // value.setaction("Signup");
@@ -269,13 +274,13 @@ class AgentFormState extends State<AgentForm> {
                               retry = false;
                             });
                           },
-                          child: Text('Sign Up'),
+                          child: Text('Sign up'),
                         ),
                       ],
                     ),
                     //dsiplay any login errors here
                     Padding(
-                      padding: EdgeInsets.all(10),
+                      padding: EdgeInsets.all(5),
                       child: Text(
                         correctLogin,
                         style: TextStyle(
@@ -284,11 +289,7 @@ class AgentFormState extends State<AgentForm> {
                             fontWeight: FontWeight.w300),
                       ),
                     ),
-                    TextButton(
-                        child: Text("View dashboard"),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/companyinfo');
-                        }),
+                  
                   ],
                 ),
               ),

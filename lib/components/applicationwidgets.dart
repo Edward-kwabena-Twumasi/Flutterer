@@ -1,13 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
+import 'package:myapp/screens/dashboard.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-
+import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:image_picker/image_picker.dart';
 
 //text widget
@@ -38,7 +42,6 @@ class InputFields extends StatelessWidget {
       this.hintext, this.controller, this.iconData, this.inputtype);
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(iconData),
       title: TextFormField(
         style: TextStyle(color: Colors.black),
         keyboardType: inputtype,
@@ -209,7 +212,6 @@ class SearchLocsState extends State<SearchLocs> {
         }
 
         setState(() {
-          suggestions.toList();
           hideoverlay = false;
         });
       }
@@ -235,7 +237,9 @@ class SearchLocsState extends State<SearchLocs> {
                     return ListTile(
                         key: Key(index.toString()),
                         onTap: () {
-                          this.myoverlay.mounted ? myoverlay.remove() : null;
+                          this.myoverlay.mounted
+                              ? myoverlay.remove()
+                              : myoverlay.remove();
 
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
@@ -274,7 +278,7 @@ class SearchLocsState extends State<SearchLocs> {
       leading: Icon(Icons.search),
       title: TextFormField(
         decoration: InputDecoration(
-            labelText: "Travel From",
+            labelText: "Travel $widget.direction",
             fillColor: Colors.pink,
             border:
                 OutlineInputBorder(borderRadius: BorderRadius.circular(30))),
@@ -328,5 +332,94 @@ class _OptionButtonState extends State<OptionButton> {
         ),
       ),
     );
+  }
+}
+
+class UploadPic extends StatefulWidget {
+  UploadPic(
+      {Key? key,
+      required this.foldername,
+      required this.imagename,
+      required this.imgUrl})
+      : super(key: key);
+
+  String foldername, imagename, imgUrl;
+
+  @override
+  _UploadPicState createState() => _UploadPicState();
+}
+
+class _UploadPicState extends State<UploadPic> {
+  String? imgUrl;
+  void upLoadimg() async {
+    print("starting upload");
+    final picker = ImagePicker();
+    XFile? image;
+    image = await picker.pickImage(source: ImageSource.gallery);
+
+    var file = File(image!.path);
+    print(file);
+    // ignore: unnecessary_null_comparison
+    if (file != null) {
+      print("file is not nul");
+      var snapshot = await FirebaseStorage.instance
+          .ref(FirebaseAuth.instance.currentUser!.uid.substring(0, 5))
+          .child(widget.foldername + "/" + widget.imagename)
+          .putFile(file)
+          .whenComplete(() => print("done"));
+      var geturl = await snapshot.ref.getDownloadURL();
+      setState(() {
+        imgUrl = geturl;
+        widget.imgUrl = geturl;
+      });
+    } else {
+      print("no image chosen");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: Center(
+            child: Column(
+      children: [
+        (imgUrl != null)
+            ? Image.network(imgUrl!, cacheHeight: 120, cacheWidth: 120)
+            : Placeholder(
+                fallbackHeight: 120,
+                fallbackWidth: 120,
+              ),
+        SizedBox(
+          height: 10,
+        ),
+        FloatingActionButton.extended(
+          onPressed: () => upLoadimg(),
+          label: Text("upload"),
+          icon: Icon(Icons.send),
+        ),
+      ],
+    )));
+  }
+}
+
+class payment extends StatefulWidget {
+  const payment({Key? key}) : super(key: key);
+
+  @override
+  _paymentState createState() => _paymentState();
+}
+
+class _paymentState extends State<payment> {
+  var publicKey = '[YOUR_PAYSTACK_PUBLIC_KEY]';
+  final plugin = PaystackPlugin();
+
+  @override
+  void initState() {
+    plugin.initialize(publicKey: publicKey);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }

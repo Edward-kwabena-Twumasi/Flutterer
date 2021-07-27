@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 /// Defines the main theme color.
 // final MaterialColor themeMaterialColor =
@@ -27,45 +28,59 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      body: ListView.builder(
-        itemCount: _positionItems.length,
-        itemBuilder: (context, index) {
-          final positionItem = _positionItems[index];
+      appBar: AppBar(title: Text("Get location details")),
+      body: Center(
+        child: ListView.builder(
+          itemCount: _positionItems.length,
+          itemBuilder: (context, index) {
+            final positionItem = _positionItems[index];
 
-          if (positionItem.type == _PositionItemType.permission) {
-            return ListTile(
-              title: Text(positionItem.displayValue,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  )),
-            );
-          } else {
-            return Card(
-              child: ListTile(
-                tileColor: Colors.amber,
-                title: Text(
-                  positionItem.displayValue,
-                  style: TextStyle(color: Colors.white),
+            if (positionItem.type == _PositionItemType.permission) {
+              return ListTile(
+                title: Text(positionItem.displayValue,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    )),
+              );
+            } else {
+              return Card(
+                child: ListTile(
+                  tileColor: Colors.lightBlue,
+                  subtitle: Text(positionItem.placename,
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  title: Text(
+                    positionItem.displayValue,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-            );
-          }
-        },
+              );
+            }
+          },
+        ),
       ),
       floatingActionButton: Stack(
         children: <Widget>[
           Positioned(
             bottom: 150.0,
-            right: 150.0,
+            right: 50.0,
             child: FloatingActionButton.extended(
                 onPressed: () async {
-                  await Geolocator.getCurrentPosition().then((value) => {
-                        _positionItems.add(_PositionItem(
-                            _PositionItemType.position, value.toString()))
-                      });
+                  var position = await Geolocator.getCurrentPosition(
+                          desiredAccuracy: LocationAccuracy.best)
+                      .then((value) async {
+                    List<Placemark> placemarks = await placemarkFromCoordinates(
+                            value.latitude, value.longitude)
+                        .then((value2) {
+                      _positionItems.add(_PositionItem(
+                          _PositionItemType.position,
+                          value2.toString(),
+                          value2.toString()));
+                      return value2;
+                    });
+                  });
 
                   setState(
                     () {},
@@ -74,8 +89,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
                 label: Text("Current Position")),
           ),
           Positioned(
-            bottom: 220.0,
-            right: 10.0,
+            bottom: 100.0,
+            right: 50.0,
             child: FloatingActionButton.extended(
               onPressed: _toggleListening,
               label: Text(() {
@@ -89,12 +104,11 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
                   return "$buttonText position updates stream";
                 }
               }()),
-              backgroundColor: _determineButtonColor(),
             ),
           ),
           Positioned(
-              bottom: 430.0,
-              right: 10.0,
+              bottom: 50.0,
+              right: 50.0,
               child: FloatingActionButton.extended(
                 onPressed: _toggleLocationServiceListener,
                 label: Text(() {
@@ -108,7 +122,6 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
                     return "$buttonText location service stream";
                   }
                 }()),
-                backgroundColor: _determineLocationServiceButtonColor(),
               )),
         ],
       ),
@@ -122,23 +135,15 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
       !(_locationServiceStatusSubscription == null ||
           _locationServiceStatusSubscription!.isPaused);
 
-  Color _determineButtonColor() {
-    return _isListening() ? Colors.green : Colors.red;
-  }
-
-  Color _determineLocationServiceButtonColor() {
-    return _isLocationServiceListening() ? Colors.green : Colors.red;
-  }
-
   void _toggleLocationServiceListener() {
     if (_locationServiceStatusSubscription == null) {
       final serviceStatusStream = Geolocator.getServiceStatusStream();
-      _locationServiceStatusSubscription = serviceStatusStream
-          .handleError((error) {
+      _locationServiceStatusSubscription = serviceStatusStream.handleError(
+          (error) {
         _locationServiceStatusSubscription?.cancel();
         _locationServiceStatusSubscription = null;
       }).listen((status) => setState(() => _positionItems.add(_PositionItem(
-              _PositionItemType.locationServiceStatus, status.toString()))));
+          _PositionItemType.locationServiceStatus, status.toString(), ""))));
       _locationServiceStatusSubscription?.pause();
     }
 
@@ -161,7 +166,7 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
         _positionStreamSubscription?.cancel();
         _positionStreamSubscription = null;
       }).listen((position) => setState(() => _positionItems.add(
-          _PositionItem(_PositionItemType.position, position.toString()))));
+          _PositionItem(_PositionItemType.position, position.toString(), ""))));
       _positionStreamSubscription?.pause();
     }
 
@@ -196,8 +201,9 @@ enum _PositionItemType {
 }
 
 class _PositionItem {
-  _PositionItem(this.type, this.displayValue);
+  _PositionItem(this.type, this.displayValue, this.placename);
 
   final _PositionItemType type;
   final String displayValue;
+  final String placename;
 }

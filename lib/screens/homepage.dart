@@ -1,18 +1,19 @@
-import 'dart:html';
 import 'dart:ui';
-
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:myapp/components/AgentsList.dart';
+//import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/screens/completebook.dart';
 import 'package:myapp/screens/reportscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/components/getlocation.dart';
+//import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 enum companyFilters { VIP, STC, MMT }
 enum queryFilters { isEqualTo }
@@ -94,37 +95,77 @@ class TabBarDemo extends StatelessWidget {
               IconButton(onPressed: () {}, icon: Icon(Icons.notifications))
             ],
             bottom: TabBar(
+              indicatorColor: Colors.lightGreen,
               tabs: [
-                Container(
-                    padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.red, width: 2),
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.red[50]),
-                    child: Tab(
-                        icon: Icon(Icons.bus_alert_rounded,
-                            color: Colors.black))),
-                Container(
-                    padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.red, width: 2),
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.red[50]),
-                    child: Tab(icon: Icon(Icons.train, color: Colors.black))),
-                Container(
-                    padding: EdgeInsets.fromLTRB(40, 5, 40, 5),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.red, width: 2),
-                      borderRadius: BorderRadius.circular(30),
-                      color: Colors.red[50],
-                    ),
-                    child: Tab(icon: Icon(Icons.flight, color: Colors.black))),
+                Tab(icon: Icon(Icons.bus_alert_rounded, color: Colors.black)),
+                Tab(icon: Icon(Icons.train, color: Colors.black)),
+                Tab(icon: Icon(Icons.flight, color: Colors.black)),
               ],
             )),
         body: TabBarView(
           children: [
             SafeArea(
               child: Container(
+                
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Text("Find and book for Buses",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    SizedBox(
+                      height: 7,
+                    ),
+                    Locations(),
+                    // Stack(
+                    //   overflow: Overflow.visible,
+                    //   alignment: Alignment.bottomCenter,
+                    //   children: [
+                    //     Positioned(
+                    //         left: 3,
+                    //         bottom: 5,
+                    //         child: FloatingActionButton(
+                    //           heroTag: "availables",
+                    //           shape: RoundedRectangleBorder(
+                    //               borderRadius: BorderRadius.circular(6)),
+                    //           onPressed: () {
+                    //             print(
+                    //                 "fetch available seats for defined locations");
+                    //           },
+                    //           child: Icon(Icons.chair),
+                    //         )),
+                    //     Positioned(
+                    //         right: 3,
+                    //         bottom: 5,
+                    //         child: FloatingActionButton(
+                    //           heroTag: "leaving",
+                    //           shape: RoundedRectangleBorder(
+                    //               borderRadius: BorderRadius.circular(6)),
+                    //           onPressed: () {
+                    //             print(
+                    //                 "ready to leave trips for defined locations");
+                    //           },
+                    //           child: Icon(Icons.watch),
+                    //         ))
+                    //   ],
+                    // )
+                  ],
+                ),
+              ),
+            ),
+
+            //Block for Buses
+            SafeArea(
+              child: Container(
+               
                 constraints: BoxConstraints.expand(),
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -133,298 +174,47 @@ class TabBarDemo extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Locations(),
-                    Card(
-                      elevation: 5,
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 60,
-                            padding: EdgeInsets.all(5),
-                            child: ListView(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                FloatingActionButton.extended(
-                                    heroTag: "5",
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          builder: (BuildContext context) {
-                                            return FractionallySizedBox(
-                                              heightFactor: 0.8,
-                                              child: Column(children: [
-                                                SearchLocs(
-                                                  direction: 'from',
-                                                  locations: places,
-                                                  searchcontrol: searchfrom,
-                                                ),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                SearchLocs(
-                                                  direction: 'to',
-                                                  locations: places,
-                                                  searchcontrol: searchto,
-                                                )
-                                              ]),
-                                            );
-                                          });
-                                    },
-                                    label: Text("Available Seats")),
-                                FloatingActionButton.extended(
-                                    heroTag: "4",
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          builder: (BuildContext context) {
-                                            return FractionallySizedBox(
-                                              heightFactor: 0.9,
-                                              child: Column(children: [
-                                                SearchLocs(
-                                                    direction: 'from',
-                                                    locations: places,
-                                                    searchcontrol: searchfrom),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                SearchLocs(
-                                                    direction: 'to',
-                                                    locations: places,
-                                                    searchcontrol: searchto)
-                                              ]),
-                                            );
-                                          });
-                                    },
-                                    label: Text("Recent activity")),
-                                FloatingActionButton.extended(
-                                    heroTag: "3",
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          builder: (BuildContext context) {
-                                            return FractionallySizedBox(
-                                              heightFactor: 0.9,
-                                              child: Column(children: [
-                                                SearchLocs(
-                                                    direction: 'from',
-                                                    locations: places,
-                                                    searchcontrol: searchfrom),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                SearchLocs(
-                                                    direction: 'to',
-                                                    locations: places,
-                                                    searchcontrol: searchto)
-                                              ]),
-                                            );
-                                          });
-                                    },
-                                    label: Text("Departures")),
-                              ],
-                            ),
-                          ),
-                          Container(
-                              height: 60,
-                              padding: EdgeInsets.all(5),
-                              child: ListView(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.horizontal,
-                                children: [
-                                  FloatingActionButton.extended(
-                                      heroTag: "1",
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return Column();
-                                            });
-                                      },
-                                      label: Text("Find company")),
-                                ],
-                              )),
-                        ],
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                    )
+                      child: Text("Find and book for trains",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    SizedBox(
+                      height: 7,
+                    ),
+                    Locations(),
                   ],
                 ),
               ),
             ),
-            //Block for Buses
-            Container(
-              constraints: BoxConstraints.expand(),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Locations(),
-                  Card(
-                    elevation: 5,
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 60,
-                          padding: EdgeInsets.all(5),
-                          child: ListView(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              FloatingActionButton.extended(
-                                  heroTag: "avs2",
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(children: [
-                                            SearchLocs(
-                                              direction: 'from',
-                                              locations: places,
-                                              searchcontrol: searchfrom,
-                                            ),
-                                            SizedBox(
-                                              height: 5,
-                                            ),
-                                            SearchLocs(
-                                                direction: 'to',
-                                                locations: places,
-                                                searchcontrol: searchfrom)
-                                          ]);
-                                        });
-                                  },
-                                  label: Text("Available Seats")),
-                              FloatingActionButton.extended(
-                                  heroTag: "recact2",
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column();
-                                        });
-                                  },
-                                  label: Text("Recent activity")),
-                              FloatingActionButton.extended(
-                                  heroTag: "dep2",
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(children: []);
-                                        });
-                                  },
-                                  label: Text("Departures")),
-                            ],
-                          ),
-                        ),
-                        Container(
-                            height: 60,
-                            padding: EdgeInsets.all(5),
-                            child: ListView(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                FloatingActionButton.extended(
-                                    heroTag: "fc2",
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Column(children: []);
-                                          });
-                                    },
-                                    label: Text("Find company")),
-                              ],
-                            )),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
             //Block for trains
-            Container(
-              constraints: BoxConstraints.expand(),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage('images/train1.png'), fit: BoxFit.cover),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Locations(),
-                  Card(
-                    elevation: 5,
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 60,
-                          padding: EdgeInsets.all(5),
-                          child: ListView(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              FloatingActionButton.extended(
-                                  heroTag: "avs3",
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(children: []);
-                                        });
-                                  },
-                                  label: Text("Available Seats")),
-                              FloatingActionButton.extended(
-                                  heroTag: "recact3",
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(children: []);
-                                        });
-                                  },
-                                  label: Text("Recent activity")),
-                              FloatingActionButton.extended(
-                                  heroTag: "dep3",
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(children: []);
-                                        });
-                                  },
-                                  label: Text("Departures")),
-                            ],
-                          ),
-                        ),
-                        Container(
-                            height: 60,
-                            padding: EdgeInsets.all(5),
-                            child: ListView(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                FloatingActionButton.extended(
-                                    heroTag: "fc3",
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Column(children: []);
-                                          });
-                                    },
-                                    label: Text("Find company")),
-                              ],
-                            )),
-                      ],
+            SafeArea(
+              child: Container(
+               
+                constraints: BoxConstraints.expand(),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('images/train1.png'),
+                      fit: BoxFit.cover),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Text("Find and book for flights",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                  )
-                ],
+                    SizedBox(
+                      height: 7,
+                    ),
+                    Locations(),
+                  ],
+                ),
               ),
             )
           ],
@@ -443,7 +233,14 @@ Widget region() {
       margin: EdgeInsets.all(15));
 }
 
-class Locations extends StatelessWidget {
+class Locations extends StatefulWidget {
+  const Locations({Key? key}) : super(key: key);
+
+  @override
+  LocationsState createState() => LocationsState();
+}
+
+class LocationsState extends State<Locations> {
   TextEditingController from = TextEditingController();
   TextEditingController to = TextEditingController();
   @override
@@ -453,6 +250,28 @@ class Locations extends StatelessWidget {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
+            FloatingActionButton.extended(
+              onPressed: () async {
+                var position = await Geolocator.getCurrentPosition(
+                        desiredAccuracy: LocationAccuracy.best)
+                    .then((value) async {
+                  List<Placemark> placemarks = await placemarkFromCoordinates(
+                          value.latitude, value.longitude)
+                      .then((value2) {
+                    print(value2);
+                    return value2;
+                  });
+                });
+
+                setState(
+                  () {},
+                );
+              },
+              label: Text("Current loc"),
+              icon: Icon(Icons.location_on),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
             SearchLocs(
                 direction: 'from', locations: places, searchcontrol: from),
             SizedBox(height: 5),
@@ -468,24 +287,30 @@ class Locations extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 //add time chooser
-                MyStatefulWidget(
-                  restorationId: "main",
+                SizedBox(
+                  height: 10,
+                  child: MyStatefulWidget(
+                    restorationId: "main",
+                  ),
                 ), //proceed with boooking
-                RawMaterialButton(
-                  fillColor: Colors.lightBlue,
-                  splashColor: Colors.white,
-                  shape: StadiumBorder(),
-                  onPressed: () {
-                    print("clicked");
-                    Navigator.pushNamed(context, "/matchingtrips");
-                  },
-                  child: Text("Search"),
+                SizedBox(
+                  height: 100,
+                  child: FloatingActionButton(
+                    splashColor: Colors.white,
+                    shape: StadiumBorder(),
+                    onPressed: () {
+                      print("clicked");
+                      print(onetrip.date);
+                      Navigator.pushNamed(context, "/matchingtrips");
+                    },
+                    child: Text("Search"),
+                  ),
                 )
               ],
             ))),
           ],
         )),
-        height: 180,
+        height: 300,
         padding: EdgeInsets.all(10),
         margin: EdgeInsets.all(8));
 
@@ -622,6 +447,15 @@ class TripsState extends State<Trips> {
                                           elevation: 5,
                                           child: Column(
                                             children: [
+                                              ListView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount: doc['date'].length,
+                                                  itemBuilder:
+                                                      (BuildContext context,
+                                                          idx) {
+                                                    return Text(
+                                                        doc['date'][idx].toString());
+                                                  }),
                                               ListTile(
                                                   title: Row(
                                                     children: [
@@ -723,41 +557,43 @@ class HelpClass extends StatelessWidget {
             icon: Icon(Icons.arrow_back_ios)),
         title: Text("Find help"),
       ),
-      body: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            FloatingActionButton.extended(
-              heroTag: "cheap",
-              onPressed: () {},
-              label: Text("Make a cheap travel"),
-              icon: Icon(Icons.money),
-            ),
-            SizedBox(height: 40),
-            FloatingActionButton.extended(
-                heroTag: "where",
+      body: Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              FloatingActionButton.extended(
+                heroTag: "cheap",
+                onPressed: () {},
+                label: Text("Make a cheap travel"),
+                icon: Icon(Icons.money),
+              ),
+              SizedBox(height: 40),
+              FloatingActionButton.extended(
+                  heroTag: "where",
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/location');
+                  },
+                  label: Text("Where am i?"),
+                  icon: Icon(Icons.location_on)),
+              SizedBox(height: 40),
+              FloatingActionButton.extended(
+                heroTag: "report",
                 onPressed: () {
-                  Navigator.pushNamed(context, '/location');
+                  Navigator.pushNamed(context, "/reports");
                 },
-                label: Text("Where am i?"),
-                icon: Icon(Icons.location_on)),
-            SizedBox(height: 40),
-            FloatingActionButton.extended(
-              heroTag: "report",
-              onPressed: () {
-                Navigator.pushNamed(context, "/reports");
-              },
-              label: Text("Report a matter"),
-              icon: Icon(Icons.report_problem),
-            ),
-            SizedBox(height: 40),
-            FloatingActionButton.extended(
-              heroTag: "health",
-              onPressed: () {},
-              label: Text("My Health"),
-              icon: Icon(Icons.health_and_safety),
-            ),
-          ]),
+                label: Text("Report a matter"),
+                icon: Icon(Icons.report_problem),
+              ),
+              SizedBox(height: 40),
+              FloatingActionButton.extended(
+                heroTag: "health",
+                onPressed: () {},
+                label: Text("My Health"),
+                icon: Icon(Icons.health_and_safety),
+              ),
+            ]),
+      ),
     );
   }
 }
@@ -855,65 +691,66 @@ class UserInfoClassState extends State<UserInfoClass> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserState>(
-      builder: (context, value, child) => Column(
-        children: [
-          Text("Welcome !",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40)),
-          Container(
-            margin: EdgeInsets.all(30),
-            child: CircleAvatar(
-              child: Image.asset(
-                "images/bus2.png",
-                width: 250,
-                height: 250,
-                fit: BoxFit.cover,
+    return Scaffold(
+      appBar: AppBar(title: Text("Profile")),
+      body: Consumer<UserState>(
+        builder: (context, value, child) => Column(
+          children: [
+            Text("Welcome !",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40)),
+            Container(
+              margin: EdgeInsets.all(30),
+              child: CircleAvatar(
+                child: Image.asset(
+                  "images/bus2.png",
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 10,
-            child: ListTile(
-              title: Text("Name"),
-              subtitle: Text(value.loggedInAs.toString()),
-              leading: CircleAvatar(
-                child: Image.asset("images/bus1.png"),
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                title: Text("Name"),
+                subtitle: Text(value.loggedInAs.toString()),
+                leading: CircleAvatar(
+                  child: Image.asset("images/bus1.png"),
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 10,
-            child: ListTile(
-              title: Text("Phone"),
-              subtitle: Text("0552489602"),
-              leading: CircleAvatar(
-                child: Image.asset("images/bus1.png"),
+            SizedBox(
+              height: 15,
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                title: Text("Phone"),
+                subtitle: Text("0552489602"),
+                leading: CircleAvatar(
+                  child: Image.asset("images/bus1.png"),
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            height: 15,
-          ),
-          Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 10,
-            child: ListTile(
-              title: Text("Email"),
-              subtitle: Text(value.loggedinmail.toString()),
-              leading: CircleAvatar(
-                child: Image.asset("images/bus1.png"),
-              ),
+            SizedBox(
+              height: 15,
             ),
-          )
-        ],
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                title: Text("Email"),
+                subtitle: Text(value.loggedinmail.toString()),
+                leading: CircleAvatar(
+                  child: Image.asset("images/bus1.png"),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

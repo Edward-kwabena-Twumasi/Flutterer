@@ -92,7 +92,7 @@ class MyApp extends StatelessWidget {
           "/home": (context) => ButtomNav(),
           "/agentlogin": (context) => MyCompApp()
         },
-        title: 'Flutter Travel App',
+        title: 'Great Travelling App',
         home: AppHome());
   }
 }
@@ -101,62 +101,52 @@ class AppHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Travellers App',
-          style: TextStyle(color: Colors.black),
+        backgroundColor: Colors.white,
+        title: ListTile(
+          leading: Icon(Icons.star, color: Colors.amber),
+          trailing: Icon(Icons.star, color: Colors.amber),
+          title: Text(
+            "Travel Mates",
+            style:
+                TextStyle(fontFamily: "verdana", fontWeight: FontWeight.bold),
+          ),
         ),
-        backgroundColor: Colors.transparent,
         centerTitle: true,
       ),
-      body: Center(
-        child: Container(
-          child: Stack(overflow: Overflow.visible, children: [
-            MyForm(),
-            Positioned(
-                top: 0,
-                right: 0,
-                child: RawMaterialButton(
-                  fillColor: Colors.amber,
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/agentlogin');
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Text("Companies",
-                        style: TextStyle(fontWeight: FontWeight.w700)),
-                  ),
-                  shape: StadiumBorder(),
-                )),
-            Positioned(
-                top: 10,
-                left: 10,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(200),
-                  child: Image.asset(
-                    "images/bus1.png",
-                    height: 90,
-                    width: 90,
-                    fit: BoxFit.cover,
-                  ),
-                )),
-            Positioned(
-                bottom: 10,
-                left: 10,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(200),
-                  child: Image.asset("images/train1.png",
-                      height: 90, width: 90, fit: BoxFit.cover),
-                )),
-            Positioned(
-                bottom: 10,
-                right: 10,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(200),
-                  child: Image.asset("images/bus1.png",
-                      height: 90, width: 90, fit: BoxFit.cover),
-                )),
-          ]),
-        ),
+      body: Container(
+        child: ListView(
+         shrinkWrap: true,
+          children: [
+          ListTile(
+                title: Text(
+                  "Love to travel?",
+                  style: TextStyle(
+                      fontFamily: "verdana", fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("We are glad to help")),
+         
+          Padding(
+            padding: EdgeInsets.all(5),
+            child: MyForm(),
+          ),
+          
+            ListTile(
+              title: Text("For companies"),
+              subtitle: RawMaterialButton(
+                fillColor: Colors.amber,
+                onPressed: () {
+                  Navigator.pushNamed(context, '/agentlogin');
+                },
+                child: Padding(
+                  padding: EdgeInsets.all(6),
+                  child: Text("Companies",
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+                shape: StadiumBorder(),
+              ),
+            ),
+         
+        ]),
       ),
     );
   }
@@ -219,68 +209,73 @@ class MyFormState extends State<MyForm> {
   Widget build(BuildContext context) {
     return retry
         ? Consumer<UserState>(
-            builder: (context, value, child) => Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Text("Login  ", style: TextStyle(fontFamily: "serif")),
-                  InputFields("Enter Username", username, Icons.input,
-                      TextInputType.text),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  InputFields("Enter Email", usermail, Icons.email,
-                      TextInputType.emailAddress),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  InputFields("Enter Password", userpass, Icons.password,
-                      TextInputType.visiblePassword),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: RawMaterialButton(
-                        shape: StadiumBorder(),
-                        fillColor: Colors.white,
-                        //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                        onPressed: () {
-                          // Validate will return true if the form is valid, or false if
-                          // the form is invalid.
-
-                          if (_formKey.currentState!.validate()) {
-                            print(value.signinstate);
-                            value
-                                .signInWithMPass(usermail.text, userpass.text)
-                                .then((registedstate) {
-                              checkStatus(registedstate);
-                            }).then((value) {
-                              if (allowlogin) {
-                                Navigator.pushNamed(context, '/home');
-                              }
-                            });
-                          }
-                        },
-
-                        child: Padding(
-                            padding: EdgeInsets.all(7),
-                            child: Text('Sign In',
-                                style: TextStyle(
+            builder: (context, value, child) =>  Form(
+                key: _formKey,
+               
+              child: ListView(
+                 shrinkWrap: true,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text("Login ",
+                          style: TextStyle(
+                              fontFamily: "serif",
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    InputFields("Enter Username", username, Icons.input,
+                        TextInputType.text),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    InputFields("Enter Email", usermail, Icons.email,
+                        TextInputType.emailAddress),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    InputFields("Enter Password", userpass, Icons.password,
+                        TextInputType.visiblePassword),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: RawMaterialButton(
+                          shape: StadiumBorder(),
+                          fillColor: Colors.white,
+                          //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                          onPressed: () {
+                            // Validate will return true if the form is valid, or false if
+                            // the form is invalid.
+            
+                            if (_formKey.currentState!.validate()) {
+                              print(value.signinstate);
+                              value
+                                  .signInWithMPass(usermail.text, userpass.text)
+                                  .then((registedstate) {
+                                checkStatus(registedstate);
+                              }).then((value) {
+                                if (allowlogin) {
+                                  Navigator.pushNamed(context, '/home');
+                                }
+                              });
+                            }
+                          },
+            
+                          child: Padding(
+                              padding: EdgeInsets.only(left:15,top:5,bottom:5,right:15),
+                              child: Text('Login',
+                                  style: TextStyle(
                                     color: Colors.amber,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 25,
-                                    fontStyle: FontStyle.italic))),
+                                    fontWeight: FontWeight.bold,
+                                  
+                                  ))),
+                        ),
                       ),
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Row(
+                    Row(
                       children: [
-                        Text("Dont have an account? ",
+                        Text("No account?   ",
                             style: TextStyle(
-                                color: Colors.amber,
+                                color: Colors.lightBlue,
                                 fontWeight: FontWeight.w100)),
                         TextButton(
                             onPressed: () {
@@ -292,30 +287,30 @@ class MyFormState extends State<MyForm> {
                             child: Text(' Sign Up ',
                                 style: TextStyle(
                                     fontStyle: FontStyle.italic,
-                                    color: Colors.white))),
+                                    color: Colors.black))),
                       ],
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(2),
-                    child: Text(
-                      correctLogin,
-                      style: TextStyle(
-                          backgroundColor: Colors.white,
-                          color: Colors.red,
-                          fontWeight: FontWeight.w300),
-                    ),
-                  ),
-                  TextButton(
+                    Padding(
+                      padding: EdgeInsets.all(2),
                       child: Text(
-                        "go home",
-                        style: TextStyle(color: Colors.white),
+                        correctLogin,
+                        style: TextStyle(
+                            backgroundColor: Colors.white,
+                            color: Colors.red,
+                            fontWeight: FontWeight.w300),
                       ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/home');
-                      }),
-                ],
-              ),
+                    ),
+                    TextButton(
+                        child: Text(
+                          "go home",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/home');
+                        }),
+                  ],
+                ),
+             
             ),
           )
         : SignupForm();

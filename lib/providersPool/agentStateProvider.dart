@@ -96,6 +96,8 @@ class CompanyState extends ChangeNotifier {
       'address': {'region': region, 'city': city, 'apartment': apartment},
       'regions': [region],
       'stations': [],
+      'buses': [],
+      'drivers': [],
       'id': FirebaseAuth.instance.currentUser!.uid
       // 42
     }).then((value) {

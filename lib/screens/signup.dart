@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
@@ -28,7 +26,7 @@ class SignupFormState extends State<SignupForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height,
       child: Stepper(
         type: StepperType.horizontal,
         currentStep: currentindex,
@@ -47,7 +45,7 @@ class SignupFormState extends State<SignupForm> {
         steps: [
           Step(
             title: Text(
-              "Email and password",
+              "Email & password",
               style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -78,7 +76,7 @@ class SignupFormState extends State<SignupForm> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: RawMaterialButton(
-                          fillColor: Colors.green,
+                          fillColor: Colors.white,
                           shape: StadiumBorder(),
                           onPressed: () {
                             // Validate will return true if the form is valid, or false if
@@ -121,7 +119,7 @@ class SignupFormState extends State<SignupForm> {
             ),
           ),
           Step(
-            title: Text("Personal information"),
+            title: Text("Personal info",softWrap: true,overflow: TextOverflow.ellipsis,),
             content: Consumer<UserState>(
               builder: (context, value, child) => Form(
                 key: _formKey2,

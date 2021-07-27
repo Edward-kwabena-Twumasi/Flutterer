@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
@@ -24,28 +22,31 @@ TripClass onetrip =
 String companyname = "";
 
 class DashApp extends StatefulWidget {
-  String companytype;
-  DashApp({required this.companytype});
+  final String companytype;
+  const DashApp({required this.companytype});
   DashAppState createState() => DashAppState();
 }
 
 class DashAppState extends State<DashApp> {
   List<TextEditingController> controls = [];
-  List<bool> valstate = [];
+  List<bool> stopstate = [];
+  List<bool> pickstate = [];
   Widget interroutes(int howmany) {
     for (var i = 0; i < howmany; i++) {
       controls
-          .add(new TextEditingController(text: "enter route " + i.toString()));
-      valstate.add(false);
+          .add(new TextEditingController(text: "enter route " + (i+1).toString()));
+      pickstate.add(false);
+      stopstate.add(false);
     }
     bool value = false;
-    return Center(
-      child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: howmany,
-          itemBuilder: (BuildContext, index) {
-            return Padding(
-              padding: const EdgeInsets.all(10.0),
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: howmany,
+        itemBuilder: (BuildContext, index) {
+          return Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Card(
+              elevation: 18,
               child: Column(
                 children: [
                   TextFormField(
@@ -55,54 +56,47 @@ class DashAppState extends State<DashApp> {
                       title: Text("PIck up point"),
                       subtitle: Text("switch on if a pickup point"),
                       activeColor: Colors.lightBlue,
-                      value: valstate[index],
+                      value: pickstate[index],
                       onChanged: (bool val) {
                         setState(() {
-                          valstate[index] = val;
+                          pickstate[index] = val;
+                          pickstate = pickstate;
                         });
-                        print(valstate[index]);
                       }),
                   SwitchListTile(
                       title: Text("Stop point"),
                       subtitle: Text("switch on if a stop point"),
-                      value: valstate[index],
+                      value: stopstate[index],
                       onChanged: (bool val) {
                         print(val);
                         setState(() {
-                          valstate[index] = val;
-                          valstate;
+                          stopstate[index] = val;
+                          stopstate = stopstate;
                         });
                       }),
                   Divider(height: 4, indent: 3, color: Colors.lightBlue)
                 ],
               ),
-            );
-          }),
-    );
+            ),
+          );
+        });
   }
 
   List<String> places = [];
-
-  @override
-  void initState() {
-    super.initState();
-
-    List<String> getplaces = [
-      "Kumasi",
-      "Obuasi",
-      "Accra",
-      "Kasoa",
-      "Mankessim",
-      "Wa"
-    ];
-    places = getplaces;
-  }
 
   final namecontroller = TextEditingController(),
       idcontroller = TextEditingController(),
       regioncontroller = TextEditingController(),
       citycontroller = TextEditingController(),
       destcontroller = TextEditingController(),
+      seatcontroller = TextEditingController(),
+      distcontroller = TextEditingController(),
+      ttimecontroller = TextEditingController(),
+      phonecontroller = TextEditingController(),
+      drivername = TextEditingController(),
+      driverphone = TextEditingController(),
+      busname = TextEditingController(),
+      busnumber = TextEditingController(),
       routecontroller = TextEditingController();
   TextEditingController searchfrom = TextEditingController();
   TextEditingController searchto = TextEditingController();
@@ -112,97 +106,59 @@ class DashAppState extends State<DashApp> {
   var selectregions = [];
   var interoutes = [];
   String showregions = '';
-  int routenum = 0;
+  int? routenum;
+  @override
+  void initState() {
+    routenum = 1;
+    routecontroller.text = routenum.toString();
+    routecontroller.addListener(() {
+      if (routecontroller.text.isNotEmpty) {
+        setState(() {
+          routenum = int.parse(routecontroller.text);
+        });
+      }
+    });
+    driverphone.addListener(() {
+      setState(() {});
+    });
+
+    busnumber.addListener(() {
+      setState(() {});
+    });
+    List<String> getplaces = [
+      "Kumasi",
+      "Obuasi",
+      "Accra",
+      "Kasoa",
+      "Mankessim",
+      "Wa"
+    ];
+    places = getplaces;
+    super.initState();
+  }
+
+  String? foldername, imagename, imageurl = "";
 
   void pressed() {
     selectregions.add("REGION");
     return null;
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _openDrawer() {
+    _scaffoldKey.currentState!.openDrawer();
+  }
+
+  void _closeDrawer() {
+    Navigator.of(context).pop();
+  }
+
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-            drawer: Drawer(
-              elevation: 30,
-              semanticLabel: "drawer",
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  DrawerHeader(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                    ),
-                    child: Text('Drawer Header'),
-                  ),
-                  IconButton(
-                      tooltip: "register driver",
-                      onPressed: () {
-                        showModalBottomSheet(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.95,
-                                child: SingleChildScrollView(
-                                    child: Form(
-                                  child: Column(children: [
-                                    Text("Provide driver details"),
-                                    InputFields("name", namecontroller,
-                                        Icons.person_add, TextInputType.name),
-                                    InputFields("phone", namecontroller,
-                                        Icons.phone, TextInputType.number),
-                                    InputFields("photo", namecontroller,
-                                        Icons.photo, TextInputType.url),
-                                    FloatingActionButton.extended(
-                                        label: Text("Add driver"),
-                                        onPressed: () {},
-                                        icon: Icon(Icons.add)),
-                                  ]),
-                                )),
-                              );
-                            });
-                      },
-                      icon: Icon(Icons.app_registration)),
-                  IconButton(
-                      tooltip: "register bus",
-                      onPressed: () {
-                        showModalBottomSheet(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                  heightFactor: 0.95,
-                                  child: SingleChildScrollView(
-                                    child: Form(
-                                        child: Column(children: [
-                                      Text("Provide driver details"),
-                                      InputFields("name", namecontroller,
-                                          Icons.person_add, TextInputType.name),
-                                      InputFields("phone", namecontroller,
-                                          Icons.phone, TextInputType.number),
-                                      InputFields("photo", namecontroller,
-                                          Icons.photo, TextInputType.url),
-                                      FloatingActionButton.extended(
-                                          label: Text("Add bus"),
-                                          onPressed: () {},
-                                          icon: Icon(Icons.add)),
-                                    ])),
-                                  ));
-                            });
-                      },
-                      icon: Icon(Icons.app_registration)),
-                ],
-              ),
-            ),
+            key: _scaffoldKey,
             appBar: AppBar(
               leading: IconButton(
                   onPressed: () {
@@ -210,7 +166,154 @@ class DashAppState extends State<DashApp> {
                   },
                   icon: Icon(Icons.arrow_back_ios)),
               title: Text(companyname + "  Dashboard"),
-              actions: [],
+              actions: [
+                IconButton(onPressed: _openDrawer, icon: Icon(Icons.menu))
+              ],
+            ),
+            drawer: Drawer(
+              elevation: 30,
+              semanticLabel: "drawer",
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  IconButton(
+                      onPressed: _closeDrawer,
+                      icon: Icon(Icons.arrow_back_ios)),
+                  // DrawerHeader(
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.blue,
+                  //   ),
+                  //   child: Text('Menu'),
+                  // ),
+                  TextButton(
+                    child: Text("register bus"),
+                    onPressed: () {
+                      setState(() {
+                        foldername = "Bus";
+                      });
+                      showModalBottomSheet(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(50),
+                                  topRight: Radius.circular(50))),
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return FractionallySizedBox(
+                              heightFactor: 0.95,
+                              child: SingleChildScrollView(
+                                  child: Form(
+                                child: Column(children: [
+                                  Text("Provide Bus details"),
+                                  InputFields("name", busname, Icons.person_add,
+                                      TextInputType.name),
+                                  InputFields("number/id", busnumber,
+                                      Icons.phone, TextInputType.number),
+                                  InputFields("number of seats", seatcontroller,
+                                      Icons.phone, TextInputType.number),
+                                  UploadPic(
+                                      foldername: foldername!,
+                                      imagename: busnumber.text,
+                                      imgUrl: imageurl!),
+                                  FloatingActionButton.extended(
+                                      label: Text("Add bus"),
+                                      onPressed: () {
+                                        FirebaseFirestore.instance
+                                            .collection('companies')
+                                            .doc(widget.companytype)
+                                            .collection('Registered Companies')
+                                            .doc(FirebaseAuth
+                                                .instance.currentUser!.uid)
+                                            .update({
+                                          "drivers": FieldValue.arrayUnion([
+                                            {
+                                              "name": busname.text,
+                                              "number": busnumber.text,
+                                              "seats": busnumber.text,
+                                              "image": imageurl
+                                            }
+                                          ])
+                                        }).then((value) =>
+                                                print("Bus registered"));
+                                      },
+                                      icon: Icon(Icons.add)),
+                                ]),
+                              )),
+                            );
+                          });
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  TextButton(
+                    child: Text("register driver"),
+                    onPressed: () {
+                      setState(() {
+                        foldername = "Driver";
+                      });
+                      showModalBottomSheet(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(50),
+                                  topRight: Radius.circular(50))),
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return FractionallySizedBox(
+                                heightFactor: 0.95,
+                                child: SingleChildScrollView(
+                                  child: Form(
+                                      child: Column(children: [
+                                    Text("Provide driver details"),
+                                    InputFields("name", drivername,
+                                        Icons.person_add, TextInputType.name),
+                                    InputFields("phone", driverphone,
+                                        Icons.phone, TextInputType.number),
+                                    UploadPic(
+                                        foldername: foldername!,
+                                        imagename: driverphone.text,
+                                        imgUrl: imageurl!),
+                                    FloatingActionButton.extended(
+                                        label: Text("Add bus"),
+                                        onPressed: () {
+                                          FirebaseFirestore.instance
+                                              .collection('companies')
+                                              .doc(widget.companytype)
+                                              .collection(
+                                                  'Registered Companies')
+                                              .doc(FirebaseAuth
+                                                  .instance.currentUser!.uid)
+                                              .update({
+                                            "buses": FieldValue.arrayUnion([
+                                              {
+                                                "name": drivername.text,
+                                                "phone": driverphone.text,
+                                                "image": imageurl
+                                              }
+                                            ])
+                                          }).then((value) => print("Hello"));
+                                        },
+                                        icon: Icon(Icons.add)),
+                                    Row(
+                                      children: List.unmodifiable(() sync* {
+                                        for (var i = 0; i < 5; i++) {
+                                          yield Expanded(
+                                            child: IconButton(
+                                              iconSize: 30,
+                                              icon: Icon(Icons.ac_unit),
+                                              color: Colors.green,
+                                              onPressed: () {},
+                                            ),
+                                          );
+                                        }
+                                      }()),
+                                    )
+                                  ])),
+                                ));
+                          });
+                    },
+                  ),
+                ],
+              ),
             ),
             floatingActionButton: Stack(
               children: [
@@ -304,8 +407,11 @@ class DashAppState extends State<DashApp> {
                                           Icons.input, TextInputType.text),
                                       Text("Station Location"),
                                       Text("Region"),
-                                      InputFields("Region", regioncontroller,
-                                          Icons.input, TextInputType.text),
+                                      InputFields(
+                                          "Region/capitalise",
+                                          regioncontroller,
+                                          Icons.input,
+                                          TextInputType.text),
                                       InputFields("City", citycontroller,
                                           Icons.input, TextInputType.text),
                                       InputFields("id", idcontroller,
@@ -331,16 +437,19 @@ class DashAppState extends State<DashApp> {
                                                     FieldValue.arrayUnion([
                                                   {
                                                     "name": namecontroller.text,
-                                                    "region":
-                                                        regioncontroller.text,
+                                                    "region": regioncontroller
+                                                        .text
+                                                        .toUpperCase(),
                                                     "city": citycontroller.text,
                                                     "id": idcontroller.text,
                                                     "destinations":
-                                                        destcontroller.text,
+                                                        destcontroller.text
+                                                            .toLowerCase()
+                                                            .split(",")
                                                   }
                                                 ])
                                               }).then((value) =>
-                                                      print("Hello"));
+                                                      print("Station added"));
                                               print({
                                                 namecontroller.text,
                                                 regioncontroller.text,
@@ -393,41 +502,77 @@ class DashAppState extends State<DashApp> {
                                         locations: places,
                                         searchcontrol: searchto,
                                       ),
-                                      Expanded(
+                                      Container(
+                                        width: 500,
+                                        height: 100,
                                         child: Row(children: [
-                                          InputFields(
-                                              "how many inter routes?",
-                                              routecontroller,
-                                              Icons.input,
-                                              TextInputType.text),
+                                          Expanded(
+                                            child: InputFields(
+                                                "how many inter routes?",
+                                                routecontroller,
+                                                Icons.input,
+                                                TextInputType.text),
+                                          ),
                                           TextButton(
                                               onPressed: () {
+                                                int num = int.parse(
+                                                    routecontroller.text);
                                                 setState(() {
-                                                  routenum = routecontroller
-                                                      .text as int;
+                                                  routenum = num;
                                                 });
                                               },
                                               child: Text("add them"))
                                         ]),
                                       ),
-                                      interroutes(routenum),
+                                      interroutes(routenum!),
                                       InputFields("Bus id", idcontroller,
                                           Icons.input, TextInputType.text),
                                       Text("SELECT IMAGE"),
-                                      InputFields("Seats", idcontroller,
+                                      InputFields("Seats", seatcontroller,
                                           Icons.input, TextInputType.number),
-                                      InputFields("distance/km", idcontroller,
+                                      InputFields("distance/km", distcontroller,
                                           Icons.input, TextInputType.number),
-                                      InputFields("duration", idcontroller,
+                                      InputFields("duration", ttimecontroller,
                                           Icons.input, TextInputType.datetime),
                                       InputFields(
                                           "Driver Contact",
-                                          idcontroller,
+                                          phonecontroller,
                                           Icons.input,
                                           TextInputType.phone),
                                       Text("SELECT IMAGE"),
                                       FloatingActionButton.extended(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            for (int i = 0;
+                                                i < controls.length;
+                                                i++) {
+                                              interoutes.add([
+                                                {
+                                                  "routename": controls[i].text,
+                                                  "stop":
+                                                      stopstate[i].toString(),
+                                                  "pickup":
+                                                      pickstate[i].toString()
+                                                }
+                                              ]);
+                                            }
+                                            FirebaseFirestore.instance
+                                                .collection("trips")
+                                                .add({
+                                              "from": searchfrom.text,
+                                              "to": searchto.text,
+                                              "interoutes": interoutes,
+                                              "distance": int.parse(
+                                                  distcontroller.text),
+                                              "duration": int.parse(
+                                                  ttimecontroller.text),
+                                              "seats": int.parse(
+                                                  seatcontroller.text),
+                                              "company": companyname,
+                                              "busid": idcontroller.text,
+                                              "driverphone":
+                                                  phonecontroller.text,
+                                            });
+                                          },
                                           label: Text("Add Trip"))
                                     ]),
                                   ),
@@ -491,6 +636,11 @@ class DashboardState extends State<Dashboard> {
                           .map((doc) => Center(
                                 child: Column(
                                   children: [
+                                    Text("Not verified",
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red)),
                                     Text(doc['registered_name'],
                                         style: TextStyle(
                                             fontSize: 30,
@@ -502,29 +652,49 @@ class DashboardState extends State<Dashboard> {
                                           return ExpansionTile(
                                               title:
                                                   Text(doc['regions'][index]),
-                                              children: [
-                                                ListView.builder(
-                                                    shrinkWrap: true,
-                                                    itemCount:
-                                                        doc['stations'].length,
-                                                    itemBuilder:
-                                                        (context, index) {
-                                                      return ListTile(
-                                                        title: Text(
-                                                            doc['stations']
-                                                                    [index]
-                                                                .name),
-                                                        subtitle: Text(
-                                                            doc['stations']
-                                                                        [index]
-                                                                    .region +
-                                                                " " +
-                                                                doc['stations']
-                                                                        [index]
-                                                                    .city),
-                                                      );
-                                                    })
-                                              ]);
+                                              children:
+                                                  List.unmodifiable(() sync* {
+                                                for (var i = 0;
+                                                    i < doc['stations'].length;
+                                                    i++) {
+                                                  if (doc['stations'][i]
+                                                          ['region'] ==
+                                                      doc['regions'][index]) {
+                                                    yield ListTile(
+                                                      title: Text(
+                                                          doc['stations'][i]
+                                                              ['name']),
+                                                    );
+                                                  }
+                                                }
+                                              }())
+                                              // [
+                                              //   Text("Stations",
+                                              //       style: TextStyle(
+                                              //           fontWeight:
+                                              //               FontWeight.bold)),
+                                              //   ListView.builder(
+                                              //       shrinkWrap: true,
+                                              //       itemCount:
+                                              //           doc['stations'].length,
+                                              //       itemBuilder:
+                                              //           (context, indx) {
+                                              //         return ListTile(
+                                              //           title: Text(
+                                              //               doc['stations']
+                                              //                   [indx]['name']),
+                                              //           subtitle: Text(
+                                              //               doc['stations']
+                                              //                           [indx]
+                                              //                       ['region'] +
+                                              //                   "  " +
+                                              //                   doc['stations']
+                                              //                           [indx]
+                                              //                       ['city']),
+                                              //         );
+                                              //       })
+                                              // ]
+                                              );
                                         }),
                                   ],
                                 ),
@@ -533,34 +703,3 @@ class DashboardState extends State<Dashboard> {
                 })));
   }
 }
-
-// Widget interroutes(int howmany) {
-//   List<TextEditingController> controls = [];
-//   for (var i = 0; i < howmany; i++) {
-//     controls
-//         .add(new TextEditingController(text: "enter route " + i.toString()));
-//   }
-//   bool value = false;
-//   return Center(
-//     child: ListView.builder(
-//         shrinkWrap: true,
-//         itemCount: howmany,
-//         itemBuilder: (BuildContext, index) {
-//           return Form(
-//               child: Column(
-//             children: [
-//               TextFormField(
-//                 controller: controls[index],
-//               ),
-//               SwitchListTile(
-//                   title: Text("PIck up"),
-//                   value: value,
-//                   onChanged: (bool val) {
-//                     value = val;
-//                   }),
-//               Divider()
-//             ],
-//           ));
-//         }),
-//   );
-// }

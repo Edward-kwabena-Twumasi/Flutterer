@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/components/applicationwidgets.dart';
