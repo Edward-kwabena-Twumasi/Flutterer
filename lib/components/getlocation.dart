@@ -29,55 +29,48 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Get location details")),
-      body: Center(
-        child: ListView.builder(
-          itemCount: _positionItems.length,
-          itemBuilder: (context, index) {
-            final positionItem = _positionItems[index];
-
-            if (positionItem.type == _PositionItemType.permission) {
-              return ListTile(
-                title: Text(positionItem.displayValue,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    )),
-              );
-            } else {
-              return Card(
-                child: ListTile(
-                  tileColor: Colors.lightBlue,
-                  subtitle: Text(positionItem.placename,
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
-                  title: Text(
-                    positionItem.displayValue,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              );
-            }
-          },
-        ),
-      ),
+      body:Text("Position"),
       floatingActionButton: Stack(
         children: <Widget>[
+       Positioned(
+        child: Center(
+          child: ListView.builder(
+            itemCount: _positionItems.length,
+            itemBuilder: (context, index) {
+              final positionItem = _positionItems[index];
+                return Card(
+                  child: ListTile(
+                    tileColor: Colors.lightBlue,
+                    subtitle: Text(positionItem.placename,
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                    title: Text(
+                      positionItem.displayValue,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                );
+             
+            },
+          ),
+        ),
+      ),
+      
           Positioned(
-            bottom: 150.0,
+            bottom: 50.0,
             right: 50.0,
             child: FloatingActionButton.extended(
                 onPressed: () async {
                   var position = await Geolocator.getCurrentPosition(
                           desiredAccuracy: LocationAccuracy.best)
                       .then((value) async {
-                    List<Placemark> placemarks = await placemarkFromCoordinates(
+                   var address = await GeocodingPlatform.instance.placemarkFromCoordinates(
                             value.latitude, value.longitude)
                         .then((value2) {
                       _positionItems.add(_PositionItem(
                           _PositionItemType.position,
-                          value2.toString(),
-                          value2.toString()));
+                          value2.first.locality.toString(),
+                          value2.first.name.toString()));
                       return value2;
                     });
                   });
@@ -88,100 +81,14 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
                 },
                 label: Text("Current Position")),
           ),
-          Positioned(
-            bottom: 100.0,
-            right: 50.0,
-            child: FloatingActionButton.extended(
-              onPressed: _toggleListening,
-              label: Text(() {
-                if (_positionStreamSubscription == null) {
-                  return "Start position updates stream";
-                } else {
-                  final buttonText = _positionStreamSubscription!.isPaused
-                      ? "Resume"
-                      : "Pause";
-
-                  return "$buttonText position updates stream";
-                }
-              }()),
-            ),
-          ),
-          Positioned(
-              bottom: 50.0,
-              right: 50.0,
-              child: FloatingActionButton.extended(
-                onPressed: _toggleLocationServiceListener,
-                label: Text(() {
-                  if (_locationServiceStatusSubscription == null) {
-                    return "Start location service stream";
-                  } else {
-                    final buttonText =
-                        _locationServiceStatusSubscription!.isPaused
-                            ? "Resume"
-                            : "Pause";
-                    return "$buttonText location service stream";
-                  }
-                }()),
-              )),
+         
         ],
       ),
     );
   }
 
-  bool _isListening() => !(_positionStreamSubscription == null ||
-      _positionStreamSubscription!.isPaused);
-
-  bool _isLocationServiceListening() =>
-      !(_locationServiceStatusSubscription == null ||
-          _locationServiceStatusSubscription!.isPaused);
-
-  void _toggleLocationServiceListener() {
-    if (_locationServiceStatusSubscription == null) {
-      final serviceStatusStream = Geolocator.getServiceStatusStream();
-      _locationServiceStatusSubscription = serviceStatusStream.handleError(
-          (error) {
-        _locationServiceStatusSubscription?.cancel();
-        _locationServiceStatusSubscription = null;
-      }).listen((status) => setState(() => _positionItems.add(_PositionItem(
-          _PositionItemType.locationServiceStatus, status.toString(), ""))));
-      _locationServiceStatusSubscription?.pause();
-    }
-
-    setState(() {
-      if (_locationServiceStatusSubscription == null) {
-        return;
-      }
-      if (_locationServiceStatusSubscription!.isPaused) {
-        _locationServiceStatusSubscription!.resume();
-      } else {
-        _locationServiceStatusSubscription!.pause();
-      }
-    });
-  }
-
-  void _toggleListening() {
-    if (_positionStreamSubscription == null) {
-      final positionStream = Geolocator.getPositionStream();
-      _positionStreamSubscription = positionStream.handleError((error) {
-        _positionStreamSubscription?.cancel();
-        _positionStreamSubscription = null;
-      }).listen((position) => setState(() => _positionItems.add(
-          _PositionItem(_PositionItemType.position, position.toString(), ""))));
-      _positionStreamSubscription?.pause();
-    }
-
-    setState(() {
-      if (_positionStreamSubscription == null) {
-        return;
-      }
-
-      if (_positionStreamSubscription!.isPaused) {
-        _positionStreamSubscription!.resume();
-      } else {
-        _positionStreamSubscription!.pause();
-      }
-    });
-  }
+ 
+ 
 
   @override
   void dispose() {

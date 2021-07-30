@@ -105,48 +105,54 @@ class AppHome extends StatelessWidget {
         title: ListTile(
           leading: Icon(Icons.star, color: Colors.amber),
           trailing: Icon(Icons.star, color: Colors.amber),
-          title: Text(
-            "Travel Mates",
-            style:
-                TextStyle(fontFamily: "verdana", fontWeight: FontWeight.bold),
+          title: Center(
+            child: Text(
+              "Travel Mates",
+              style:
+                  TextStyle(fontFamily: "verdana", fontWeight: FontWeight.bold),
+            ),
           ),
         ),
         centerTitle: true,
       ),
       body: Container(
-        child: ListView(
-         shrinkWrap: true,
-          children: [
-          ListTile(
-                title: Text(
-                  "Love to travel?",
-                  style: TextStyle(
-                      fontFamily: "verdana", fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("We are glad to help")),
-         
-          Padding(
-            padding: EdgeInsets.all(5),
-            child: MyForm(),
-          ),
-          
+        child: SingleChildScrollView(
+          child: ListView(
+           shrinkWrap: true,
+            children: [
             ListTile(
-              title: Text("For companies"),
-              subtitle: RawMaterialButton(
-                fillColor: Colors.amber,
-                onPressed: () {
-                  Navigator.pushNamed(context, '/agentlogin');
-                },
-                child: Padding(
-                  padding: EdgeInsets.all(6),
-                  child: Text("Companies",
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-                shape: StadiumBorder(),
-              ),
+                  title: Center(
+                    child: Text(
+                      "Love to travel?",
+                      style: TextStyle(
+                          fontFamily: "verdana", fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  subtitle: Center(child: Text("We are glad to help"))),
+           
+            Padding(
+              padding: EdgeInsets.all(3),
+              child: MyForm(),
             ),
-         
-        ]),
+            
+              ListTile(
+                title: Center(child: Text("For companies")),
+                subtitle: RawMaterialButton(
+                  fillColor: Colors.amber,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/agentlogin');
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Text("Companies",
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                  shape: StadiumBorder(),
+                ),
+              ),
+           
+          ]),
+        ),
       ),
     );
   }
@@ -261,7 +267,7 @@ class MyFormState extends State<MyForm> {
                           },
             
                           child: Padding(
-                              padding: EdgeInsets.only(left:15,top:5,bottom:5,right:15),
+                              padding: EdgeInsets.only(left:15,top:3,bottom:3,right:15),
                               child: Text('Login',
                                   style: TextStyle(
                                     color: Colors.amber,
@@ -288,19 +294,7 @@ class MyFormState extends State<MyForm> {
                                 style: TextStyle(
                                     fontStyle: FontStyle.italic,
                                     color: Colors.black))),
-                      ],
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(2),
-                      child: Text(
-                        correctLogin,
-                        style: TextStyle(
-                            backgroundColor: Colors.white,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w300),
-                      ),
-                    ),
-                    TextButton(
+                                    TextButton(
                         child: Text(
                           "go home",
                           style: TextStyle(color: Colors.white),
@@ -308,6 +302,19 @@ class MyFormState extends State<MyForm> {
                         onPressed: () {
                           Navigator.pushNamed(context, '/home');
                         }),
+                      ],
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(1),
+                      child: Text(
+                        correctLogin,
+                        style: TextStyle(
+                            backgroundColor: Colors.black,
+                            color: Colors.red,
+                            fontWeight: FontWeight.w300),
+                      ),
+                    ),
+                    
                   ],
                 ),
              

@@ -20,6 +20,8 @@ void main() {
 TripClass onetrip =
     TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
 String companyname = "";
+List<String> drivers = [];
+List<String> buses = [];
 
 class DashApp extends StatefulWidget {
   final String companytype;
@@ -31,55 +33,76 @@ class DashAppState extends State<DashApp> {
   List<TextEditingController> controls = [];
   List<bool> stopstate = [];
   List<bool> pickstate = [];
+  String initialval = buses[0];
+  String initialval1 = drivers[0];
+  void changed(String? value) {
+    setState(() {
+      initialval = value!;
+    });
+  }
+
+  void changed1(String? value) {
+    setState(() {
+      initialval1 = value!;
+    });
+  }
+
   Widget interroutes(int howmany) {
+    print(howmany);
+    controls = [];
+    stopstate = [];
+    pickstate = [];
     for (var i = 0; i < howmany; i++) {
-      controls
-          .add(new TextEditingController(text: "enter route " + (i+1).toString()));
+      controls.add(
+          new TextEditingController(text: "enter route " + (i + 1).toString()));
       pickstate.add(false);
       stopstate.add(false);
     }
     bool value = false;
-    return ListView.builder(
-        shrinkWrap: true,
-        itemCount: howmany,
-        itemBuilder: (BuildContext, index) {
-          return Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Card(
-              elevation: 18,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: controls[index],
-                  ),
-                  SwitchListTile(
-                      title: Text("PIck up point"),
-                      subtitle: Text("switch on if a pickup point"),
-                      activeColor: Colors.lightBlue,
-                      value: pickstate[index],
-                      onChanged: (bool val) {
-                        setState(() {
-                          pickstate[index] = val;
-                          pickstate = pickstate;
-                        });
-                      }),
-                  SwitchListTile(
-                      title: Text("Stop point"),
-                      subtitle: Text("switch on if a stop point"),
-                      value: stopstate[index],
-                      onChanged: (bool val) {
-                        print(val);
-                        setState(() {
-                          stopstate[index] = val;
-                          stopstate = stopstate;
-                        });
-                      }),
-                  Divider(height: 4, indent: 3, color: Colors.lightBlue)
-                ],
+    return Container(
+      height: 400,
+      child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: howmany,
+          itemBuilder: (BuildContext, index) {
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Card(
+                elevation: 18,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: controls[index],
+                    ),
+                    SwitchListTile(
+                        title: Text("PIck up point"),
+                        subtitle: Text("switch on if a pickup point"),
+                        activeColor: Colors.lightBlue,
+                        value: pickstate[index],
+                        onChanged: (bool val) {
+                          setState(() {
+                            pickstate[index] = val;
+                            pickstate = pickstate;
+                          });
+                        }),
+                    SwitchListTile(
+                        title: Text("Stop point"),
+                        subtitle: Text("switch on if a stop point"),
+                        value: stopstate[index],
+                        onChanged: (bool val) {
+                          print(val);
+                          setState(() {
+                            stopstate[index] = val;
+                            stopstate = stopstate;
+                          });
+                        }),
+                    Divider(height: 4, indent: 3, color: Colors.lightBlue)
+                  ],
+                ),
               ),
-            ),
-          );
-        });
+            );
+          }),
+    );
   }
 
   List<String> places = [];
@@ -106,18 +129,11 @@ class DashAppState extends State<DashApp> {
   var selectregions = [];
   var interoutes = [];
   String showregions = '';
-  int? routenum;
+  int? routenum = 1;
+  PageController? pgcontrol;
   @override
   void initState() {
-    routenum = 1;
     routecontroller.text = routenum.toString();
-    routecontroller.addListener(() {
-      if (routecontroller.text.isNotEmpty) {
-        setState(() {
-          routenum = int.parse(routecontroller.text);
-        });
-      }
-    });
     driverphone.addListener(() {
       setState(() {});
     });
@@ -137,7 +153,7 @@ class DashAppState extends State<DashApp> {
     super.initState();
   }
 
-  String? foldername, imagename, imageurl = "";
+  String? foldername, imagename, imageurl;
 
   void pressed() {
     selectregions.add("REGION");
@@ -157,6 +173,9 @@ class DashAppState extends State<DashApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
+        routes: {
+          "/schedules": (context) => ShedulesInfo(),
+        },
         home: Scaffold(
             key: _scaffoldKey,
             appBar: AppBar(
@@ -173,146 +192,178 @@ class DashAppState extends State<DashApp> {
             drawer: Drawer(
               elevation: 30,
               semanticLabel: "drawer",
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  IconButton(
-                      onPressed: _closeDrawer,
-                      icon: Icon(Icons.arrow_back_ios)),
-                  // DrawerHeader(
-                  //   decoration: BoxDecoration(
-                  //     color: Colors.blue,
-                  //   ),
-                  //   child: Text('Menu'),
-                  // ),
-                  TextButton(
-                    child: Text("register bus"),
-                    onPressed: () {
-                      setState(() {
-                        foldername = "Bus";
-                      });
-                      showModalBottomSheet(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(50),
-                                  topRight: Radius.circular(50))),
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (BuildContext context) {
-                            return FractionallySizedBox(
-                              heightFactor: 0.95,
-                              child: SingleChildScrollView(
-                                  child: Form(
-                                child: Column(children: [
-                                  Text("Provide Bus details"),
-                                  InputFields("name", busname, Icons.person_add,
-                                      TextInputType.name),
-                                  InputFields("number/id", busnumber,
-                                      Icons.phone, TextInputType.number),
-                                  InputFields("number of seats", seatcontroller,
-                                      Icons.phone, TextInputType.number),
-                                  UploadPic(
-                                      foldername: foldername!,
-                                      imagename: busnumber.text,
-                                      imgUrl: imageurl!),
-                                  FloatingActionButton.extended(
-                                      label: Text("Add bus"),
-                                      onPressed: () {
-                                        FirebaseFirestore.instance
-                                            .collection('companies')
-                                            .doc(widget.companytype)
-                                            .collection('Registered Companies')
-                                            .doc(FirebaseAuth
-                                                .instance.currentUser!.uid)
-                                            .update({
-                                          "drivers": FieldValue.arrayUnion([
-                                            {
-                                              "name": busname.text,
-                                              "number": busnumber.text,
-                                              "seats": busnumber.text,
-                                              "image": imageurl
-                                            }
-                                          ])
-                                        }).then((value) =>
-                                                print("Bus registered"));
-                                      },
-                                      icon: Icon(Icons.add)),
-                                ]),
-                              )),
-                            );
+              child: Center(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    IconButton(
+                        onPressed: _closeDrawer,
+                        icon: Icon(Icons.arrow_back_ios)),
+                    FloatingActionButton.extended(
+                      onPressed: () {
+                        Navigator.pushNamed(context, "/schedules");
+                      },
+                      label: Text(
+                        "See shedules",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 30),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextButton(
+                        child: Text("register bus"),
+                        onPressed: () {
+                          setState(() {
+                            foldername = "Bus";
                           });
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  TextButton(
-                    child: Text("register driver"),
-                    onPressed: () {
-                      setState(() {
-                        foldername = "Driver";
-                      });
-                      showModalBottomSheet(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(50),
-                                  topRight: Radius.circular(50))),
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (BuildContext context) {
-                            return FractionallySizedBox(
-                                heightFactor: 0.95,
-                                child: SingleChildScrollView(
-                                  child: Form(
-                                      child: Column(children: [
-                                    Text("Provide driver details"),
-                                    InputFields("name", drivername,
-                                        Icons.person_add, TextInputType.name),
-                                    InputFields("phone", driverphone,
-                                        Icons.phone, TextInputType.number),
-                                    UploadPic(
+                          showModalBottomSheet(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      topRight: Radius.circular(50))),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return FractionallySizedBox(
+                                  heightFactor: 0.95,
+                                  child: SingleChildScrollView(
+                                      child: Form(
+                                    child: Column(children: [
+                                      Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Text("Provide Bus details")),
+                                      InputFields("name", busname,
+                                          Icons.person_add, TextInputType.name),
+                                      InputFields("number/id", busnumber,
+                                          Icons.phone, TextInputType.number),
+                                      InputFields(
+                                          "number of seats",
+                                          seatcontroller,
+                                          Icons.phone,
+                                          TextInputType.number),
+                                      UploadPic(
                                         foldername: foldername!,
-                                        imagename: driverphone.text,
-                                        imgUrl: imageurl!),
-                                    FloatingActionButton.extended(
-                                        label: Text("Add bus"),
-                                        onPressed: () {
-                                          FirebaseFirestore.instance
-                                              .collection('companies')
-                                              .doc(widget.companytype)
-                                              .collection(
-                                                  'Registered Companies')
-                                              .doc(FirebaseAuth
-                                                  .instance.currentUser!.uid)
-                                              .update({
-                                            "buses": FieldValue.arrayUnion([
-                                              {
-                                                "name": drivername.text,
-                                                "phone": driverphone.text,
-                                                "image": imageurl
-                                              }
-                                            ])
-                                          }).then((value) => print("Hello"));
-                                        },
-                                        icon: Icon(Icons.add)),
-                                    Row(
-                                      children: List.unmodifiable(() sync* {
-                                        for (var i = 0; i < 5; i++) {
-                                          yield Expanded(
-                                            child: IconButton(
-                                              iconSize: 30,
-                                              icon: Icon(Icons.ac_unit),
-                                              color: Colors.green,
-                                              onPressed: () {},
-                                            ),
-                                          );
-                                        }
-                                      }()),
-                                    )
-                                  ])),
-                                ));
+                                        imagename: busnumber.text,
+                                      ),
+                                      FloatingActionButton.extended(
+                                          label: Text("Add bus"),
+                                          onPressed: () {
+                                            imageurl = imgUrl;
+
+                                            FirebaseFirestore.instance
+                                                .collection('companies')
+                                                .doc(widget.companytype)
+                                                .collection(
+                                                    'Registered Companies')
+                                                .doc(FirebaseAuth
+                                                    .instance.currentUser!.uid)
+                                                .update({
+                                              "drivers": FieldValue.arrayUnion([
+                                                {
+                                                  "name": busname.text,
+                                                  "number": busnumber.text,
+                                                  "seats": busnumber.text,
+                                                  "image": imageurl
+                                                }
+                                              ])
+                                            }).then((value) =>
+                                                    print("Bus registered"));
+                                          },
+                                          icon: Icon(Icons.add)),
+                                    ]),
+                                  )),
+                                );
+                              });
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextButton(
+                        child: Text(
+                          "register driver",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 30),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            foldername = "Driver";
                           });
-                    },
-                  ),
-                ],
+                          showModalBottomSheet(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      topRight: Radius.circular(50))),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return FractionallySizedBox(
+                                    heightFactor: 0.95,
+                                    child: SingleChildScrollView(
+                                      child: Form(
+                                          child: Column(children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text("Provide driver details"),
+                                        ),
+                                        InputFields(
+                                            "name",
+                                            drivername,
+                                            Icons.person_add,
+                                            TextInputType.name),
+                                        InputFields("phone", driverphone,
+                                            Icons.phone, TextInputType.number),
+                                        UploadPic(
+                                          foldername: foldername!,
+                                          imagename: driverphone.text,
+                                        ),
+                                        FloatingActionButton.extended(
+                                            label: Text("Add driver"),
+                                            onPressed: () {
+                                              imageurl = imgUrl;
+                                              FirebaseFirestore.instance
+                                                  .collection('companies')
+                                                  .doc(widget.companytype)
+                                                  .collection(
+                                                      'Registered Companies')
+                                                  .doc(FirebaseAuth.instance
+                                                      .currentUser!.uid)
+                                                  .update({
+                                                "buses": FieldValue.arrayUnion([
+                                                  {
+                                                    "name": drivername.text,
+                                                    "phone": driverphone.text,
+                                                    "image": imageurl
+                                                  }
+                                                ])
+                                              }).then((value) =>
+                                                      print("Hello"));
+                                            },
+                                            icon: Icon(Icons.add)),
+                                        Row(
+                                          children: List.unmodifiable(() sync* {
+                                            for (var i = 0; i < 5; i++) {
+                                              yield Expanded(
+                                                child: IconButton(
+                                                  iconSize: 30,
+                                                  icon: Icon(Icons.ac_unit),
+                                                  color: Colors.green,
+                                                  onPressed: () {},
+                                                ),
+                                              );
+                                            }
+                                          }()),
+                                        )
+                                      ])),
+                                    ));
+                              });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             floatingActionButton: Stack(
@@ -416,6 +467,24 @@ class DashAppState extends State<DashApp> {
                                           Icons.input, TextInputType.text),
                                       InputFields("id", idcontroller,
                                           Icons.input, TextInputType.text),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: InputFields(
+                                                "Latitude",
+                                                citycontroller,
+                                                Icons.input,
+                                                TextInputType.text),
+                                          ),
+                                          Expanded(
+                                            child: InputFields(
+                                                "Longitude",
+                                                idcontroller,
+                                                Icons.input,
+                                                TextInputType.text),
+                                          ),
+                                        ],
+                                      ),
                                       InputFields(
                                           "List all destinations",
                                           destcontroller,
@@ -515,6 +584,7 @@ class DashAppState extends State<DashApp> {
                                           ),
                                           TextButton(
                                               onPressed: () {
+                                                print(routenum);
                                                 int num = int.parse(
                                                     routecontroller.text);
                                                 setState(() {
@@ -525,20 +595,24 @@ class DashAppState extends State<DashApp> {
                                         ]),
                                       ),
                                       interroutes(routenum!),
-                                      InputFields("Bus id", idcontroller,
-                                          Icons.input, TextInputType.text),
-                                      Text("SELECT IMAGE"),
+                                      OptionButton(
+                                          options: buses,
+                                          onchange: changed,
+                                          dropdownValue: initialval),
+                                      // InputFields("Bus id", idcontroller,
+                                      //     Icons.input, TextInputType.text),
                                       InputFields("Seats", seatcontroller,
                                           Icons.input, TextInputType.number),
                                       InputFields("distance/km", distcontroller,
                                           Icons.input, TextInputType.number),
                                       InputFields("duration", ttimecontroller,
                                           Icons.input, TextInputType.datetime),
-                                      InputFields(
-                                          "Driver Contact",
-                                          phonecontroller,
-                                          Icons.input,
-                                          TextInputType.phone),
+
+                                      OptionButton(
+                                          options: drivers,
+                                          onchange: changed1,
+                                          dropdownValue: initialval1),
+
                                       Text("SELECT IMAGE"),
                                       FloatingActionButton.extended(
                                           onPressed: () {
@@ -548,10 +622,8 @@ class DashAppState extends State<DashApp> {
                                               interoutes.add([
                                                 {
                                                   "routename": controls[i].text,
-                                                  "stop":
-                                                      stopstate[i].toString(),
-                                                  "pickup":
-                                                      pickstate[i].toString()
+                                                  "stop": stopstate[i],
+                                                  "pickup": pickstate[i]
                                                 }
                                               ]);
                                             }
@@ -584,7 +656,13 @@ class DashAppState extends State<DashApp> {
                 )
               ],
             ),
-            body: Dashboard(companytype: widget.companytype)));
+            body: PageView(
+              controller: pgcontrol,
+              physics: ScrollPhysics(),
+              children: [
+              Dashboard(companytype: widget.companytype),
+              ShedulesInfo()
+            ])));
   }
 }
 
@@ -619,13 +697,18 @@ class DashboardState extends State<Dashboard> {
                                 SizedBox(
                                   height: 5,
                                 ),
-                                Text("Loading ...")
+                                Text("Loading data...")
                               ],
                             )));
                   } else if (snapshot.hasError) {
                     print(snapshot.error);
                   } else if (snapshot.hasData) {
-                    companyname = snapshot.data!.docs[0].get('registered_name');
+                    if (snapshot.data!.size > 0) {
+                      setState(() {
+                        companyname =
+                            snapshot.data!.docs[0].get('registered_name');
+                      });
+                    }
 
                     print(companyname);
                   }
@@ -667,34 +750,7 @@ class DashboardState extends State<Dashboard> {
                                                     );
                                                   }
                                                 }
-                                              }())
-                                              // [
-                                              //   Text("Stations",
-                                              //       style: TextStyle(
-                                              //           fontWeight:
-                                              //               FontWeight.bold)),
-                                              //   ListView.builder(
-                                              //       shrinkWrap: true,
-                                              //       itemCount:
-                                              //           doc['stations'].length,
-                                              //       itemBuilder:
-                                              //           (context, indx) {
-                                              //         return ListTile(
-                                              //           title: Text(
-                                              //               doc['stations']
-                                              //                   [indx]['name']),
-                                              //           subtitle: Text(
-                                              //               doc['stations']
-                                              //                           [indx]
-                                              //                       ['region'] +
-                                              //                   "  " +
-                                              //                   doc['stations']
-                                              //                           [indx]
-                                              //                       ['city']),
-                                              //         );
-                                              //       })
-                                              // ]
-                                              );
+                                              }()));
                                         }),
                                   ],
                                 ),
@@ -702,4 +758,73 @@ class DashboardState extends State<Dashboard> {
                           .toList());
                 })));
   }
+}
+
+class ShedulesInfo extends StatefulWidget {
+  @override
+  _ShedulesInfoState createState() => _ShedulesInfoState();
+}
+
+class _ShedulesInfoState extends State<ShedulesInfo> {
+  final Stream<QuerySnapshot> _usersStream = FirebaseFirestore.instance
+      .collection('trips')
+      .orderBy("date", descending: false)
+      .snapshots();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            ListTile(
+              title: Text("Sheduled Trips"),
+            ),
+            StreamBuilder<QuerySnapshot>(
+              stream: _usersStream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Something went wrong');
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Text("Loading");
+                }
+
+                return new ListView(
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+                    return new ListTile(
+                      title: new Text(document.id),
+                      subtitle: Column(
+                        children: [
+                          new Text(data['from'] + " ===> " + data['to']),
+                          new Text("Departure : " + data['date'].toDate()),
+                          new Text("Bus id : " + data['busid'].toDate()),
+                          Text(data['busid'] == false ? "Not full" : "Full")
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Driver {
+  Driver(this.id);
+  String id;
+}
+
+class Bus {
+  Bus(this.id);
+  String id;
 }

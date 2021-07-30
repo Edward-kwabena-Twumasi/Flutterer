@@ -54,12 +54,15 @@ class MyCompApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.lightBlue,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back_ios)),
-          title: Icon(Icons.login),
+          title: ListTile(
+            title: Text("Travelling Companies",style: TextStyle(color:Colors.white,fontWeight: FontWeight.bold),),
+          ),
           centerTitle: true,
         ),
         body: Center(
@@ -130,167 +133,172 @@ class AgentFormState extends State<AgentForm> {
     return retry
         ? Consumer<CompanyState>(
             builder: (context, value, child) => Container(
-              height: 800,
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    ListTile(
-                      subtitle: Text("Lets get to work!"),
-                      title: Text(" Login ",
-                        style: TextStyle(
-                            fontFamily: "serif", fontWeight: FontWeight.bold,fontSize: 30))
-                             ),
-                   ListTile(
-                     subtitle: Text("Select company type"),
-                     title:
-                  
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        InputChip(
-                          selected: select1,
-                          labelPadding: EdgeInsets.all(5),
-                          selectedColor: Colors.green,
-                          onPressed: () {
-                            setState(() {
-                              companytype = "Bus";
-                              print(companytype);
-                              select1 = true;
-                              select3 = false;
-                              select2 = false;
-                            });
-                          },
-                          label: Text("Bus"),
-                          avatar: CircleAvatar(
-                            child: Text("B"),
+              height: 900,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      ListTile(
+                          subtitle: Center(child: Text("Lets get to work!")),
+                          title: Center(
+                            child: Text(" Login ",
+                                style: TextStyle(
+                                    fontFamily: "serif",
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 30)),
+                          )),
+                      ListTile(
+                        tileColor: Colors.red[100],
+                        subtitle: Center(child: Text("Select company type")),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            InputChip(
+                              selected: select1,
+                              labelPadding: EdgeInsets.all(5),
+                              selectedColor: Colors.green,
+                              onPressed: () {
+                                setState(() {
+                                  companytype = "Bus";
+                                  print(companytype);
+                                  select1 = true;
+                                  select3 = false;
+                                  select2 = false;
+                                });
+                              },
+                              label: Text("Bus"),
+                              avatar: CircleAvatar(
+                                child: Text("B"),
+                              ),
+                            ),
+                            InputChip(
+                                selected: select2,
+                                labelPadding: EdgeInsets.all(5),
+                                selectedColor: Colors.green,
+                                onPressed: () {
+                                  setState(() {
+                                    companytype = "Flight";
+                                    print(companytype);
+                                    select2 = true;
+                                    select1 = false;
+                                    select3 = false;
+                                  });
+                                },
+                                label: Text("Flight"),
+                                avatar: CircleAvatar(
+                                  child: Text("F"),
+                                )),
+                            InputChip(
+                                selected: select3,
+                                labelPadding: EdgeInsets.all(5),
+                                selectedColor: Colors.green,
+                                onPressed: () {
+                                  setState(() {
+                                    companytype = "Train";
+                                    print(companytype);
+                                    select3 = true;
+                                    select1 = false;
+                                    select2 = false;
+                                  });
+                                },
+                                label: Text("Train"),
+                                avatar: CircleAvatar(
+                                  child: Text("T"),
+                                )),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      InputFields("Company Email", email, Icons.email,
+                          TextInputType.emailAddress),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      InputFields(" Password", password, Icons.password,
+                          TextInputType.text),
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: RawMaterialButton(
+                            shape: StadiumBorder(),
+                            fillColor: Colors.white,
+                            //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                            onPressed: () {
+                              // Validate will return true if the form is valid, or false if
+                              // the form is invalid.
+              
+                              if (_formKey.currentState!.validate()) {
+                                // if (checkStatus(myController1.text)) {
+                                //   Navigator.push(context, MaterialPageRoute(
+                                //     builder: (context) {
+                                //       return TabBarDemo();
+                                //     },
+                                //   ));
+                                // }
+                                value
+                                    .signInWithMPass(email.text, password.text)
+                                    .then((registedstate) {
+                                  if (registedstate == companyStates.successful) {
+                                    Navigator.pushNamed(context, '/companyinfo');
+                                  } else if (registedstate ==
+                                      companyStates.registerNow) {
+                                    setState(() {
+                                      correctLogin = "You are not registered";
+                                    });
+                                  } else if (registedstate ==
+                                      companyStates.wrongPassword) {
+                                    setState(() {
+                                      correctLogin = "You entered wrong password";
+                                    });
+                                  }
+                                });
+                              }
+                            },
+              
+                            child: Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text(' Login ',
+                                    style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                       ))),
                           ),
                         ),
-                        InputChip(
-                            selected: select2,
-                            labelPadding: EdgeInsets.all(5),
-                            selectedColor: Colors.green,
-                            onPressed: () {
-                              setState(() {
-                                companytype = "Flight";
-                                print(companytype);
-                                select2 = true;
-                                select1 = false;
-                                select3 = false;
-                              });
-                            },
-                            label: Text("Flight"),
-                            avatar: CircleAvatar(
-                              child: Text("F"),
-                            )),
-                        InputChip(
-                            selected: select3,
-                            labelPadding: EdgeInsets.all(5),
-                            selectedColor: Colors.green,
-                            onPressed: () {
-                              setState(() {
-                                companytype = "Train";
-                                print(companytype);
-                                select3 = true;
-                                select1 = false;
-                                select2 = false;
-                              });
-                            },
-                            label: Text("Train"),
-                            avatar: CircleAvatar(
-                              child: Text("T"),
-                            )),
-                      ],
-                    ),
-                     ),
-                    SizedBox(height: 20),
-                    InputFields("Company Email", email, Icons.email,
-                        TextInputType.emailAddress),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    InputFields("Enter Password", password, Icons.password,
-                        TextInputType.text),
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: RawMaterialButton(
-                          shape: StadiumBorder(),
-                          fillColor: Colors.white,
-                          //padding:  EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                          onPressed: () {
-                            // Validate will return true if the form is valid, or false if
-                            // the form is invalid.
-
-                            if (_formKey.currentState!.validate()) {
-                              // if (checkStatus(myController1.text)) {
-                              //   Navigator.push(context, MaterialPageRoute(
-                              //     builder: (context) {
-                              //       return TabBarDemo();
-                              //     },
-                              //   ));
-                              // }
-                              value
-                                  .signInWithMPass(email.text, password.text)
-                                  .then((registedstate) {
-                                if (registedstate == companyStates.successful) {
-                                  Navigator.pushNamed(context, '/companyinfo');
-                                } else if (registedstate ==
-                                    companyStates.registerNow) {
-                                  setState(() {
-                                    correctLogin = "You are not registered";
-                                  });
-                                } else if (registedstate ==
-                                    companyStates.wrongPassword) {
-                                  setState(() {
-                                    correctLogin = "You entered wrong password";
-                                  });
-                                }
-                              });
-                            }
-                          },
-
-                          child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Text(' Login ',
-                                  style: TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 25))),
+                      ),
+                      Text(correctLogin),
+                      Center(
+                        child: Row(
+                          children: [
+                            Text(" No account ? "),
+                            TextButton(
+                              onPressed: () {
+                                // value.setaction("Signup");
+                                setState(() {
+                                  allowlogin = false;
+                                  retry = false;
+                                });
+                              },
+                              child: Text('Sign up'),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    Text(correctLogin),
-                    Row(
-                      children: [
-                        Text(" No account ? "),
-                        TextButton(
-                          onPressed: () {
-                            // value.setaction("Signup");
-                            setState(() {
-                              allowlogin = false;
-                              retry = false;
-                            });
-                          },
-                          child: Text('Sign up'),
+                      //dsiplay any login errors here
+                      Padding(
+                        padding: EdgeInsets.all(5),
+                        child: Text(
+                          correctLogin,
+                          style: TextStyle(
+                              backgroundColor: Colors.white,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w300),
                         ),
-                      ],
-                    ),
-                    //dsiplay any login errors here
-                    Padding(
-                      padding: EdgeInsets.all(5),
-                      child: Text(
-                        correctLogin,
-                        style: TextStyle(
-                            backgroundColor: Colors.white,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w300),
                       ),
-                    ),
-                  
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

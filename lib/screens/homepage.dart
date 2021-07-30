@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 //import 'package:myapp/components/AgentsList.dart';
 import 'package:myapp/components/applicationwidgets.dart';
+
 import 'package:myapp/screens/completebook.dart';
 import 'package:myapp/screens/reportscreen.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,8 @@ import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/components/getlocation.dart';
 //import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+
+import '../main.dart';
 
 enum companyFilters { VIP, STC, MMT }
 enum queryFilters { isEqualTo }
@@ -27,7 +30,9 @@ void main() {
 // TripClass onetrip =
 //     TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
-Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid");
+List<Interoutes> routes = [];
+Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid", routes);
+String triptype = "Bus";
 
 class ButtomNav extends StatefulWidget {
   @override
@@ -54,10 +59,11 @@ class ButtomNavState extends State<ButtomNav> {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        "/matchingtrips": (context) => Trips(onetrip),
+        "/matchingtrips": (context) => Trips(onetrip, triptype),
         "/location": (context) => GeolocatorWidget(),
         "/completebook": (context) => Booking(),
-        "/reports": (context) => Reporter()
+        "/reports": (context) => Reporter(),
+        "/map": (context) => MyApp()
       },
       home: Scaffold(
           bottomNavigationBar: BottomNavigationBar(
@@ -81,7 +87,38 @@ class ButtomNavState extends State<ButtomNav> {
   }
 }
 
-class TabBarDemo extends StatelessWidget {
+class TabBarDemo extends StatefulWidget {
+  const TabBarDemo({Key? key}) : super(key: key);
+
+  @override
+  TabBarDemoState createState() => TabBarDemoState();
+}
+
+class TabBarDemoState extends State<TabBarDemo> {
+  List triptype = ["Bus", "Flight", "Train"];
+  List<String> typelist = ["Local", "International"];
+  List<String> returnlist = ["Retrun trip", "One Time"];
+  void initState() {
+    initialreturn = returnlist[0];
+    initialtype = typelist[0];
+    super.initState();
+  }
+
+  String? initialreturn;
+  String? initialtype;
+
+  void typeaction(String? choice) {
+    setState(() {
+      initialtype = choice;
+    });
+  }
+
+  void returnaction(String? choice) {
+    setState(() {
+      initialreturn = choice;
+    });
+  }
+
   TextEditingController searchfrom = TextEditingController();
   TextEditingController searchto = TextEditingController();
   @override
@@ -106,7 +143,6 @@ class TabBarDemo extends StatelessWidget {
           children: [
             SafeArea(
               child: Container(
-                
                 decoration: BoxDecoration(
                   image: DecorationImage(
                       image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
@@ -124,39 +160,7 @@ class TabBarDemo extends StatelessWidget {
                     SizedBox(
                       height: 7,
                     ),
-                    Locations(),
-                    // Stack(
-                    //   overflow: Overflow.visible,
-                    //   alignment: Alignment.bottomCenter,
-                    //   children: [
-                    //     Positioned(
-                    //         left: 3,
-                    //         bottom: 5,
-                    //         child: FloatingActionButton(
-                    //           heroTag: "availables",
-                    //           shape: RoundedRectangleBorder(
-                    //               borderRadius: BorderRadius.circular(6)),
-                    //           onPressed: () {
-                    //             print(
-                    //                 "fetch available seats for defined locations");
-                    //           },
-                    //           child: Icon(Icons.chair),
-                    //         )),
-                    //     Positioned(
-                    //         right: 3,
-                    //         bottom: 5,
-                    //         child: FloatingActionButton(
-                    //           heroTag: "leaving",
-                    //           shape: RoundedRectangleBorder(
-                    //               borderRadius: BorderRadius.circular(6)),
-                    //           onPressed: () {
-                    //             print(
-                    //                 "ready to leave trips for defined locations");
-                    //           },
-                    //           child: Icon(Icons.watch),
-                    //         ))
-                    //   ],
-                    // )
+                    Locations(triptype: triptype[0]),
                   ],
                 ),
               ),
@@ -165,7 +169,6 @@ class TabBarDemo extends StatelessWidget {
             //Block for Buses
             SafeArea(
               child: Container(
-               
                 constraints: BoxConstraints.expand(),
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -184,7 +187,7 @@ class TabBarDemo extends StatelessWidget {
                     SizedBox(
                       height: 7,
                     ),
-                    Locations(),
+                    Locations(triptype: triptype[2]),
                   ],
                 ),
               ),
@@ -192,7 +195,6 @@ class TabBarDemo extends StatelessWidget {
             //Block for trains
             SafeArea(
               child: Container(
-               
                 constraints: BoxConstraints.expand(),
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -212,7 +214,30 @@ class TabBarDemo extends StatelessWidget {
                     SizedBox(
                       height: 7,
                     ),
-                    Locations(),
+                    Container(
+                      height: 50,
+                      margin: EdgeInsets.only(left: 5, right: 5, bottom: 3),
+                      child: Card(
+                        elevation: 7,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          children: [
+                            Expanded(
+                                child: OptionButton(
+                                    options: typelist,
+                                    onchange: typeaction,
+                                    dropdownValue: initialtype!)),
+                            Expanded(
+                                child: OptionButton(
+                                    options: returnlist,
+                                    onchange: returnaction,
+                                    dropdownValue: initialreturn!))
+                          ],
+                        ),
+                      ),
+                    ),
+                    Locations(triptype: triptype[1]),
                   ],
                 ),
               ),
@@ -234,82 +259,109 @@ Widget region() {
 }
 
 class Locations extends StatefulWidget {
-  const Locations({Key? key}) : super(key: key);
+  const Locations({Key? key, required this.triptype}) : super(key: key);
 
+  final String triptype;
   @override
   LocationsState createState() => LocationsState();
 }
 
 class LocationsState extends State<Locations> {
+  bool stripcity = false;
   TextEditingController from = TextEditingController();
   TextEditingController to = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Container(
         child: Center(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            FloatingActionButton.extended(
-              onPressed: () async {
-                var position = await Geolocator.getCurrentPosition(
-                        desiredAccuracy: LocationAccuracy.best)
-                    .then((value) async {
-                  List<Placemark> placemarks = await placemarkFromCoordinates(
-                          value.latitude, value.longitude)
-                      .then((value2) {
-                    print(value2);
-                    return value2;
-                  });
-                });
-
-                setState(
-                  () {},
-                );
-              },
-              label: Text("Current loc"),
-              icon: Icon(Icons.location_on),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            SearchLocs(
-                direction: 'from', locations: places, searchcontrol: from),
-            SizedBox(height: 5),
-            SearchLocs(
-              direction: 'to',
-              locations: places,
-              searchcontrol: to,
-            ),
-            Expanded(
-                child: Center(
-                    child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                //add time chooser
-                SizedBox(
-                  height: 10,
-                  child: MyStatefulWidget(
-                    restorationId: "main",
-                  ),
-                ), //proceed with boooking
-                SizedBox(
-                  height: 100,
-                  child: FloatingActionButton(
-                    splashColor: Colors.white,
-                    shape: StadiumBorder(),
-                    onPressed: () {
-                      print("clicked");
-                      print(onetrip.date);
-                      Navigator.pushNamed(context, "/matchingtrips");
-                    },
-                    child: Text("Search"),
-                  ),
-                )
-              ],
-            ))),
-          ],
-        )),
+            child: Card(
+              child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+              Center(
+                child: Row(
+                  children: [
+                    FloatingActionButton.extended(
+                      onPressed: () async {
+                        var position = await Geolocator.getCurrentPosition(
+                                desiredAccuracy: LocationAccuracy.best)
+                            .then((value) async {
+                          var address = await placemarkFromCoordinates(
+                                  value.latitude, value.longitude)
+                              .then((value2) {
+                            from.text = value2.first.locality! +
+                                "," +
+                                value2.first.subLocality!;
+                            return value2;
+                          });
+                        });
+            
+                        setState(
+                          () {
+                            stripcity = true;
+                          },
+                        );
+                      },
+                      label: Text("Current loc"),
+                      icon: Icon(Icons.location_on),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    Expanded(
+                        child: FloatingActionButton.extended(
+                            onPressed: () {
+                              Navigator.pushNamed(context, "/map");
+                            },
+                            label: Text("view  map")))
+                  ],
+                ),
+              ),
+              SearchLocs(
+                  direction: 'from', locations: places, searchcontrol: from),
+              SizedBox(height: 5),
+              SearchLocs(
+                direction: 'to',
+                locations: places,
+                searchcontrol: to,
+              ),
+              Expanded(
+                  child: Center(
+                      child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //add time chooser
+                  SizedBox(
+                    height: 40,
+                    child: MyStatefulWidget(
+                      restorationId: "main",
+                    ),
+                  ), //proceed with boooking
+                  SizedBox(
+                    height: 40,
+                    child: FloatingActionButton(
+                      splashColor: Colors.white,
+                      shape: StadiumBorder(),
+                      onPressed: () {
+                        stripcity
+                            ? onetrip.fromLoc = from.text.split(",")[0].trim()
+                            : onetrip.fromLoc = from.text.trim();
+                        onetrip.toLoc = to.text;
+                        setState(() {
+                          triptype = widget.triptype;
+                        });
+                        print("clicked for : "+triptype);
+                        print(onetrip.date);
+                        Navigator.pushNamed(context, "/matchingtrips");
+                      },
+                      child: Text("Search"),
+                    ),
+                  )
+                ],
+              ))),
+                      ],
+                    ),
+            )),
         height: 300,
         padding: EdgeInsets.all(10),
         margin: EdgeInsets.all(8));
@@ -324,8 +376,9 @@ class LocationsState extends State<Locations> {
 
 //trips class to list trips serached for
 class Trips extends StatefulWidget {
-  TripClass _tripdata;
-  Trips(this._tripdata);
+  final String triptype;
+  final TripClass _tripdata;
+  const Trips(this._tripdata, this.triptype);
   @override
   TripsState createState() => TripsState();
 }
@@ -371,7 +424,7 @@ class TripsState extends State<Trips> {
                 Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back_ios)),
-          title: Text("All trips for this location"),
+          title: Text("Trips Search Results "),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -401,133 +454,140 @@ class TripsState extends State<Trips> {
                 ),
               ),
               SingleChildScrollView(
-                  child: StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection('trips')
-                          .where("from", isEqualTo: widget._tripdata.fromLoc)
-                          .where("to", isEqualTo: widget._tripdata.toLoc)
-                          .where("company", whereIn: filterquery)
-                          //.where("seats", isGreaterThan: 0)
-                          .snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (!snapshot.hasData &&
-                            !(snapshot.connectionState ==
-                                ConnectionState.done)) {
-                          return Center(
-                              child: Card(
-                                  elevation: 8,
-                                  child: Column(
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(
-                                        height: 5,
-                                      ),
-                                      Text("Loading ...")
-                                    ],
-                                  )));
-                        } else if (snapshot.hasError) {
-                          print(snapshot.error);
-                        } else if (snapshot.hasData) {
-                          // ignore: unnecessary_statements
-                          isfound = true;
-                        } else if (snapshot.connectionState ==
-                                ConnectionState.done &&
-                            !snapshot.hasData) {
-                          isfound = false;
-                        }
-                        return isfound
-                            ? ListView(
-                                shrinkWrap: true,
-                                children: snapshot.data!.docs
-                                    .map((doc) => Card(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8)),
-                                          elevation: 5,
-                                          child: Column(
-                                            children: [
-                                              ListView.builder(
-                                                  shrinkWrap: true,
-                                                  itemCount: doc['date'].length,
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                          idx) {
-                                                    return Text(
-                                                        doc['date'][idx].toString());
-                                                  }),
-                                              ListTile(
-                                                  title: Row(
-                                                    children: [
-                                                      Text(doc['from'],
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.black,
-                                                              backgroundColor:
-                                                                  Colors.amber,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                      Text("  to   "),
-                                                      Text(doc['to'],
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.black,
-                                                              backgroundColor:
-                                                                  Colors
-                                                                      .blueGrey,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                    ],
-                                                  ),
-                                                  subtitle:
-                                                      Text(doc['company'])),
-                                              Divider(
-                                                thickness: 0.8,
-                                                color: Colors.blueGrey,
-                                              ),
-                                              ListTile(
-                                                  trailing: Text(
-                                                      doc['fare'].toString() +
-                                                          ' Cdz',
-                                                      style: TextStyle(
-                                                          fontSize: 30,
-                                                          color: Colors
-                                                              .lightBlue)),
-                                                  leading: Icon(
-                                                    Icons.chair,
-                                                    size: 40,
-                                                  ),
-                                                  title: Text(
-                                                      doc['seats'].toString() +
-                                                          " Available"),
-                                                  subtitle:
-                                                      FloatingActionButton(
-                                                          onPressed: () {
-                                                            seat.busnumber =
-                                                                doc["busnumber"];
-                                                            seat.from =
-                                                                doc["from"];
-                                                            seat.to = doc["to"];
-                                                            seat.seats =
-                                                                doc["seats"];
-                                                            seat.unitprice =
-                                                                doc["fare"];
-                                                            seat.tripid = doc.id
-                                                                .toString();
-                                                            print('clicked');
-                                                            Navigator.pushNamed(
-                                                                context,
-                                                                "/completebook");
-                                                          },
-                                                          child: Text("Book")))
-                                            ],
+                  child: Column(
+                    children: [
+                      Text(widget.triptype+ "s " +" from " +widget._tripdata.fromLoc+ " to "+widget._tripdata.toLoc,
+                      style:TextStyle(fontWeight:FontWeight.bold)
+                      ),
+                      StreamBuilder(
+                          stream: FirebaseFirestore.instance
+                              .collection('trips')
+                              .where("from", isEqualTo: widget._tripdata.fromLoc)
+                              .where("to", isEqualTo: widget._tripdata.toLoc)
+                              .where("company", whereIn: filterquery)
+                              .where("triptype", isEqualTo: widget.triptype)
+                              .snapshots(),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (!snapshot.hasData &&
+                                !(snapshot.connectionState ==
+                                    ConnectionState.done)) {
+                              return Center(
+                                  child: Card(
+                                      elevation: 8,
+                                      child: Column(
+                                        children: [
+                                          CircularProgressIndicator(),
+                                          SizedBox(
+                                            height: 5,
                                           ),
-                                        ))
-                                    .toList())
-                            : Text("Couldnt find matching search");
-                      })),
+                                          Text("Loading ...")
+                                        ],
+                                      )));
+                            } else if (snapshot.hasError) {
+                              print(snapshot.error);
+                            } else if (snapshot.hasData) {
+                              // ignore: unnecessary_statements
+                              isfound = true;
+                            } else if (snapshot.connectionState ==
+                                    ConnectionState.done &&
+                                !snapshot.hasData) {
+                              isfound = false;
+                            }
+                            return isfound
+                                ? ListView(
+                                    shrinkWrap: true,
+                                    children: snapshot.data!.docs.map((doc) {
+                                      return Card(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8)),
+                                        elevation: 5,
+                                        child: Column(
+                                          children: [
+                                            ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount: doc['date'].length,
+                                                itemBuilder:
+                                                    (BuildContext context, idx) {
+                                                  return Text(doc['date'][idx]
+                                                      .toDate()
+                                                      .toString());
+                                                }),
+                                            ListTile(
+                                                title: Row(
+                                                  children: [
+                                                    Text(doc['from'],
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            backgroundColor:
+                                                                Colors.amber,
+                                                            fontWeight:
+                                                                FontWeight.bold)),
+                                                    Text("  to   "),
+                                                    Text(doc['to'],
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            backgroundColor:
+                                                                Colors.blueGrey,
+                                                            fontWeight:
+                                                                FontWeight.bold)),
+                                                  ],
+                                                ),
+                                                subtitle: Text(doc['company'])),
+                                            Divider(
+                                              thickness: 0.8,
+                                              color: Colors.blueGrey,
+                                            ),
+                                            ListTile(
+                                                trailing: Text(
+                                                    doc['fare'].toString() + ' Cdz',
+                                                    style: TextStyle(
+                                                        fontSize: 30,
+                                                        color: Colors.lightBlue)),
+                                                leading: Icon(
+                                                  Icons.chair,
+                                                  size: 40,
+                                                ),
+                                                title: Text(
+                                                    doc['seats'].toString() +
+                                                        " Available"),
+                                                subtitle: FloatingActionButton(
+                                                    onPressed: () {
+                                                      for (var i = 0;
+                                                          i <
+                                                              doc["interoutes"]
+                                                                  .length;
+                                                          i++) {
+                                                        routes.add(Interoutes(
+                                                            doc["interoutes"][i]
+                                                                ['routename'],
+                                                            doc['interoutes'][i]
+                                                                ['pickup'],
+                                                            doc['interoutes'][i]
+                                                                ['stop']));
+                                                                
+                                                      }
+                                                      seat.busnumber =
+                                                          doc["busnumber"];
+                                                      seat.from = doc["from"];
+                                                      seat.to = doc["to"];
+                                                      seat.seats = doc["seats"];
+                                                      seat.unitprice = doc["fare"];
+                                                      seat.tripid =
+                                                          doc.id.toString();
+                                                      print('clicked');
+                                                      Navigator.pushNamed(
+                                                          context, "/completebook");
+                                                    },
+                                                    child: Text("Book")))
+                                          ],
+                                        ),
+                                      );
+                                    }).toList())
+                                : Text("Couldnt find matching search");
+                          }),
+                    ],
+                  )),
             ]),
           ),
         ),
@@ -748,6 +808,11 @@ class UserInfoClassState extends State<UserInfoClass> {
                   child: Image.asset("images/bus1.png"),
                 ),
               ),
+            ),
+            Row(
+              children:[
+
+              ]
             )
           ],
         ),
@@ -763,6 +828,15 @@ class Seat {
   String from;
   String to;
   String tripid;
+  List<Interoutes> routes;
   Seat(this.busnumber, this.seats, this.unitprice, this.from, this.to,
-      this.tripid);
+      this.tripid, this.routes);
+}
+
+class Interoutes {
+  String name;
+  bool stop;
+  bool pickup;
+
+  Interoutes(this.name, this.pickup, this.stop);
 }

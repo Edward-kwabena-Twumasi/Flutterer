@@ -43,6 +43,7 @@ class InputFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: TextFormField(
+        
         style: TextStyle(color: Colors.black),
         keyboardType: inputtype,
         decoration: new InputDecoration(
@@ -74,7 +75,7 @@ class InputFields extends StatelessWidget {
 Widget niceChips(IconData icondata, String text, void Function() pressed) {
   return InputChip(
     backgroundColor: Colors.lightBlue,
-    selected: false,
+    selected: true,
     selectedColor: Colors.amber,
     label: Text(text),
     avatar: Icon(icondata),
@@ -208,7 +209,8 @@ class SearchLocsState extends State<SearchLocs> {
 
             this.myoverlay = this.createOverlay();
             Overlay.of(context)!.insert(this.myoverlay);
-          }
+          } else
+            suggestions = [];
         }
 
         setState(() {
@@ -244,6 +246,7 @@ class SearchLocsState extends State<SearchLocs> {
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
                           widget.searchcontrol.text = suggestions[index];
+                          suggestions = [];
                           widget.direction == "From"
                               ? onetrip.fromLoc = widget.searchcontrol.text
                               : onetrip.toLoc = widget.searchcontrol.text;
@@ -335,22 +338,22 @@ class _OptionButtonState extends State<OptionButton> {
   }
 }
 
-class UploadPic extends StatefulWidget {
-  UploadPic(
-      {Key? key,
-      required this.foldername,
-      required this.imagename,
-      required this.imgUrl})
-      : super(key: key);
+String? imgUrl;
 
-  String foldername, imagename, imgUrl;
+class UploadPic extends StatefulWidget {
+  UploadPic({
+    Key? key,
+    required this.foldername,
+    required this.imagename,
+  }) : super(key: key);
+
+  String foldername, imagename;
 
   @override
   _UploadPicState createState() => _UploadPicState();
 }
 
 class _UploadPicState extends State<UploadPic> {
-  String? imgUrl;
   void upLoadimg() async {
     print("starting upload");
     final picker = ImagePicker();
@@ -370,7 +373,6 @@ class _UploadPicState extends State<UploadPic> {
       var geturl = await snapshot.ref.getDownloadURL();
       setState(() {
         imgUrl = geturl;
-        widget.imgUrl = geturl;
       });
     } else {
       print("no image chosen");
@@ -393,10 +395,14 @@ class _UploadPicState extends State<UploadPic> {
           height: 10,
         ),
         FloatingActionButton.extended(
+          backgroundColor: Colors.white,
           onPressed: () => upLoadimg(),
-          label: Text("upload"),
-          icon: Icon(Icons.send),
+          label: Text(
+            "Choose image",
+            style: TextStyle(color: Colors.black),
+          ),
         ),
+        SizedBox(height: 5)
       ],
     )));
   }
