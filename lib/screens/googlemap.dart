@@ -3,30 +3,59 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(Mymap());
 
-class MyApp extends StatefulWidget {
+class Mymap extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  _MymapState createState() => _MymapState();
 }
 
-class _MyAppState extends State<MyApp> {
-  Future<Position> getposition(var lat, var lng) async {
-    var position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.best)
-        .then((value) {
-      lat = value.latitude;
-      lng = value.longitude;
-    });
-    return position;
+class _MymapState extends State<Mymap> {
+  
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Map View'),
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back_ios)),
+          backgroundColor: Colors.lightBlueAccent[200],
+        ),
+        body: Showmap()
+      ),
+    );
+  }
+}
+
+class Showmap extends StatefulWidget {
+  const Showmap({ Key? key }) : super(key: key);
+
+  @override
+  _ShowmapState createState() => _ShowmapState();
+}
+
+class _ShowmapState extends State<Showmap> {
+  Future<Position> getposition() async {
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best);
   }
 
-  double? latitude, longitude;
-  LatLng? _center;
+  bool loading = true;
+  LatLng _center = LatLng(50, 50);
+  @override
   void initState() {
-    getposition(latitude, longitude);
+    getposition().then((value) {
+      setState(() {
+        _center = LatLng(value.latitude, value.longitude);
+        loading = false;
+      });
+    });
+    // print(_center);
     super.initState();
-    _center = LatLng(latitude!, longitude!);
   }
 
   late GoogleMapController mapController;
@@ -37,20 +66,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Maps Sample App'),
-          backgroundColor: Colors.green[700],
-        ),
-        body: GoogleMap(
+    return loading ? CircularProgressIndicator(): GoogleMap(
+          mapType:MapType.normal,
           onMapCreated: _onMapCreated,
           initialCameraPosition: CameraPosition(
-            target: _center!,
-            zoom: 11.0,
+            target: _center,
+            zoom: 12.0,
           ),
-        ),
-      ),
-    );
+        );
   }
 }

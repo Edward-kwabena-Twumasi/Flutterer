@@ -29,17 +29,18 @@ class Book extends StatefulWidget {
 class BookState extends State<Book> {
   var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
   final plugin = PaystackPlugin();
-
+  var seatids = [];
   int? unitprice;
-  int? chosen;
+  int chosen = 0;
   int? total;
   Color? seatcolor;
+  Color? chosencolor;
   @override
   void initState() {
     seatcolor = Colors.grey;
     unitprice = widget.seat.unitprice;
     chosen = 0;
-    total = chosen! * unitprice!;
+    total = chosen * unitprice!;
     plugin.initialize(publicKey: publicKey);
     super.initState();
   }
@@ -50,72 +51,18 @@ class BookState extends State<Book> {
     return DefaultTabController(
         length: 3,
         child: Scaffold(
-          floatingActionButton: ListTile(
-            tileColor: Colors.white,
-            leading: Text(widget.seat.from),
-            trailing: Text(widget.seat.to),
-            title: Text("Fare  : " + unitprice.toString()),
-            subtitle: Column(
-              children: [
-                Row(
-                  children: [
-                    Text("Chosen : " + chosen.toString()),
-                    Text(" Total : " + total.toString()),
-                  ],
-                ),
-                Center(
-                  child: FloatingActionButton.extended(
-                      onPressed: () {
-                        showModalBottomSheet(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.95,
-                                child: Column(
-                                  children: [
-                                    Text("Ticket Details"),
-                                    FloatingActionButton.extended(
-                                        onPressed: () async {
-                                          Charge charge = Charge()
-                                            ..amount = 10000
-                                            ..reference =
-                                                Timestamp.now().toString()
-                                            // or ..accessCode = _getAccessCodeFrmInitialization()
-                                            ..email = FirebaseAuth
-                                                .instance.currentUser!.email
-                                            ..accessCode = FirebaseAuth
-                                                .instance.currentUser!.uid
-                                                .substring(1, 2);
-                                          CheckoutResponse response =
-                                              await plugin
-                                                  .checkout(
-                                            context,
-                                            method: CheckoutMethod
-                                                .selectable, // Defaults to CheckoutMethod.selectable
-                                            charge: charge,
-                                          )
-                                                  .catchError((e) {
-                                            print(e);
-                                          });
-                                        },
-                                        label: Text("Pay now"))
-                                  ],
-                                ),
-                              );
-                            });
-                      },
-                      label: Text("Get Ticket")),
-                )
-              ],
-            ),
-          ),
           appBar: AppBar(
+              leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(Icons.arrow_back_ios)),
               backgroundColor: Colors.white,
-              title: Text("Complete booking"),
+              title: Text(
+                "Complete booking",
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
               bottom: TabBar(tabs: [
                 Tab(
                   child: Text(
@@ -142,16 +89,146 @@ class BookState extends State<Book> {
                 itemCount: widget.seat.seats,
                 itemBuilder: (BuildContext ctx, index) {
                   return FloatingActionButton.extended(
-                    key: Key(index.toString()),
-                    backgroundColor: seatcolor,
-                    onPressed: () {},
-                    label: Text(index.toString()),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    icon: Icon(
-                      Icons.chair,
-                      size: 30,
-                    ),
+                    label: Text((index+1).toString()),
+                    icon: Icon(Icons.chair),
+                    heroTag: index.toString(),
+                    key: Key("Seat numbers" + index.toString()),
+                    backgroundColor:
+                        seatids.contains(index) ? Colors.brown : seatcolor,
+                    onPressed: () {
+                      print(index);
+                      if (!seatids.contains(index)) {
+                        setState(() {
+                          seatids.add(index);
+                          chosen += 1;
+                          chosencolor;
+                          seatcolor;
+                        });
+                      } else
+                        print("seat already chosen");
+                      showModalBottomSheet(
+                          barrierColor: Colors.indigo[300],
+                          backgroundColor: Colors.indigo[200],
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(50),
+                                  topRight: Radius.circular(50))),
+                          context: context,
+                          builder: (BuildContext context) {
+                            return FractionallySizedBox(
+                              heightFactor: 0.99,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "Ticket Details",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    SizedBox(height: 12),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SingleChildScrollView(
+                                        child: Card(
+                                          shape: RoundedRectangleBorder(),
+                                          elevation: 10,
+                                          child: SingleChildScrollView(
+                                            child: ListView(
+                                              shrinkWrap: true,
+                                              children: [
+                                                Text("Number of seats : " +
+                                                    chosen.toString(),
+                                                     style: TextStyle(
+                                              fontWeight: FontWeight.bold,fontSize:26)
+                                                    ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: ListTile(
+                                                    title: Text("Seats"),
+                                                    subtitle: SingleChildScrollView(
+                                                      child: ListView.builder(
+                                                          shrinkWrap: true,
+                                                          itemCount: seatids.length,
+                                                          itemBuilder:
+                                                              (BuildContext context,
+                                                                  indx) {
+                                                            return Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(3.0),
+                                                              child: ListTile(
+                                                                tileColor: Colors
+                                                                    .grey[200],
+                                                                shape: RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(
+                                                                                20)),
+                                                                title: Text(seatids[
+                                                                        indx]
+                                                                    .toString()),
+                                                                trailing:
+                                                                    IconButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          print(
+                                                                              "cancel");
+                                                                        },
+                                                                        icon: Icon(
+                                                                          Icons
+                                                                              .cancel,
+                                                                          size: 30,
+                                                                          color: Colors
+                                                                              .red,
+                                                                        )),
+                                                              ),
+                                                            );
+                                                          }),
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(),
+                                    FloatingActionButton.extended(
+                                        heroTag: "pay",
+                                        onPressed: () async {
+                                          Charge charge = Charge()
+                                            ..amount = total!
+                                            ..reference =
+                                                Timestamp.now().toString()
+                                            // or ..accessCode = _getAccessCodeFrmInitialization()
+                                            ..email = FirebaseAuth
+                                                .instance.currentUser!.email
+                                            ..accessCode = FirebaseAuth
+                                                .instance.currentUser!.uid
+                                                .substring(1, 2);
+                                          CheckoutResponse response = await plugin
+                                              .checkout(
+                                            context,
+                                            method: CheckoutMethod
+                                                .selectable, // Defaults to CheckoutMethod.selectable
+                                            charge: charge,
+                                          )
+                                              .catchError((e) {
+                                            print(e);
+                                          });
+                                        },
+                                        label: Text("Pay now"))
+                                  ],
+                                ),
+                              ),
+                            );
+                          });
+                    },
                   );
                 }),
             Column(
@@ -165,7 +242,17 @@ class BookState extends State<Book> {
                     })
               ],
             ),
-            Text("Routes"),
+            Column(
+              children: [
+                Text("Routes and stops"),
+                ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: widget.seat.routes.length,
+                    itemBuilder: (BuildContext context, index) {
+                      return Text(widget.seat.routes[index].name);
+                    })
+              ],
+            )
           ]),
         ));
   }

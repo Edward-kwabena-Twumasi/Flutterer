@@ -1,22 +1,22 @@
 import 'dart:ui';
-import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-//import 'package:myapp/components/AgentsList.dart';
+
 import 'package:myapp/components/applicationwidgets.dart';
 
 import 'package:myapp/screens/completebook.dart';
 import 'package:myapp/screens/reportscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
-//import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:myapp/components/getlocation.dart';
-//import 'package:geolocator/geolocator.dart';
+
 import 'package:geocoding/geocoding.dart';
 
-import '../main.dart';
+import 'googlemap.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 enum companyFilters { VIP, STC, MMT }
 enum queryFilters { isEqualTo }
@@ -33,6 +33,10 @@ List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 List<Interoutes> routes = [];
 Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid", routes);
 String triptype = "Bus";
+Timestamp now = Timestamp.now();
+DateTime time =
+    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+TextEditingController datecontroller = TextEditingController();
 
 class ButtomNav extends StatefulWidget {
   @override
@@ -63,9 +67,16 @@ class ButtomNavState extends State<ButtomNav> {
         "/location": (context) => GeolocatorWidget(),
         "/completebook": (context) => Booking(),
         "/reports": (context) => Reporter(),
-        "/map": (context) => MyApp()
+        "/map": (context) => Mymap()
       },
       home: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back_ios)),
+          ),
           bottomNavigationBar: BottomNavigationBar(
               currentIndex: currentindx,
               backgroundColor: Colors.white,
@@ -141,25 +152,16 @@ class TabBarDemoState extends State<TabBarDemo> {
             )),
         body: TabBarView(
           children: [
-            SafeArea(
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
-                ),
+            Container(
+              height: 900,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+              ),
+              child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Text("Find and book for Buses",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                    SizedBox(
-                      height: 7,
-                    ),
                     Locations(triptype: triptype[0]),
                   ],
                 ),
@@ -167,53 +169,36 @@ class TabBarDemoState extends State<TabBarDemo> {
             ),
 
             //Block for Buses
-            SafeArea(
-              child: Container(
-                constraints: BoxConstraints.expand(),
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
-                ),
+            Container(
+              height: 900,
+              constraints: BoxConstraints.expand(),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+              ),
+              child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Text("Find and book for trains",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                    SizedBox(
-                      height: 7,
-                    ),
                     Locations(triptype: triptype[2]),
                   ],
                 ),
               ),
             ),
+
             //Block for trains
-            SafeArea(
-              child: Container(
-                constraints: BoxConstraints.expand(),
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('images/train1.png'),
-                      fit: BoxFit.cover),
-                ),
+
+            Container(
+              height: 900,
+              constraints: BoxConstraints.expand(),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('images/train1.png'), fit: BoxFit.cover),
+              ),
+              child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Text("Find and book for flights",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                    SizedBox(
-                      height: 7,
-                    ),
                     Container(
                       height: 50,
                       margin: EdgeInsets.only(left: 5, right: 5, bottom: 3),
@@ -241,7 +226,7 @@ class TabBarDemoState extends State<TabBarDemo> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -270,50 +255,60 @@ class LocationsState extends State<Locations> {
   bool stripcity = false;
   TextEditingController from = TextEditingController();
   TextEditingController to = TextEditingController();
+
+  void initState() {
+    super.initState();
+    datecontroller.text = time.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
         child: Center(
             child: Card(
-              child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
               Center(
-                child: Row(
-                  children: [
-                    FloatingActionButton.extended(
-                      onPressed: () async {
-                        var position = await Geolocator.getCurrentPosition(
-                                desiredAccuracy: LocationAccuracy.best)
-                            .then((value) async {
-                          var address = await placemarkFromCoordinates(
-                                  value.latitude, value.longitude)
-                              .then((value2) {
-                            from.text = value2.first.locality! +
-                                "," +
-                                value2.first.subLocality!;
-                            return value2;
+                child: Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      FloatingActionButton.extended(
+                        onPressed: () async {
+                          var position = await Geolocator.getCurrentPosition(
+                                  desiredAccuracy: LocationAccuracy.best)
+                              .then((value) async {
+                            var address = await placemarkFromCoordinates(
+                                    value.latitude, value.longitude)
+                                .then((value2) {
+                              from.text = value2.first.locality! +
+                                  "," +
+                                  value2.first.subLocality!;
+                              return value2;
+                            });
                           });
-                        });
-            
-                        setState(
-                          () {
-                            stripcity = true;
-                          },
-                        );
-                      },
-                      label: Text("Current loc"),
-                      icon: Icon(Icons.location_on),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                    Expanded(
-                        child: FloatingActionButton.extended(
-                            onPressed: () {
-                              Navigator.pushNamed(context, "/map");
+
+                          setState(
+                            () {
+                              stripcity = true;
                             },
-                            label: Text("view  map")))
-                  ],
+                          );
+                        },
+                        label: Text("Current loc"),
+                        icon: Icon(Icons.location_on),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      Expanded(
+                          child: FloatingActionButton.extended(
+                              onPressed: () {
+                                Navigator.pushNamed(context, "/map");
+                              },
+                              label: Text("view  map")))
+                    ],
+                  ),
                 ),
               ),
               SearchLocs(
@@ -324,6 +319,9 @@ class LocationsState extends State<Locations> {
                 locations: places,
                 searchcontrol: to,
               ),
+              SizedBox(height: 5),
+              InputFields("Travel date", datecontroller, Icons.date_range,
+                  TextInputType.datetime),
               Expanded(
                   child: Center(
                       child: Row(
@@ -350,7 +348,7 @@ class LocationsState extends State<Locations> {
                         setState(() {
                           triptype = widget.triptype;
                         });
-                        print("clicked for : "+triptype);
+                        print("clicked for : " + triptype);
                         print(onetrip.date);
                         Navigator.pushNamed(context, "/matchingtrips");
                       },
@@ -359,12 +357,12 @@ class LocationsState extends State<Locations> {
                   )
                 ],
               ))),
-                      ],
-                    ),
-            )),
-        height: 300,
+            ],
+          ),
+        )),
+        height: 400,
         padding: EdgeInsets.all(10),
-        margin: EdgeInsets.all(8));
+        margin: EdgeInsets.all(3));
 
     // TODO: implement build
   }
@@ -387,6 +385,7 @@ class TripsState extends State<Trips> {
   // String gttriptype ;
   companyFilters filter = companyFilters.VIP;
   bool isfound = true;
+  int results = 0;
   List filterquery = ["VIP", "STC", "MMT"];
   void filterall() {
     setState(() {
@@ -455,139 +454,142 @@ class TripsState extends State<Trips> {
               ),
               SingleChildScrollView(
                   child: Column(
-                    children: [
-                      Text(widget.triptype+ "s " +" from " +widget._tripdata.fromLoc+ " to "+widget._tripdata.toLoc,
-                      style:TextStyle(fontWeight:FontWeight.bold)
-                      ),
-                      StreamBuilder(
-                          stream: FirebaseFirestore.instance
-                              .collection('trips')
-                              .where("from", isEqualTo: widget._tripdata.fromLoc)
-                              .where("to", isEqualTo: widget._tripdata.toLoc)
-                              .where("company", whereIn: filterquery)
-                              .where("triptype", isEqualTo: widget.triptype)
-                              .snapshots(),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<QuerySnapshot> snapshot) {
-                            if (!snapshot.hasData &&
-                                !(snapshot.connectionState ==
-                                    ConnectionState.done)) {
-                              return Center(
-                                  child: Card(
-                                      elevation: 8,
-                                      child: Column(
-                                        children: [
-                                          CircularProgressIndicator(),
-                                          SizedBox(
-                                            height: 5,
-                                          ),
-                                          Text("Loading ...")
-                                        ],
-                                      )));
-                            } else if (snapshot.hasError) {
-                              print(snapshot.error);
-                            } else if (snapshot.hasData) {
-                              // ignore: unnecessary_statements
-                              isfound = true;
-                            } else if (snapshot.connectionState ==
-                                    ConnectionState.done &&
-                                !snapshot.hasData) {
-                              isfound = false;
-                            }
-                            return isfound
-                                ? ListView(
-                                    shrinkWrap: true,
-                                    children: snapshot.data!.docs.map((doc) {
-                                      return Card(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8)),
-                                        elevation: 5,
-                                        child: Column(
-                                          children: [
-                                            ListView.builder(
-                                                shrinkWrap: true,
-                                                itemCount: doc['date'].length,
-                                                itemBuilder:
-                                                    (BuildContext context, idx) {
-                                                  return Text(doc['date'][idx]
-                                                      .toDate()
-                                                      .toString());
-                                                }),
-                                            ListTile(
-                                                title: Row(
-                                                  children: [
-                                                    Text(doc['from'],
-                                                        style: TextStyle(
-                                                            color: Colors.black,
-                                                            backgroundColor:
-                                                                Colors.amber,
-                                                            fontWeight:
-                                                                FontWeight.bold)),
-                                                    Text("  to   "),
-                                                    Text(doc['to'],
-                                                        style: TextStyle(
-                                                            color: Colors.black,
-                                                            backgroundColor:
-                                                                Colors.blueGrey,
-                                                            fontWeight:
-                                                                FontWeight.bold)),
-                                                  ],
-                                                ),
-                                                subtitle: Text(doc['company'])),
-                                            Divider(
-                                              thickness: 0.8,
-                                              color: Colors.blueGrey,
-                                            ),
-                                            ListTile(
-                                                trailing: Text(
-                                                    doc['fare'].toString() + ' Cdz',
+                children: [
+                  Text(
+                      widget.triptype +
+                          "s " +
+                          " from " +
+                          widget._tripdata.fromLoc +
+                          " to " +
+                          widget._tripdata.toLoc +
+                          " . " +
+                          results.toString() +
+                          " found",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('trips')
+                          .where("from", isEqualTo: widget._tripdata.fromLoc)
+                          .where("to", isEqualTo: widget._tripdata.toLoc)
+                          .where("company", whereIn: filterquery)
+                          .where("triptype", isEqualTo: widget.triptype)
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (!snapshot.hasData &&
+                            !(snapshot.connectionState ==
+                                ConnectionState.done)) {
+                          return Center(
+                              child: Card(
+                                  elevation: 8,
+                                  child: Column(
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text("Loading ...")
+                                    ],
+                                  )));
+                        } else if (snapshot.hasError) {
+                          print(snapshot.error);
+                        } else if (snapshot.hasData) {
+                          // ignore: unnecessary_statements
+                          results = snapshot.data!.size;
+                          isfound = true;
+                        } else if (snapshot.data!.size < 1) {
+                          isfound = false;
+                        }
+                        return isfound
+                            ? ListView(
+                                shrinkWrap: true,
+                                children: snapshot.data!.docs.map((doc) {
+                                  results += 1;
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    elevation: 5,
+                                    child: Column(
+                                      children: [
+                                        ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: doc['date'].length,
+                                            itemBuilder:
+                                                (BuildContext context, idx) {
+                                              return Text(doc['date'][idx]
+                                                  .toDate()
+                                                  .toString());
+                                            }),
+                                        ListTile(
+                                            title: Row(
+                                              children: [
+                                                Text(doc['from'],
                                                     style: TextStyle(
-                                                        fontSize: 30,
-                                                        color: Colors.lightBlue)),
-                                                leading: Icon(
-                                                  Icons.chair,
-                                                  size: 40,
-                                                ),
-                                                title: Text(
-                                                    doc['seats'].toString() +
-                                                        " Available"),
-                                                subtitle: FloatingActionButton(
-                                                    onPressed: () {
-                                                      for (var i = 0;
-                                                          i <
-                                                              doc["interoutes"]
-                                                                  .length;
-                                                          i++) {
-                                                        routes.add(Interoutes(
-                                                            doc["interoutes"][i]
-                                                                ['routename'],
-                                                            doc['interoutes'][i]
-                                                                ['pickup'],
-                                                            doc['interoutes'][i]
-                                                                ['stop']));
-                                                                
-                                                      }
-                                                      seat.busnumber =
-                                                          doc["busnumber"];
-                                                      seat.from = doc["from"];
-                                                      seat.to = doc["to"];
-                                                      seat.seats = doc["seats"];
-                                                      seat.unitprice = doc["fare"];
-                                                      seat.tripid =
-                                                          doc.id.toString();
-                                                      print('clicked');
-                                                      Navigator.pushNamed(
-                                                          context, "/completebook");
-                                                    },
-                                                    child: Text("Book")))
-                                          ],
-                                        ),
-                                      );
-                                    }).toList())
-                                : Text("Couldnt find matching search");
-                          }),
-                    ],
-                  )),
+                                                        color: Colors.black,
+                                                        backgroundColor:
+                                                            Colors.amber,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                Text("  to   "),
+                                                Text(doc['to'],
+                                                    style: TextStyle(
+                                                        color: Colors.black,
+                                                        backgroundColor:
+                                                            Colors.blueGrey,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ],
+                                            ),
+                                            subtitle: Text(doc['company'])),
+                                        ListTile(
+                                            trailing: Text(
+                                                doc['fare'].toString() + ' Cdz',
+                                                style: TextStyle(
+                                                    fontSize: 30,
+                                                    color: Colors.lightBlue)),
+                                            leading: Icon(
+                                              Icons.chair,
+                                              size: 40,
+                                            ),
+                                            title: Text(
+                                                doc['seats'].toString() +
+                                                    " Available"),
+                                            subtitle: FloatingActionButton(
+                                                onPressed: () {
+                                                  for (var i = 0;
+                                                      i <
+                                                          doc["interoutes"]
+                                                              .length;
+                                                      i++) {
+                                                    routes.add(Interoutes(
+                                                        doc["interoutes"][i]
+                                                            ['routename'],
+                                                        doc['interoutes'][i]
+                                                            ['pickup'],
+                                                        doc['interoutes'][i]
+                                                            ['stop']));
+                                                  }
+                                                  seat.busnumber =
+                                                      doc["busnumber"];
+                                                  seat.from = doc["from"];
+                                                  seat.to = doc["to"];
+                                                  seat.seats = doc["seats"];
+                                                  seat.unitprice = doc["fare"];
+                                                  seat.tripid =
+                                                      doc.id.toString();
+                                                  print('clicked');
+                                                  Navigator.pushNamed(
+                                                      context, "/completebook");
+                                                },
+                                                child: Text("Book")))
+                                      ],
+                                    ),
+                                  );
+                                }).toList())
+                            : Text("Couldnt find matching search");
+                      }),
+                ],
+              )),
             ]),
           ),
         ),
@@ -599,8 +601,8 @@ class TripsState extends State<Trips> {
 class TripClass {
   String fromLoc;
   String toLoc;
-  String time;
-  String date;
+  DateTime time;
+  DateTime date;
   String tripclass;
 
   TripClass(this.fromLoc, this.toLoc, this.time, this.date, this.tripclass);
@@ -619,13 +621,13 @@ class HelpClass extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
             children: [
               FloatingActionButton.extended(
                 heroTag: "cheap",
                 onPressed: () {},
-                label: Text("Make a cheap travel"),
+                label: Text("Booking assistant"),
                 icon: Icon(Icons.money),
               ),
               SizedBox(height: 40),
@@ -646,12 +648,6 @@ class HelpClass extends StatelessWidget {
                 icon: Icon(Icons.report_problem),
               ),
               SizedBox(height: 40),
-              FloatingActionButton.extended(
-                heroTag: "health",
-                onPressed: () {},
-                label: Text("My Health"),
-                icon: Icon(Icons.health_and_safety),
-              ),
             ]),
       ),
     );
@@ -713,8 +709,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     if (newSelectedDate != null) {
       setState(() {
         _selectedDate.value = newSelectedDate;
-        onetrip.date =
-            ' ${_selectedDate.value.day}/${_selectedDate.value.month}/${_selectedDate.value.year}';
+        time = DateTime(_selectedDate.value.year, _selectedDate.value.month,
+            _selectedDate.value.day);
+        onetrip.date = DateTime(_selectedDate.value.year,
+            _selectedDate.value.month, _selectedDate.value.day);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Selected: ${_selectedDate.value.day}/${_selectedDate.value.month}/${_selectedDate.value.year}'),
@@ -756,46 +754,22 @@ class UserInfoClassState extends State<UserInfoClass> {
       body: Consumer<UserState>(
         builder: (context, value, child) => Column(
           children: [
-            Text("Welcome !",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40)),
-            Container(
-              margin: EdgeInsets.all(30),
-              child: CircleAvatar(
-                child: Image.asset(
-                  "images/bus2.png",
-                  fit: BoxFit.cover,
-                ),
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(150),
+                child: Container(
+                    color: Colors.amber,
+                    height: 100,
+                    width: 100,
+                    child: Stack(children: [
+                      Positioned.fill(child: Text("Hi")),
+                      Positioned(
+                          right: 5,
+                          bottom: 2,
+                          child: IconButton(
+                              onPressed: () {}, icon: Icon(Icons.photo_camera)))
+                    ])),
               ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                title: Text("Name"),
-                subtitle: Text(value.loggedInAs.toString()),
-                leading: CircleAvatar(
-                  child: Image.asset("images/bus1.png"),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                title: Text("Phone"),
-                subtitle: Text("0552489602"),
-                leading: CircleAvatar(
-                  child: Image.asset("images/bus1.png"),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 15,
             ),
             Card(
               shape: RoundedRectangleBorder(
@@ -804,16 +778,28 @@ class UserInfoClassState extends State<UserInfoClass> {
               child: ListTile(
                 title: Text("Email"),
                 subtitle: Text(value.loggedinmail.toString()),
-                leading: CircleAvatar(
-                  child: Image.asset("images/bus1.png"),
-                ),
               ),
             ),
-            Row(
-              children:[
-
-              ]
-            )
+            Row(children: [
+              Expanded(
+                  child: FloatingActionButton.extended(
+                heroTag: "rate",
+                icon: Icon(Icons.star),
+                onPressed: () {},
+                label: Text("Rate Us",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              )),
+              Expanded(
+                  child: FloatingActionButton.extended(
+                heroTag: "review",
+                icon: Icon(Icons.edit),
+                onPressed: () {},
+                label: Text("Write review",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ))
+            ])
           ],
         ),
       ),

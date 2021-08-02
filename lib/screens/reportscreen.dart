@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:provider/provider.dart';
+import 'package:rate_my_app/rate_my_app.dart';
 
 void main() {
   runApp(Reporter());
@@ -22,9 +25,12 @@ class Reporter extends StatefulWidget {
 class ReporterState extends State<Reporter> {
   final _formKey = GlobalKey<FormState>();
 
-  final repname = TextEditingController();
-  final repmail = TextEditingController();
+  final condition = TextEditingController();
+  final time = TextEditingController();
+  final helphow = TextEditingController();
   final tripid = TextEditingController();
+  final itemdescribe = TextEditingController();
+  final describe = TextEditingController();
   final recipient = TextEditingController();
   final pgcontrol = PageController();
   var options = ["Health", "Lost Item", "General"];
@@ -92,43 +98,48 @@ class ReporterState extends State<Reporter> {
                   SizedBox(
                     height: 5,
                   ),
-                  SizedBox(
-                    height: 5,
-                  ),
                   InputFields("trip id", tripid, Icons.password,
                       TextInputType.visiblePassword),
-                  InputFields("receipient", recipient, Icons.password,
+                  InputFields("report to", recipient, Icons.password,
+                      TextInputType.visiblePassword),
+                  InputFields("time of incidence", time, Icons.password,
                       TextInputType.visiblePassword),
                   Container(
-                    height: 200,
+                    height: 300,
                     child: PageView(
                       controller: pgcontrol,
                       children: [
                         ListView(
                           shrinkWrap: true,
                           children: [
-                            InputFields("Description", tripid, Icons.password,
-                                TextInputType.multiline),
-                            InputFields("Other", recipient, Icons.password,
-                                TextInputType.text),
-                          ],
-                        ),
-                        ListView(
-                          shrinkWrap: true,
-                          children: [
-                            InputFields("Item image", tripid, Icons.password,
-                                TextInputType.number),
-                            InputFields("Description", recipient,
+                            InputFields("Describe condition", condition,
                                 Icons.password, TextInputType.multiline),
-                          ],
-                        ),
-                        ListView(
-                          shrinkWrap: true,
-                          children: [
-                            InputFields("Describe condition", tripid,
-                                Icons.password, TextInputType.multiline),
-                            InputFields("How severe?", recipient,
+                            InputFields("How may we help you?", helphow,
                                 Icons.password, TextInputType.text),
+                          ],
+                        ),
+                        ListView(
+                          shrinkWrap: true,
+                          children: [
+                            UploadPic(
+                                foldername: "Reports",
+                                imagename: FirebaseAuth
+                                    .instance.currentUser!.uid
+                                    .substring(2, 2)),
+                            InputFields("Describe item", itemdescribe,
+                                Icons.password, TextInputType.multiline),
+                          ],
+                        ),
+                        ListView(
+                          shrinkWrap: true,
+                          children: [
+                            InputFields("Give description", describe,
+                                Icons.password, TextInputType.multiline),
+                            UploadPic(
+                                foldername: "Reports",
+                                imagename: FirebaseAuth
+                                    .instance.currentUser!.uid
+                                    .substring(2, 2)),
                           ],
                         ),
                       ],
@@ -144,18 +155,46 @@ class ReporterState extends State<Reporter> {
                         onPressed: () {
                           // Validate will return true if the form is valid, or false if
                           // the form is invalid.
-
-                          if (_formKey.currentState!.validate()) {}
+                          var reptype = {};
+                          if (_formKey.currentState!.validate()) {
+                            if (initialval == options[0]) {
+                              reptype = {
+                                "type": options[0],
+                                "condition": condition.text,
+                                "helphow": helphow.text
+                              };
+                            } else if (initialval == options[1]) {
+                              reptype = {
+                                "type": options[1],
+                                "describe": itemdescribe.text,
+                                "imageurl": imgUrl
+                              };
+                            } else if (initialval == options[2]) {
+                              reptype = {
+                                "type": options[2],
+                                "describe": describe.text,
+                                "imageurl": imgUrl
+                              };
+                            }
+                            FirebaseFirestore.instance
+                                .collection("Reports")
+                                .add({
+                              "id": tripid.text,
+                              "receipient": recipient.text,
+                              "attime": time.text,
+                              "report": reptype
+                            });
+                          }
                         },
 
                         child: Padding(
                             padding: EdgeInsets.all(4),
-                            child: Text('Submit',
+                            child: Text('Submit report',
                                 style: TextStyle(
-                                    color: Colors.amber,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 25,
-                                    fontStyle: FontStyle.italic))),
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 25,
+                                ))),
                       ),
                     ),
                   )

@@ -43,7 +43,6 @@ class InputFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: TextFormField(
-        
         style: TextStyle(color: Colors.black),
         keyboardType: inputtype,
         decoration: new InputDecoration(
@@ -74,9 +73,10 @@ class InputFields extends StatelessWidget {
 
 Widget niceChips(IconData icondata, String text, void Function() pressed) {
   return InputChip(
-    backgroundColor: Colors.lightBlue,
-    selected: true,
-    selectedColor: Colors.amber,
+    side: BorderSide.none,
+    backgroundColor: Colors.grey,
+    selected: false,
+    selectedColor: Colors.green[100],
     label: Text(text),
     avatar: Icon(icondata),
     labelPadding: EdgeInsets.all(8),
@@ -173,7 +173,7 @@ class _menuButtonState extends State<menuButton> {
 }
 
 TripClass onetrip =
-    TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
+    TripClass("Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal");
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 
 class SearchLocs extends StatefulWidget {
@@ -200,7 +200,7 @@ class SearchLocsState extends State<SearchLocs> {
     widget.searchcontrol.addListener(() {
       suggestions = [];
       var query = widget.searchcontrol.text;
-      hideoverlay = false;
+     
       if (query.isNotEmpty) {
         for (var i in places) {
           if (i.toLowerCase().contains(query.toLowerCase()) ||
@@ -209,12 +209,15 @@ class SearchLocsState extends State<SearchLocs> {
 
             this.myoverlay = this.createOverlay();
             Overlay.of(context)!.insert(this.myoverlay);
-          } else
-            suggestions = [];
+          }
         }
 
         setState(() {
           hideoverlay = false;
+        });
+      } else {
+        setState(() {
+          suggestions = [];
         });
       }
     });
@@ -228,7 +231,7 @@ class SearchLocsState extends State<SearchLocs> {
     return OverlayEntry(
         builder: (context) => Positioned(
               left: offset.dx,
-              top: offset.dy + size.height + 5.0,
+              top: offset.dy + size.height,
               width: size.width,
               child: Material(
                 elevation: 4.0,
@@ -237,16 +240,15 @@ class SearchLocsState extends State<SearchLocs> {
                   itemCount: suggestions.length,
                   itemBuilder: (context, index) {
                     return ListTile(
+                        shape: RoundedRectangleBorder(),
                         key: Key(index.toString()),
                         onTap: () {
-                          this.myoverlay.mounted
-                              ? myoverlay.remove()
-                              : myoverlay.remove();
+                          myoverlay.remove() ;
 
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
                           widget.searchcontrol.text = suggestions[index];
-                          suggestions = [];
+
                           widget.direction == "From"
                               ? onetrip.fromLoc = widget.searchcontrol.text
                               : onetrip.toLoc = widget.searchcontrol.text;
@@ -270,6 +272,7 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   void dispose() {
     // TODO: implement dispose
+    suggestions = [];
     super.dispose();
   }
 
@@ -278,13 +281,14 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(Icons.search),
+      
       title: TextFormField(
         decoration: InputDecoration(
             labelText: "Travel $widget.direction",
             fillColor: Colors.pink,
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(30))),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none)),
         controller: widget.searchcontrol,
       ),
     );
@@ -314,24 +318,31 @@ class _OptionButtonState extends State<OptionButton> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Consumer<UserState>(
-        builder: (context, value, child) => DropdownButton<String>(
-          value: widget.dropdownValue,
-          icon: const Icon(Icons.pin_drop_outlined),
-          iconSize: 34,
-          elevation: 16,
-          style: const TextStyle(color: Colors.black),
-          underline: Container(
-            height: 1,
+    return ListTile(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      title: Center(
+        child: SizedBox(
+          height: 40,
+          child: Consumer<UserState>(
+            builder: (context, value, child) => DropdownButton<String>(
+              value: widget.dropdownValue,
+              icon: const Icon(Icons.pin_drop_outlined),
+              iconSize: 34,
+              elevation: 16,
+              style: const TextStyle(color: Colors.black),
+              underline: Container(
+                height: 1,
+              ),
+              onChanged: widget.onchange,
+              items:
+                  widget.options.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
           ),
-          onChanged: widget.onchange,
-          items: widget.options.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
         ),
       ),
     );
@@ -339,15 +350,15 @@ class _OptionButtonState extends State<OptionButton> {
 }
 
 String? imgUrl;
-
+                     
 class UploadPic extends StatefulWidget {
-  UploadPic({
+const  UploadPic({
     Key? key,
     required this.foldername,
     required this.imagename,
   }) : super(key: key);
 
-  String foldername, imagename;
+final String foldername, imagename;
 
   @override
   _UploadPicState createState() => _UploadPicState();
