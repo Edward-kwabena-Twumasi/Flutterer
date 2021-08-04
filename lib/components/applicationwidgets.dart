@@ -1,10 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:myapp/providersPool/agentStateProvider.dart';
-import 'package:myapp/screens/dashboard.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
@@ -190,36 +187,30 @@ class SearchLocs extends StatefulWidget {
 }
 
 class SearchLocsState extends State<SearchLocs> {
-  late OverlayEntry myoverlay;
-  late bool hideoverlay;
+  final FocusNode _focusNode = FocusNode();
+  OverlayEntry? myoverlay;
+  bool hideoverlay = false;
   bool foundinlist = false;
   var mytripobj = {};
   @override
   void initState() {
     super.initState();
-    widget.searchcontrol.addListener(() {
-      suggestions = [];
-      var query = widget.searchcontrol.text;
-     
-      if (query.isNotEmpty) {
-        for (var i in places) {
-          if (i.toLowerCase().contains(query.toLowerCase()) ||
-              i.toLowerCase().startsWith(query)) {
-            suggestions.add(i);
-
-            this.myoverlay = this.createOverlay();
-            Overlay.of(context)!.insert(this.myoverlay);
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        this.myoverlay = createOverlay();
+        Overlay.of(context)!.insert(this.myoverlay!);
+        widget.searchcontrol.addListener(() {
+          for (var i in places) {
+            if ((i.contains(widget.searchcontrol.text) || i.startsWith(widget.searchcontrol.text))&
+                !suggestions.contains(i)) {
+              suggestions.add(i);
+            }
           }
-        }
-
-        setState(() {
-          hideoverlay = false;
         });
-      } else {
-        setState(() {
-          suggestions = [];
-        });
+      } else if(hideoverlay ||!_focusNode.hasFocus){
+        this.myoverlay!.remove();
       }
+      
     });
   }
 
@@ -243,7 +234,9 @@ class SearchLocsState extends State<SearchLocs> {
                         shape: RoundedRectangleBorder(),
                         key: Key(index.toString()),
                         onTap: () {
-                          myoverlay.remove() ;
+                           setState(() {
+                           hideoverlay = true;
+                          });
 
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
@@ -254,9 +247,7 @@ class SearchLocsState extends State<SearchLocs> {
                               : onetrip.toLoc = widget.searchcontrol.text;
                           suggestions = [];
                           print(mytripobj);
-                          setState(() {
-                            foundinlist = true;
-                          });
+                         
                         },
                         title: Text(
                           suggestions[index],
@@ -272,7 +263,7 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   void dispose() {
     // TODO: implement dispose
-    suggestions = [];
+
     super.dispose();
   }
 
@@ -281,7 +272,6 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      
       title: TextFormField(
         decoration: InputDecoration(
             labelText: "Travel $widget.direction",
@@ -290,6 +280,7 @@ class SearchLocsState extends State<SearchLocs> {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none)),
         controller: widget.searchcontrol,
+        focusNode: this._focusNode,
       ),
     );
   }
@@ -350,21 +341,22 @@ class _OptionButtonState extends State<OptionButton> {
 }
 
 String? imgUrl;
-                     
+
 class UploadPic extends StatefulWidget {
-const  UploadPic({
+  const UploadPic({
     Key? key,
     required this.foldername,
     required this.imagename,
   }) : super(key: key);
 
-final String foldername, imagename;
+  final String foldername, imagename;
 
   @override
   _UploadPicState createState() => _UploadPicState();
 }
 
 class _UploadPicState extends State<UploadPic> {
+  bool notdone = false;
   void upLoadimg() async {
     print("starting upload");
     final picker = ImagePicker();
@@ -380,7 +372,12 @@ class _UploadPicState extends State<UploadPic> {
           .ref(FirebaseAuth.instance.currentUser!.uid.substring(0, 5))
           .child(widget.foldername + "/" + widget.imagename)
           .putFile(file)
-          .whenComplete(() => print("done"));
+          .whenComplete(() {
+        setState(() {
+          notdone = false;
+        });
+        print("done");
+      });
       var geturl = await snapshot.ref.getDownloadURL();
       setState(() {
         imgUrl = geturl;
@@ -392,30 +389,37 @@ class _UploadPicState extends State<UploadPic> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Center(
-            child: Column(
-      children: [
-        (imgUrl != null)
-            ? Image.network(imgUrl!, cacheHeight: 120, cacheWidth: 120)
-            : Placeholder(
-                fallbackHeight: 120,
-                fallbackWidth: 120,
+    return notdone
+        ? CircularProgressIndicator()
+        : Container(
+            child: Center(
+                child: Column(
+            children: [
+              (imgUrl != null)
+                  ? Image.network(imgUrl!, cacheHeight: 120, cacheWidth: 120)
+                  : Placeholder(
+                      fallbackHeight: 120,
+                      fallbackWidth: 120,
+                    ),
+              SizedBox(
+                height: 10,
               ),
-        SizedBox(
-          height: 10,
-        ),
-        FloatingActionButton.extended(
-          backgroundColor: Colors.white,
-          onPressed: () => upLoadimg(),
-          label: Text(
-            "Choose image",
-            style: TextStyle(color: Colors.black),
-          ),
-        ),
-        SizedBox(height: 5)
-      ],
-    )));
+              FloatingActionButton.extended(
+                backgroundColor: Colors.white,
+                onPressed: () {
+                  setState(() {
+                    notdone = true;
+                  });
+                  upLoadimg();
+                },
+                label: Text(
+                  "Choose image",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+              SizedBox(height: 5)
+            ],
+          )));
   }
 }
 

@@ -30,16 +30,23 @@ class CompanySignupFormState extends State<CompanySignupForm> {
   TextEditingController city = TextEditingController();
   TextEditingController regioncontroller = TextEditingController();
   PageController pgecontroller = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    regioncontroller.text = "ASHANTI";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: MediaQuery.of(context).size.height,
       child: Stepper(
         type: StepperType.horizontal,
         currentStep: currentstep,
         onStepContinue: () {
           setState(() {
-            currentstep < 1 ? currentstep++ : null;
-            // tonext == true ? currentstep++ : null;
+            tonext == true ? currentstep++ : null;
           });
         },
         onStepTapped: (int step) {

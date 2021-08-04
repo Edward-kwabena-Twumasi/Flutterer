@@ -21,7 +21,7 @@ class Booking extends StatelessWidget {
 }
 
 class Book extends StatefulWidget {
-  Seat seat;
+ final Seat seat;
   Book({required this.seat});
   BookState createState() => BookState();
 }
@@ -30,9 +30,9 @@ class BookState extends State<Book> {
   var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
   final plugin = PaystackPlugin();
   var seatids = [];
-  int? unitprice;
+  int unitprice=10;
   int chosen = 0;
-  int? total;
+  int total=0;
   Color? seatcolor;
   Color? chosencolor;
   @override
@@ -40,7 +40,7 @@ class BookState extends State<Book> {
     seatcolor = Colors.grey;
     unitprice = widget.seat.unitprice;
     chosen = 0;
-    total = chosen * unitprice!;
+    total = chosen * unitprice;
     plugin.initialize(publicKey: publicKey);
     super.initState();
   }
@@ -89,23 +89,32 @@ class BookState extends State<Book> {
                 itemCount: widget.seat.seats,
                 itemBuilder: (BuildContext ctx, index) {
                   return FloatingActionButton.extended(
-                    label: Text((index+1).toString()),
-                    icon: Icon(Icons.chair),
+                    label: Text((index + 1).toString()),
+                    icon: Icon(Icons.chair,
+                        ),
                     heroTag: index.toString(),
                     key: Key("Seat numbers" + index.toString()),
                     backgroundColor:
-                        seatids.contains(index) ? Colors.brown : seatcolor,
+                        seatids.contains(index) ? Colors.green[300] : seatcolor,
                     onPressed: () {
                       print(index);
                       if (!seatids.contains(index)) {
                         setState(() {
                           seatids.add(index);
                           chosen += 1;
+                          total=(chosen*unitprice);
                           chosencolor;
                           seatcolor;
                         });
-                      } else
+                      } else {
                         print("seat already chosen");
+                        setState(() {
+                          seatids.remove(index);
+                         chosen -= 1;
+                         total=(chosen*unitprice);
+                        });
+                        
+                      }
                       showModalBottomSheet(
                           barrierColor: Colors.indigo[300],
                           backgroundColor: Colors.indigo[200],
@@ -139,35 +148,40 @@ class BookState extends State<Book> {
                                             child: ListView(
                                               shrinkWrap: true,
                                               children: [
-                                                Text("Number of seats : " +
-                                                    chosen.toString(),
-                                                     style: TextStyle(
-                                              fontWeight: FontWeight.bold,fontSize:26)
-                                                    ),
+                                                Text(
+                                                    "Number of seats : " +
+                                                        chosen.toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 26)),
                                                 Padding(
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: ListTile(
                                                     title: Text("Seats"),
-                                                    subtitle: SingleChildScrollView(
+                                                    subtitle:
+                                                        SingleChildScrollView(
                                                       child: ListView.builder(
                                                           shrinkWrap: true,
-                                                          itemCount: seatids.length,
+                                                          itemCount:
+                                                              seatids.length,
                                                           itemBuilder:
-                                                              (BuildContext context,
+                                                              (BuildContext
+                                                                      context,
                                                                   indx) {
                                                             return Padding(
                                                               padding:
                                                                   const EdgeInsets
                                                                       .all(3.0),
                                                               child: ListTile(
-                                                                tileColor: Colors
-                                                                    .grey[200],
+                                                                tileColor:
+                                                                    Colors.grey[
+                                                                        200],
                                                                 shape: RoundedRectangleBorder(
                                                                     borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                20)),
+                                                                        BorderRadius.circular(
+                                                                            20)),
                                                                 title: Text(seatids[
                                                                         indx]
                                                                     .toString()),
@@ -178,12 +192,14 @@ class BookState extends State<Book> {
                                                                           print(
                                                                               "cancel");
                                                                         },
-                                                                        icon: Icon(
+                                                                        icon:
+                                                                            Icon(
                                                                           Icons
                                                                               .cancel,
-                                                                          size: 30,
-                                                                          color: Colors
-                                                                              .red,
+                                                                          size:
+                                                                              30,
+                                                                          color:
+                                                                              Colors.red,
                                                                         )),
                                                               ),
                                                             );
@@ -202,7 +218,7 @@ class BookState extends State<Book> {
                                         heroTag: "pay",
                                         onPressed: () async {
                                           Charge charge = Charge()
-                                            ..amount = total!
+                                            ..amount = total
                                             ..reference =
                                                 Timestamp.now().toString()
                                             // or ..accessCode = _getAccessCodeFrmInitialization()
@@ -211,14 +227,15 @@ class BookState extends State<Book> {
                                             ..accessCode = FirebaseAuth
                                                 .instance.currentUser!.uid
                                                 .substring(1, 2);
-                                          CheckoutResponse response = await plugin
-                                              .checkout(
+                                          CheckoutResponse response =
+                                              await plugin
+                                                  .checkout(
                                             context,
                                             method: CheckoutMethod
                                                 .selectable, // Defaults to CheckoutMethod.selectable
                                             charge: charge,
                                           )
-                                              .catchError((e) {
+                                                  .catchError((e) {
                                             print(e);
                                           });
                                         },
@@ -253,8 +270,7 @@ class BookState extends State<Book> {
                     })
               ],
             )
-          ]),
-        ));
+          ])));
   }
 
   Widget itemBuilder(BuildContext context, int index) {

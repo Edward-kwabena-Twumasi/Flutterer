@@ -59,50 +59,52 @@ class DashAppState extends State<DashApp> {
       stopstate.add(false);
     }
     bool value = false;
-    return Container(
-      height: 400,
-      child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: howmany,
-          itemBuilder: (BuildContext, index) {
-            return Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Card(
-                elevation: 18,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: controls[index],
-                    ),
-                    SwitchListTile(
-                        title: Text("PIck up point"),
-                        subtitle: Text("switch on if a pickup point"),
-                        activeColor: Colors.lightBlue,
-                        value: pickstate[index],
-                        onChanged: (bool val) {
-                          setState(() {
-                            pickstate[index] = val;
-                            pickstate = pickstate;
-                          });
-                        }),
-                    SwitchListTile(
-                        title: Text("Stop point"),
-                        subtitle: Text("switch on if a stop point"),
-                        value: stopstate[index],
-                        onChanged: (bool val) {
-                          print(val);
-                          setState(() {
-                            stopstate[index] = val;
-                            stopstate = stopstate;
-                          });
-                        }),
-                    Divider(height: 4, indent: 3, color: Colors.lightBlue)
-                  ],
+    return StatefulBuilder(builder: (BuildContext context, setstate) {
+      return Container(
+        height: 400,
+        child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: howmany,
+            itemBuilder: (BuildContext, index) {
+              return Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Card(
+                  elevation: 18,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: controls[index],
+                      ),
+                      SwitchListTile(
+                          title: Text("PIck up point"),
+                          subtitle: Text("switch on if a pickup point"),
+                          activeColor: Colors.lightBlue,
+                          value: pickstate[index],
+                          onChanged: (bool val) {
+                            setState(() {
+                              pickstate[index] = val;
+                              pickstate = pickstate;
+                            });
+                          }),
+                      SwitchListTile(
+                          title: Text("Stop point"),
+                          subtitle: Text("switch on if a stop point"),
+                          value: stopstate[index],
+                          onChanged: (bool val) {
+                            print(val);
+                            setState(() {
+                              stopstate[index] = val;
+                              stopstate = stopstate;
+                            });
+                          }),
+                      Divider(height: 4, indent: 3, color: Colors.lightBlue)
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
-    );
+              );
+            }),
+      );
+    });
   }
 
   List<String> places = [];
@@ -121,6 +123,7 @@ class DashAppState extends State<DashApp> {
       drivername = TextEditingController(),
       driverphone = TextEditingController(),
       busname = TextEditingController(),
+      fare = TextEditingController(),
       latitude = TextEditingController(),
       longitude = TextEditingController(),
       busnumber = TextEditingController(),
@@ -273,7 +276,7 @@ class DashAppState extends State<DashApp> {
                                                 {
                                                   "name": busname.text,
                                                   "number": busnumber.text,
-                                                  "seats": seatcontroller,
+                                                  "seats": int.parse(seatcontroller.text) ,
                                                   "image": imageurl,
                                                   "about": about.text
                                                 }
@@ -509,11 +512,12 @@ class DashAppState extends State<DashApp> {
                                                                   .text)
                                                       .then((value) {
                                                     setState(() {
-                                                      latitude.text =
-                                                          value.first.latitude.toString();
-                                                           longitude.text =
-                                                          value.first.longitude.toString();
-
+                                                      latitude.text = value
+                                                          .first.latitude
+                                                          .toString();
+                                                      longitude.text = value
+                                                          .first.longitude
+                                                          .toString();
                                                     });
 
                                                     print(value);
@@ -570,9 +574,11 @@ class DashAppState extends State<DashApp> {
                                                         .text
                                                         .toUpperCase(),
                                                     "city": citycontroller.text,
-                                                    "cordinates":GeoPoint(double.parse(latitude.text),
-                                                     double.parse(longitude.text)),
-                                                   
+                                                    "cordinates": GeoPoint(
+                                                        double.parse(
+                                                            latitude.text),
+                                                        double.parse(
+                                                            longitude.text)),
                                                     "id": idcontroller.text,
                                                     "destinations":
                                                         destcontroller.text
@@ -672,14 +678,19 @@ class DashAppState extends State<DashApp> {
                                               ))
                                         ]),
                                       ),
-                                      interroutes(routenum!),
-                                      OptionButton(
-                                          options: vehivles,
-                                          onchange: changed,
-                                          dropdownValue: initialval),
-                                      // InputFields("Bus id", idcontroller,
-                                      //     Icons.input, TextInputType.text),
+                                     
+                                         interroutes(routenum!)
+                                     ,
+                                      StatefulBuilder(builder:
+                                          (BuildContext context, setstate) {
+                                        return OptionButton(
+                                            options: vehivles,
+                                            onchange: changed,
+                                            dropdownValue: initialval);
+                                      }),
                                       InputFields("Seats", seatcontroller,
+                                          Icons.input, TextInputType.number),
+                                           InputFields("fare", fare,
                                           Icons.input, TextInputType.number),
                                       InputFields("distance/km", distcontroller,
                                           Icons.input, TextInputType.number),
@@ -687,7 +698,7 @@ class DashAppState extends State<DashApp> {
                                         children: [
                                           Expanded(
                                             child: InputFields(
-                                                "Date : YYYY-MM-DD",
+                                                "Date : YYYY/MM/DD",
                                                 datecontroller,
                                                 Icons.input,
                                                 TextInputType.datetime),
@@ -701,12 +712,13 @@ class DashAppState extends State<DashApp> {
                                           )
                                         ],
                                       ),
-
-                                      OptionButton(
-                                          options: drivers,
-                                          onchange: changed1,
-                                          dropdownValue: initialval1),
-
+                                      StatefulBuilder(builder:
+                                          (BuildContext context, setstate) {
+                                        return OptionButton(
+                                            options: drivers,
+                                            onchange: changed1,
+                                            dropdownValue: initialval1);
+                                      }),
                                       FloatingActionButton.extended(
                                           onPressed: () {
                                             for (int i = 0;
@@ -728,17 +740,22 @@ class DashAppState extends State<DashApp> {
                                               "interoutes": interoutes,
                                               "distance": int.parse(
                                                   distcontroller.text),
-                                              "datetime": DateTime.parse(
-                                                  datecontroller.text +
+                                              "date": DateTime.parse(
+                                                  datecontroller.text
+                                                          .replaceAll("/", "") +
                                                       " " +
                                                       timecontroller.text),
                                               "seats": int.parse(
                                                   seatcontroller.text),
                                               "company": companyname,
-                                              "vehid": idcontroller.text,
-                                              "driverid": phonecontroller.text,
+                                              "vehid": initialval,
+                                               "full": false,
+                                                "fare": int.parse(
+                                                  fare.text),
+                                              "driverid": initialval1,
                                               "triptype": companytype
-                                            });
+                                            }).then((value) => print(
+                                                    "Trip added successfullly"));
                                           },
                                           label: Text("Add Trip"))
                                     ]),
@@ -805,7 +822,7 @@ class DashboardState extends State<Dashboard> {
                     if (snapshot.data!.size > 0) {
                       companyname =
                           snapshot.data!.docs[0].get('registered_name');
-                      triptype = widget.companytype;
+                     
                     }
 
                     print(companyname);
@@ -815,48 +832,91 @@ class DashboardState extends State<Dashboard> {
                       shrinkWrap: true,
                       children: snapshot.data!.docs
                           .map((doc) => Center(
-                                child: Column(
-                                  children: [
-                                    Text("Not verified",
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red)),
-                                    Text(doc['registered_name'],
-                                        style: TextStyle(
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.bold)),
-                                    ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount: doc['regions'].length,
-                                        itemBuilder: (context, index) {
-                                          return ExpansionTile(
-                                              title:
-                                                  Text(doc['regions'][index]),
-                                              children: doc['stations'].length <
-                                                      1
-                                                  ? [Text("Add stations")]
-                                                  : List.unmodifiable(() sync* {
-                                                      for (var i = 0;
-                                                          i <
-                                                              doc['stations']
-                                                                  .length;
-                                                          i++) {
-                                                        if (doc['stations'][i]
-                                                                ['region'] ==
-                                                            doc['regions']
-                                                                [index]) {
-                                                          yield ListTile(
-                                                            title: Text(
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Text("Not verified",
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red)),
+                                      Text(doc['registered_name'],
+                                          style: TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold)),
+                                      ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: doc['regions'].length,
+                                          itemBuilder: (context, index) {
+                                            return ExpansionTile(
+                                                title:
+                                                    Text(doc['regions'][index]),
+                                                children: doc['stations']
+                                                            .length <
+                                                        1
+                                                    ? [Text("Add stations")]
+                                                    : List.unmodifiable(
+                                                        () sync* {
+                                                        for (var i = 0;
+                                                            i <
                                                                 doc['stations']
-                                                                        [i]
-                                                                    ['name']),
-                                                          );
+                                                                    .length;
+                                                            i++) {
+                                                          if (doc['stations'][i]
+                                                                  ['region'] ==
+                                                              doc['regions']
+                                                                  [index]) {
+                                                            yield ListTile(
+                                                              title: Text(
+                                                                  doc['stations']
+                                                                          [i]
+                                                                      ['name']),
+                                                            );
+                                                          }
                                                         }
-                                                      }
-                                                    }()));
-                                        }),
-                                  ],
+                                                      }()));
+                                          }),
+                                      ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: doc['drivers'].length > 0
+                                              ? doc['drivers'].length
+                                              : 0,
+                                          itemBuilder:
+                                              (BuildContext context, idx) {
+                                            if (!drivers.contains(
+                                                doc['drivers'][idx]["phone"])) {
+                                              drivers.add(
+                                                  doc['drivers'][idx]["phone"]);
+                                            }
+
+                                            return ListTile(
+                                                title: Text(doc['drivers'][idx]
+                                                    ["name"]),
+                                                subtitle: Text(
+                                                  doc['drivers'][idx]["phone"],
+                                                ));
+                                          }),
+                                      ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: doc['vehicles'].length > 0
+                                              ? doc['vehicles'].length
+                                              : 0,
+                                          itemBuilder:
+                                              (BuildContext context, idx) {
+                                                if (!vehivles.contains(doc['vehicles'][idx]["number"]) ) {
+                                                  vehivles.add(
+                                                doc['vehicles'][idx]["number"]);
+                                                }
+                                            
+                                            return ListTile(
+                                                title: Text(doc['vehicles'][idx]
+                                                    ["name"]),
+                                                subtitle: Text(
+                                                  doc['vehicles'][idx]["number"],
+                                                ));
+                                          }),
+                                    ],
+                                  ),
                                 ),
                               ))
                           .toList());
@@ -901,8 +961,8 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
                       subtitle: ListView(
                         shrinkWrap: true,
                         children: [
-                          new Text(data['from'] + " ===> " + data['to']),
-                          new Text("Bus id : " + data['busnumber'].toString()),
+                          new Text(data['from'] + " > " + data['to']),
+                          new Text("Vehicle id : " + data['vehid'].toString()),
                         ],
                       ),
                     );

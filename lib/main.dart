@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
+import 'package:myapp/screens/admin.dart';
 import 'package:myapp/screens/agentlogin.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:myapp/screens/signup.dart';
@@ -92,6 +93,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         routes: {
           "/home": (context) => ButtomNav(),
+          "/admin": (context) => Admin(),
           "/agentlogin": (context) => MyCompApp()
         },
         title: 'Great Travelling App',
@@ -106,7 +108,11 @@ class AppHome extends StatelessWidget {
         backgroundColor: Colors.white,
         title: ListTile(
           leading: Icon(Icons.star, color: Colors.amber),
-          trailing: Icon(Icons.star, color: Colors.amber),
+          trailing: TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/admin');
+              },
+              child: Text("Admin")),
           title: Center(
             child: Text(
               "Travel Mates",
@@ -249,11 +255,11 @@ class MyFormState extends State<MyForm> {
                               onPressed: () {
                                 // Validate will return true if the form is valid, or false if
                                 // the form is invalid.
-                                
+
                                 if (_formKey.currentState!.validate()) {
                                   setState(() {
-                                  request = true;
-                                });
+                                    request = true;
+                                  });
                                   print(value.signinstate);
                                   value
                                       .signInWithMPass(
@@ -284,7 +290,6 @@ class MyFormState extends State<MyForm> {
                           request == true
                               ? CircularProgressIndicator()
                               : Text(""),
-                             
                         ],
                       ),
                     ),

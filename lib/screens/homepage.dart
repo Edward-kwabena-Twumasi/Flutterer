@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/screens/chatscreen.dart';
 
 import 'package:myapp/screens/completebook.dart';
 import 'package:myapp/screens/reportscreen.dart';
@@ -16,7 +17,6 @@ import 'package:myapp/components/getlocation.dart';
 import 'package:geocoding/geocoding.dart';
 
 import 'googlemap.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 enum companyFilters { VIP, STC, MMT }
 enum queryFilters { isEqualTo }
@@ -29,10 +29,11 @@ void main() {
 
 // TripClass onetrip =
 //     TripClass("Obuasi", "Obuasi", "10:00", "20 10 2021", "normal");
+List triptype = ["Bus", "Flight", "Train"];
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 List<Interoutes> routes = [];
 Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid", routes);
-String triptype = "Bus";
+
 Timestamp now = Timestamp.now();
 DateTime time =
     DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -63,11 +64,12 @@ class ButtomNavState extends State<ButtomNav> {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        "/matchingtrips": (context) => Trips(onetrip, triptype),
+        "/matchingtrips": (context) => Trips(onetrip, triptype[1]),
         "/location": (context) => GeolocatorWidget(),
         "/completebook": (context) => Booking(),
         "/reports": (context) => Reporter(),
-        "/map": (context) => Mymap()
+        "/map": (context) => Mymap(),
+        "/chat": (context) => ChatApp()
       },
       home: Scaffold(
           appBar: AppBar(
@@ -106,7 +108,6 @@ class TabBarDemo extends StatefulWidget {
 }
 
 class TabBarDemoState extends State<TabBarDemo> {
-  List triptype = ["Bus", "Flight", "Train"];
   List<String> typelist = ["Local", "International"];
   List<String> returnlist = ["Retrun trip", "One Time"];
   void initState() {
@@ -162,7 +163,7 @@ class TabBarDemoState extends State<TabBarDemo> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Locations(triptype: triptype[0]),
+                    Locations(typeoftrip: triptype[0]),
                   ],
                 ),
               ),
@@ -180,7 +181,7 @@ class TabBarDemoState extends State<TabBarDemo> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Locations(triptype: triptype[2]),
+                    Locations(typeoftrip: triptype[2]),
                   ],
                 ),
               ),
@@ -222,7 +223,7 @@ class TabBarDemoState extends State<TabBarDemo> {
                         ),
                       ),
                     ),
-                    Locations(triptype: triptype[1]),
+                    Locations(typeoftrip: triptype[1]),
                   ],
                 ),
               ),
@@ -234,19 +235,10 @@ class TabBarDemoState extends State<TabBarDemo> {
   }
 }
 
-Widget region() {
-  TextEditingController mycontroller = TextEditingController();
-  return Container(
-      child: Center(),
-      height: 70,
-      padding: EdgeInsets.all(8),
-      margin: EdgeInsets.all(15));
-}
-
 class Locations extends StatefulWidget {
-  const Locations({Key? key, required this.triptype}) : super(key: key);
+  const Locations({Key? key, required this.typeoftrip}) : super(key: key);
 
-  final String triptype;
+  final String typeoftrip;
   @override
   LocationsState createState() => LocationsState();
 }
@@ -276,6 +268,7 @@ class LocationsState extends State<Locations> {
                   child: Row(
                     children: [
                       FloatingActionButton.extended(
+                        heroTag: "getpos",
                         onPressed: () async {
                           var position = await Geolocator.getCurrentPosition(
                                   desiredAccuracy: LocationAccuracy.best)
@@ -303,6 +296,7 @@ class LocationsState extends State<Locations> {
                       ),
                       Expanded(
                           child: FloatingActionButton.extended(
+                              heroTag: "seemap",
                               onPressed: () {
                                 Navigator.pushNamed(context, "/map");
                               },
@@ -338,6 +332,7 @@ class LocationsState extends State<Locations> {
                   SizedBox(
                     height: 40,
                     child: FloatingActionButton(
+                      heroTag: "dosearch",
                       splashColor: Colors.white,
                       shape: StadiumBorder(),
                       onPressed: () {
@@ -346,10 +341,11 @@ class LocationsState extends State<Locations> {
                             : onetrip.fromLoc = from.text.trim();
                         onetrip.toLoc = to.text;
                         setState(() {
-                          triptype = widget.triptype;
+                          widget.typeoftrip;
                         });
-                        print("clicked for : " + triptype);
+                        print("clicked for : " + widget.typeoftrip);
                         print(onetrip.date);
+                        print(widget.typeoftrip +onetrip.fromLoc+onetrip.toLoc);
                         Navigator.pushNamed(context, "/matchingtrips");
                       },
                       child: Text("Search"),
@@ -471,9 +467,9 @@ class TripsState extends State<Trips> {
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
-                          .where("company", whereIn: filterquery)
-                          .where("triptype", isEqualTo: widget.triptype)
-                          .snapshots(),
+                          //  .where("company", whereIn: filterquery)
+                           .where("triptype", isEqualTo: widget.triptype)
+                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (!snapshot.hasData &&
@@ -494,6 +490,7 @@ class TripsState extends State<Trips> {
                         } else if (snapshot.hasError) {
                           print(snapshot.error);
                         } else if (snapshot.hasData) {
+                          print(snapshot.data!.size);
                           // ignore: unnecessary_statements
                           results = snapshot.data!.size;
                           isfound = true;
@@ -511,15 +508,15 @@ class TripsState extends State<Trips> {
                                     elevation: 5,
                                     child: Column(
                                       children: [
-                                        ListView.builder(
-                                            shrinkWrap: true,
-                                            itemCount: doc['date'].length,
-                                            itemBuilder:
-                                                (BuildContext context, idx) {
-                                              return Text(doc['date'][idx]
-                                                  .toDate()
-                                                  .toString());
-                                            }),
+                                        // ListView.builder(
+                                        //     shrinkWrap: true,
+                                        //     itemCount: doc['date'].length,
+                                        //     itemBuilder:
+                                        //         (BuildContext context, idx) {
+                                        //       return Text(doc['date'][idx]
+                                        //           .toDate()
+                                        //           .toString());
+                                        //     }),
                                         ListTile(
                                             title: Row(
                                               children: [
@@ -555,6 +552,7 @@ class TripsState extends State<Trips> {
                                                 doc['seats'].toString() +
                                                     " Available"),
                                             subtitle: FloatingActionButton(
+                                                heroTag: "book",
                                                 onPressed: () {
                                                   for (var i = 0;
                                                       i <
@@ -569,8 +567,7 @@ class TripsState extends State<Trips> {
                                                         doc['interoutes'][i]
                                                             ['stop']));
                                                   }
-                                                  seat.busnumber =
-                                                      doc["busnumber"];
+                                                  seat.vehid = doc["vehid"];
                                                   seat.from = doc["from"];
                                                   seat.to = doc["to"];
                                                   seat.seats = doc["seats"];
@@ -626,7 +623,9 @@ class HelpClass extends StatelessWidget {
             children: [
               FloatingActionButton.extended(
                 heroTag: "cheap",
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, '/chat');
+                },
                 label: Text("Booking assistant"),
                 icon: Icon(Icons.money),
               ),
@@ -711,6 +710,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
         _selectedDate.value = newSelectedDate;
         time = DateTime(_selectedDate.value.year, _selectedDate.value.month,
             _selectedDate.value.day);
+        datecontroller.text = time.toString();
         onetrip.date = DateTime(_selectedDate.value.year,
             _selectedDate.value.month, _selectedDate.value.day);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -741,6 +741,10 @@ class UserInfoClass extends StatefulWidget {
 }
 
 class UserInfoClassState extends State<UserInfoClass> {
+  Color starredcolor = Colors.red;
+  Color unstarredcolor = Colors.grey;
+  int stars = 5;
+  var starred = [];
   String? setemail = "sign in";
   String? setname = "yes sign in";
   void initState() {
@@ -752,55 +756,194 @@ class UserInfoClassState extends State<UserInfoClass> {
     return Scaffold(
       appBar: AppBar(title: Text("Profile")),
       body: Consumer<UserState>(
-        builder: (context, value, child) => Column(
-          children: [
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(150),
-                child: Container(
-                    color: Colors.amber,
-                    height: 100,
-                    width: 100,
-                    child: Stack(children: [
-                      Positioned.fill(child: Text("Hi")),
-                      Positioned(
-                          right: 5,
-                          bottom: 2,
-                          child: IconButton(
-                              onPressed: () {}, icon: Icon(Icons.photo_camera)))
+        builder: (context, value, child) => SingleChildScrollView(
+          child: Column(
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(150),
+                  child: Container(
+                      color: Colors.amber,
+                      height: 100,
+                      width: 100,
+                      child: Stack(children: [
+                        Positioned.fill(child: Text("Hi")),
+                        Positioned(
+                            right: 5,
+                            bottom: 2,
+                            child: IconButton(
+                                onPressed: () {},
+                                icon: Icon(Icons.photo_camera)))
+                      ])),
+                ),
+              ),
+              Center(
+                  child: FloatingActionButton.extended(
+                onPressed: () {},
+                label: Text("Health info"),
+                icon: Icon(Icons.local_hospital),
+              )),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                elevation: 10,
+                child: ListTile(
+                  title: Text("Email"),
+                  subtitle: Text(value.loggedinmail.toString()),
+                ),
+              ),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                elevation: 10,
+                child: ListTile(
+                  title: Text("Phone"),
+                  subtitle: Text(value.loggedinmail.toString()),
+                ),
+              ),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                elevation: 10,
+                child: ListTile(
+                    title: Text("Address"),
+                    subtitle:
+                        ExpansionTile(title: Text("Adress info"), children: [
+                      ListTile(
+                        title: Text("Region"),
+                        subtitle: Text(value.loggedinmail.toString()),
+                      ),
+                      ListTile(
+                        title: Text("City"),
+                        subtitle: Text(value.loggedinmail.toString()),
+                      ),
+                      ListTile(
+                        title: Text("House Address"),
+                        subtitle: Text(value.loggedinmail.toString()),
+                      ),
                     ])),
               ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                title: Text("Email"),
-                subtitle: Text(value.loggedinmail.toString()),
-              ),
-            ),
-            Row(children: [
-              Expanded(
-                  child: FloatingActionButton.extended(
-                heroTag: "rate",
-                icon: Icon(Icons.star),
-                onPressed: () {},
-                label: Text("Rate Us",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              )),
-              Expanded(
-                  child: FloatingActionButton.extended(
-                heroTag: "review",
-                icon: Icon(Icons.edit),
-                onPressed: () {},
-                label: Text("Write review",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              ))
-            ])
-          ],
+              Row(children: [
+                Expanded(
+                    child: FloatingActionButton.extended(
+                  heroTag: "rate",
+                  icon: Icon(Icons.star),
+                  onPressed: () {
+                    showModalBottomSheet(
+                        backgroundColor: Colors.amber[100],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(50),
+                                topRight: Radius.circular(50))),
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return FractionallySizedBox(
+                            heightFactor: 0.5,
+                            child: Center(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Rate",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 35),
+                                  ),
+                                  Expanded(
+                                      child: ListTile(
+                                          title: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: stars,
+                                              itemBuilder:
+                                                  (BuildContext context,
+                                                      index) {
+                                                return StatefulBuilder(
+                                                  builder:
+                                                      (BuildContext context,
+                                                          setState) {
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: IconButton(
+                                                          onPressed: () {
+                                                            if (!starred
+                                                                .contains(
+                                                                    index)) {
+                                                              setState(() {
+                                                                starred
+                                                                    .add(index);
+
+                                                                stars;
+                                                              });
+
+                                                              print(starred
+                                                                  .length);
+                                                              print(
+                                                                  starredcolor);
+                                                              print(index);
+                                                            } else {
+                                                              setState(() {
+                                                                starred.remove(
+                                                                    index);
+                                                                print(starred
+                                                                    .length);
+                                                                stars;
+                                                                print(
+                                                                    starredcolor);
+                                                                print(index);
+                                                              });
+                                                            }
+                                                          },
+                                                          icon: Icon(Icons.star,
+                                                              size: 30,
+                                                              color: starred
+                                                                      .contains(
+                                                                          index)
+                                                                  ? starredcolor
+                                                                  : unstarredcolor)),
+                                                    );
+                                                  },
+                                                );
+                                              })))
+                                ],
+                              ),
+                            ),
+                          );
+                        });
+                  },
+                  label: Text("Rate",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                )),
+                Expanded(
+                    child: FloatingActionButton.extended(
+                  heroTag: "review",
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    showModalBottomSheet(
+                        backgroundColor: Colors.amber[100],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(50),
+                                topRight: Radius.circular(50))),
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return FractionallySizedBox(
+                            child: Text("Write review"),
+                          );
+                        });
+                  },
+                  label: Text("Rreview",
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                ))
+              ])
+            ],
+          ),
         ),
       ),
     );
@@ -808,15 +951,15 @@ class UserInfoClassState extends State<UserInfoClass> {
 }
 
 class Seat {
-  String busnumber;
+  String vehid;
   int seats;
   int unitprice;
   String from;
   String to;
   String tripid;
   List<Interoutes> routes;
-  Seat(this.busnumber, this.seats, this.unitprice, this.from, this.to,
-      this.tripid, this.routes);
+  Seat(this.vehid, this.seats, this.unitprice, this.from, this.to, this.tripid,
+      this.routes);
 }
 
 class Interoutes {

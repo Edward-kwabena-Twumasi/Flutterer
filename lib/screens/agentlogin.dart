@@ -8,7 +8,7 @@ import 'package:myapp/screens/companysignup.dart';
 //irebase
 
 // Import the firebase_core plugin
-import 'package:firebase_core/firebase_core.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -143,6 +143,7 @@ class AgentFormState extends State<AgentForm> {
                 child: Form(
                   key: _formKey,
                   child: Column(
+                    mainAxisSize:MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
@@ -158,7 +159,7 @@ class AgentFormState extends State<AgentForm> {
                         )),
                       ),
                       ListTile(
-                        tileColor: Colors.red[100],
+                        tileColor: Colors.grey[100],
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -166,7 +167,7 @@ class AgentFormState extends State<AgentForm> {
                               side: BorderSide.none,
                               selected: select1,
                               labelPadding: EdgeInsets.all(5),
-                              selectedColor: Colors.green[100],
+                              selectedColor: Colors.lightBlue[300],
                               onPressed: () {
                                 setState(() {
                                   companytype = "Bus";
@@ -185,7 +186,7 @@ class AgentFormState extends State<AgentForm> {
                                 side: BorderSide.none,
                                 selected: select2,
                                 labelPadding: EdgeInsets.all(5),
-                                selectedColor: Colors.green[100],
+                                selectedColor: Colors.lightBlue[300],
                                 onPressed: () {
                                   setState(() {
                                     companytype = "Flight";
@@ -203,7 +204,7 @@ class AgentFormState extends State<AgentForm> {
                                 side: BorderSide.none,
                                 selected: select3,
                                 labelPadding: EdgeInsets.all(5),
-                                selectedColor: Colors.green[100],
+                                selectedColor: Colors.lightBlue[300],
                                 onPressed: () {
                                   setState(() {
                                     companytype = "Train";

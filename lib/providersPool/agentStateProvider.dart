@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+//import 'package:firebase_core/firebase_core.dart';
 
 enum companyStates {
   signedIn,
@@ -96,7 +96,7 @@ class CompanyState extends ChangeNotifier {
       'address': {'region': region, 'city': city, 'apartment': apartment},
       'regions': [region],
       'stations': [],
-      'buses': [],
+      'vehicles': [],
       'drivers': [],
       'id': FirebaseAuth.instance.currentUser!.uid
       // 42
