@@ -28,7 +28,9 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Get location details")),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text("Get location details")),
       body:Text("Position"),
       floatingActionButton: Stack(
         children: <Widget>[

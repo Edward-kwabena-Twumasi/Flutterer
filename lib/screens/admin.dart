@@ -13,7 +13,9 @@ class Admin extends StatelessWidget {
     return MaterialApp(
       title: title,
       home: Scaffold(
+        
           appBar: AppBar(
+            backgroundColor: Colors.white,
             title: Text("Admin panel"),
             leading: IconButton(
                 onPressed: () {

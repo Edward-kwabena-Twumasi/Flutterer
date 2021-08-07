@@ -23,6 +23,7 @@ class ChatApp extends StatelessWidget {
       title: title,
       home: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.white,
           title: Text(title),
           leading: IconButton(
               onPressed: () {

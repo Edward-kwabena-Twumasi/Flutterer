@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:myapp/providersPool/userStateProvider.dart';
 //import 'package:firebase_core/firebase_core.dart';
 
 enum companyStates {
@@ -10,12 +11,14 @@ enum companyStates {
   registerNow,
   wrongPassword,
   weakpassword,
-  successful
+  successful,
+  failed
 }
 
 class CompanyState extends ChangeNotifier {
   companyStates? signinstate;
   companyStates? registedstate;
+  companyStates? addedstate;
   String signupmsg = "";
   String? selectregion;
   Future<User?> userState() async {
@@ -80,8 +83,8 @@ class CompanyState extends ChangeNotifier {
     return registedstate;
   }
 
-  Future<void> addCompany(String comptype, String compname, String phone,
-      String email, String region, String city, String apartment) {
+  Future<companyStates> addCompany(String comptype, String compname, String phone,
+      String email, String region, String city, String apartment) async{
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference companies = FirebaseFirestore.instance
         .collection('companies')
@@ -89,7 +92,7 @@ class CompanyState extends ChangeNotifier {
         .collection("Registered Companies");
     // Call the user's CollectionReference to add a new user
 
-    return companies.doc(FirebaseAuth.instance.currentUser!.uid).set({
+    companies.doc(FirebaseAuth.instance.currentUser!.uid).set({
       'type': comptype,
       'registered_name': compname, // John Doe
       'contact': {'phone': phone, 'email': email}, // Stokes and Sons
@@ -101,8 +104,10 @@ class CompanyState extends ChangeNotifier {
       'id': FirebaseAuth.instance.currentUser!.uid
       // 42
     }).then((value) {
-      print("User Added");
-      signupmsg = "Registration completed successfully";
-    }).catchError((error) => print("Failed to add user: $error"));
+      addedstate = companyStates.successful;
+    }).catchError((error) {
+      addedstate = companyStates.failed;
+    });
+    return addedstate!;
   } //adduser
 } //end class

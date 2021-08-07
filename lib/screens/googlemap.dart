@@ -17,13 +17,16 @@ class _MymapState extends State<Mymap> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Map View'),
+          
+          centerTitle:true,
+          title: Text("Map View",style: TextStyle(fontWeight:FontWeight.bold ), ),
+          elevation: 0,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back_ios)),
-          backgroundColor: Colors.lightBlueAccent[200],
+          backgroundColor: Colors.transparent,
         ),
         body: Showmap()
       ),
@@ -43,6 +46,7 @@ class _ShowmapState extends State<Showmap> {
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best);
   }
+  
 
   bool loading = true;
   LatLng _center = LatLng(50, 50);

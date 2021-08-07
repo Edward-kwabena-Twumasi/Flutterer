@@ -1,10 +1,13 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/components/notify.dart';
+import 'package:myapp/main.dart';
 import 'package:myapp/screens/chatscreen.dart';
 
 import 'package:myapp/screens/completebook.dart';
@@ -33,7 +36,7 @@ List triptype = ["Bus", "Flight", "Train"];
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 List<Interoutes> routes = [];
 Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid", routes);
-
+int results = 0;
 Timestamp now = Timestamp.now();
 DateTime time =
     DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -46,11 +49,51 @@ class ButtomNav extends StatefulWidget {
 
 class ButtomNavState extends State<ButtomNav> {
   static List<Widget> pages = [
-    TabBarDemo(),
+    Column(
+      children: [
+        Expanded(child: TabBarDemo()),
+        Container(
+            color: Colors.amber[100],
+            height: 70,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Card(
+                      elevation: 3,
+                      child: FloatingActionButton.extended(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          onPressed: () {},
+                          label: Text("Policy"))),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Card(
+                      elevation: 3,
+                      child: FloatingActionButton.extended(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          onPressed: () {},
+                          label: Text(" offers"))),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Card(
+                      elevation: 3,
+                      child: FloatingActionButton.extended(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          onPressed: () {},
+                          label: Text("Find"))),
+                ),
+              ],
+            ))
+      ],
+    ),
     HelpClass(),
-    Center(
-        child: Text("Notify",
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
+    Notify(),
     UserInfoClass(),
   ];
   int currentindx = 0;
@@ -72,30 +115,22 @@ class ButtomNavState extends State<ButtomNav> {
         "/chat": (context) => ChatApp()
       },
       home: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: Icon(Icons.arrow_back_ios)),
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-              currentIndex: currentindx,
-              backgroundColor: Colors.white,
-              selectedItemColor: Colors.black,
-              unselectedItemColor: Colors.grey,
-              elevation: 8,
-              onTap: swithnav,
-              items: [
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
-                BottomNavigationBarItem(icon: Icon(Icons.help), label: "help"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.notifications), label: "Notify"),
-                BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
-              ]),
-          body: Center(
-            child: pages.elementAt(currentindx),
-          )),
+        bottomNavigationBar: BottomNavigationBar(
+            currentIndex: currentindx,
+            backgroundColor: Colors.white,
+            selectedItemColor: Colors.black,
+            unselectedItemColor: Colors.grey,
+            elevation: 8,
+            onTap: swithnav,
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
+              BottomNavigationBarItem(icon: Icon(Icons.help), label: "help"),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications), label: "Notify"),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
+            ]),
+        body: pages.elementAt(currentindx),
+      ),
     );
   }
 }
@@ -139,9 +174,25 @@ class TabBarDemoState extends State<TabBarDemo> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              "Book your trip",
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+            elevation: 0,
             backgroundColor: Colors.white,
             actions: [
-              IconButton(onPressed: () {}, icon: Icon(Icons.notifications))
+              IconButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut().then((value) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => App()),
+                      );
+                    });
+                  },
+                  icon: Icon(Icons.logout))
             ],
             bottom: TabBar(
               indicatorColor: Colors.lightGreen,
@@ -259,6 +310,8 @@ class LocationsState extends State<Locations> {
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
         child: Center(
             child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
@@ -307,13 +360,11 @@ class LocationsState extends State<Locations> {
               ),
               SearchLocs(
                   direction: 'from', locations: places, searchcontrol: from),
-              SizedBox(height: 5),
               SearchLocs(
                 direction: 'to',
                 locations: places,
                 searchcontrol: to,
               ),
-              SizedBox(height: 5),
               InputFields("Travel date", datecontroller, Icons.date_range,
                   TextInputType.datetime),
               Expanded(
@@ -339,13 +390,17 @@ class LocationsState extends State<Locations> {
                         stripcity
                             ? onetrip.fromLoc = from.text.split(",")[0].trim()
                             : onetrip.fromLoc = from.text.trim();
+
                         onetrip.toLoc = to.text;
+                        onetrip.triptype = widget.typeoftrip;
                         setState(() {
                           widget.typeoftrip;
                         });
                         print("clicked for : " + widget.typeoftrip);
                         print(onetrip.date);
-                        print(widget.typeoftrip +onetrip.fromLoc+onetrip.toLoc);
+                        print(widget.typeoftrip +
+                            onetrip.fromLoc +
+                            onetrip.toLoc);
                         Navigator.pushNamed(context, "/matchingtrips");
                       },
                       child: Text("Search"),
@@ -381,8 +436,8 @@ class TripsState extends State<Trips> {
   // String gttriptype ;
   companyFilters filter = companyFilters.VIP;
   bool isfound = true;
-  int results = 0;
-  List filterquery = ["VIP", "STC", "MMT"];
+
+  List filterquery = ["ALL"];
   void filterall() {
     setState(() {
       filterquery = ["VIP", "STC", "MMT"];
@@ -414,37 +469,40 @@ class TripsState extends State<Trips> {
       routes: {"/completebook": (context) => Booking()},
       home: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.white,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back_ios)),
-          title: Text("Trips Search Results "),
+          centerTitle: true,
+          title: Text(
+            "Search Results",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          elevation: 0,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(children: [
               Container(
-                height: 150,
-                margin: EdgeInsets.all(20),
+                color: Colors.amber[100],
+                height: 50,
+                margin: EdgeInsets.all(10),
                 child: Center(
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      Container(
-                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(Icons.all_out, "All", filterall)),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(Icons.all_out, "VIP", filtervip)),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(Icons.all_out, "STC", filterstc)),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                          child: niceChips(
-                              Icons.all_out, "Metro Mass", filtermmt)),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount:
+                          filterquery.length > 0 ? filterquery.length : 0,
+                      itemBuilder: (BuildContext context, idx) {
+                        return Container(
+                            margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                            child: niceChips(
+                                Icons.filter, filterquery[idx], filterall));
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -452,7 +510,7 @@ class TripsState extends State<Trips> {
                   child: Column(
                 children: [
                   Text(
-                      widget.triptype +
+                      widget._tripdata.triptype +
                           "s " +
                           " from " +
                           widget._tripdata.fromLoc +
@@ -461,15 +519,19 @@ class TripsState extends State<Trips> {
                           " . " +
                           results.toString() +
                           " found",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          color: Colors.lightBlue,
+                          fontSize: 20)),
                   StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
                           //  .where("company", whereIn: filterquery)
-                           .where("triptype", isEqualTo: widget.triptype)
-                           .snapshots(),
+                          .where("triptype",
+                              isEqualTo: widget._tripdata.triptype)
+                          .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (!snapshot.hasData &&
@@ -492,7 +554,7 @@ class TripsState extends State<Trips> {
                         } else if (snapshot.hasData) {
                           print(snapshot.data!.size);
                           // ignore: unnecessary_statements
-                          results = snapshot.data!.size;
+                          results += snapshot.data!.size;
                           isfound = true;
                         } else if (snapshot.data!.size < 1) {
                           isfound = false;
@@ -502,22 +564,19 @@ class TripsState extends State<Trips> {
                                 shrinkWrap: true,
                                 children: snapshot.data!.docs.map((doc) {
                                   results += 1;
+                                  filterquery.add(doc['date']);
                                   return Card(
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8)),
                                     elevation: 5,
                                     child: Column(
                                       children: [
-                                        // ListView.builder(
-                                        //     shrinkWrap: true,
-                                        //     itemCount: doc['date'].length,
-                                        //     itemBuilder:
-                                        //         (BuildContext context, idx) {
-                                        //       return Text(doc['date'][idx]
-                                        //           .toDate()
-                                        //           .toString());
-                                        //     }),
                                         ListTile(
+                                            tileColor:
+                                                widget._tripdata.date.day ==
+                                                        doc['date'].toDate().day
+                                                    ? Colors.amber[100]
+                                                    : Colors.red,
                                             title: Row(
                                               children: [
                                                 Text(doc['from'],
@@ -551,34 +610,49 @@ class TripsState extends State<Trips> {
                                             title: Text(
                                                 doc['seats'].toString() +
                                                     " Available"),
-                                            subtitle: FloatingActionButton(
-                                                heroTag: "book",
-                                                onPressed: () {
-                                                  for (var i = 0;
-                                                      i <
-                                                          doc["interoutes"]
-                                                              .length;
-                                                      i++) {
-                                                    routes.add(Interoutes(
-                                                        doc["interoutes"][i]
-                                                            ['routename'],
-                                                        doc['interoutes'][i]
-                                                            ['pickup'],
-                                                        doc['interoutes'][i]
-                                                            ['stop']));
-                                                  }
-                                                  seat.vehid = doc["vehid"];
-                                                  seat.from = doc["from"];
-                                                  seat.to = doc["to"];
-                                                  seat.seats = doc["seats"];
-                                                  seat.unitprice = doc["fare"];
-                                                  seat.tripid =
-                                                      doc.id.toString();
-                                                  print('clicked');
-                                                  Navigator.pushNamed(
-                                                      context, "/completebook");
-                                                },
-                                                child: Text("Book")))
+                                            subtitle: Row(
+                                              children: [
+                                                Text(widget._tripdata.date
+                                                            .day ==
+                                                        doc['date'].toDate().day
+                                                    ? "Today"
+                                                    : doc['date']
+                                                            .toDate()
+                                                            .day
+                                                            .toString() +
+                                                        "   "),
+                                                FloatingActionButton(
+                                                    heroTag: "book",
+                                                    onPressed: () {
+                                                      for (var i = 0;
+                                                          i <
+                                                              doc["interoutes"]
+                                                                  .length;
+                                                          i++) {
+                                                        routes.add(Interoutes(
+                                                            doc["interoutes"][i]
+                                                                ['routename'],
+                                                            doc['interoutes'][i]
+                                                                ['pickup'],
+                                                            doc['interoutes'][i]
+                                                                ['stop']));
+                                                      }
+                                                      seat.vehid = doc["vehid"];
+                                                      seat.from = doc["from"];
+                                                      seat.to = doc["to"];
+                                                      seat.seats = doc["seats"];
+                                                      seat.unitprice =
+                                                          doc["fare"];
+                                                      seat.tripid =
+                                                          doc.id.toString();
+                                                      print('clicked');
+                                                      Navigator.pushNamed(
+                                                          context,
+                                                          "/completebook");
+                                                    },
+                                                    child: Text("Book")),
+                                              ],
+                                            ))
                                       ],
                                     ),
                                   );
@@ -601,20 +675,27 @@ class TripClass {
   DateTime time;
   DateTime date;
   String tripclass;
-
-  TripClass(this.fromLoc, this.toLoc, this.time, this.date, this.tripclass);
+  String triptype;
+  TripClass(this.fromLoc, this.toLoc, this.time, this.date, this.tripclass,
+      this.triptype);
 }
 
 class HelpClass extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_ios)),
-        title: Text("Find help"),
+        centerTitle: true,
+        title: Text(
+          "Help",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
       ),
       body: Center(
         child: Column(
@@ -745,205 +826,247 @@ class UserInfoClassState extends State<UserInfoClass> {
   Color unstarredcolor = Colors.grey;
   int stars = 5;
   var starred = [];
-  String? setemail = "sign in";
-  String? setname = "yes sign in";
+  var healthinfo = [];
+  Future<void> userdata() async {
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get().then((doc) {
+      if (doc.exists) {
+        print("Document data:" + doc.data()!["phone"]);
+        setState(() {
+          healthinfo = doc.data()!["healthinfo"];
+          user.name = doc.data()!["full_name"];
+          user.city = doc.data()!["city"];
+          user.phone = doc.data()!["phone"];
+          user.email = doc.data()!["email"];
+          user.region = doc.data()!["region"];
+        });
+        
+      } else {
+        // doc.data() will be undefined in this case
+        print("No such document!");
+      }
+    }).catchError((e) {
+      print(e);
+    });
+    ;
+  }
+
+  User user = User("name", "city", "phone", "email", "region");
+  String setname = "Name";
+  // var info = FirebaseFirestore.instance
+  //     .collection("users")
+  //     .doc(FirebaseAuth.instance.currentUser!.uid)
+  //     .get();
   void initState() {
     super.initState();
+    userdata();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
-      body: Consumer<UserState>(
-        builder: (context, value, child) => SingleChildScrollView(
-          child: Column(
-            children: [
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(150),
-                  child: Container(
-                      color: Colors.amber,
-                      height: 100,
-                      width: 100,
-                      child: Stack(children: [
-                        Positioned.fill(child: Text("Hi")),
-                        Positioned(
-                            right: 5,
-                            bottom: 2,
-                            child: IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.photo_camera)))
-                      ])),
-                ),
-              ),
-              Center(
-                  child: FloatingActionButton.extended(
-                onPressed: () {},
-                label: Text("Health info"),
-                icon: Icon(Icons.local_hospital),
-              )),
-              Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                elevation: 10,
-                child: ListTile(
-                  title: Text("Email"),
-                  subtitle: Text(value.loggedinmail.toString()),
-                ),
-              ),
-              Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                elevation: 10,
-                child: ListTile(
-                  title: Text("Phone"),
-                  subtitle: Text(value.loggedinmail.toString()),
-                ),
-              ),
-              Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-                elevation: 10,
-                child: ListTile(
-                    title: Text("Address"),
-                    subtitle:
-                        ExpansionTile(title: Text("Adress info"), children: [
-                      ListTile(
-                        title: Text("Region"),
-                        subtitle: Text(value.loggedinmail.toString()),
-                      ),
-                      ListTile(
-                        title: Text("City"),
-                        subtitle: Text(value.loggedinmail.toString()),
-                      ),
-                      ListTile(
-                        title: Text("House Address"),
-                        subtitle: Text(value.loggedinmail.toString()),
-                      ),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Text(
+          "Profile",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(150),
+                child: Container(
+                    color: Colors.amber,
+                    height: 100,
+                    width: 100,
+                    child: Stack(children: [
+                      Positioned.fill(child: Text("Hi")),
+                      Positioned(
+                          right: 5,
+                          bottom: 2,
+                          child: IconButton(
+                              onPressed: () {}, icon: Icon(Icons.photo_camera)))
                     ])),
               ),
-              Row(children: [
-                Expanded(
-                    child: FloatingActionButton.extended(
-                  heroTag: "rate",
-                  icon: Icon(Icons.star),
-                  onPressed: () {
-                    showModalBottomSheet(
-                        backgroundColor: Colors.amber[100],
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(50),
-                                topRight: Radius.circular(50))),
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) {
-                          return FractionallySizedBox(
-                            heightFactor: 0.5,
-                            child: Center(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "Rate",
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 35),
-                                  ),
-                                  Expanded(
-                                      child: ListTile(
-                                          title: ListView.builder(
-                                              scrollDirection: Axis.horizontal,
-                                              itemCount: stars,
-                                              itemBuilder:
-                                                  (BuildContext context,
-                                                      index) {
-                                                return StatefulBuilder(
-                                                  builder:
-                                                      (BuildContext context,
-                                                          setState) {
-                                                    return Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: IconButton(
-                                                          onPressed: () {
-                                                            if (!starred
-                                                                .contains(
-                                                                    index)) {
-                                                              setState(() {
-                                                                starred
-                                                                    .add(index);
+            ),
+            Center(
+                child: FloatingActionButton.extended(
+              onPressed: () {},
+              label: Text("Health info"),
+              icon: Icon(Icons.local_hospital),
+            )),
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                title: Text("Name"),
+                subtitle: Text(user.name),
+              ),
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                title: Text("Email"),
+                subtitle: Text(user.email),
+              ),
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                title: Text("Phone"),
+                subtitle: Text(user.phone),
+              ),
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 10,
+              child: ListTile(
+                  title: Text("Address"),
+                  subtitle:
+                      ExpansionTile(title: Text("Adress info"), children: [
+                    ListTile(
+                      title: Text("Region"),
+                      subtitle: Text(user.region),
+                    ),
+                    ListTile(
+                      title: Text("City"),
+                      subtitle: Text(user.city),
+                    ),
+                    ListTile(
+                      title: Text("House Address"),
+                      subtitle: Text("House address"),
+                    ),
+                  ])),
+            ),
+            Row(children: [
+              Expanded(
+                  child: FloatingActionButton.extended(
+                heroTag: "rate",
+                icon: Icon(Icons.star),
+                onPressed: () {
+                  showModalBottomSheet(
+                      backgroundColor: Colors.amber[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(50),
+                              topRight: Radius.circular(50))),
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext context) {
+                        return FractionallySizedBox(
+                          heightFactor: 0.5,
+                          child: Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Rate",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 35),
+                                ),
+                                Expanded(
+                                    child: ListTile(
+                                        title: ListView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: stars,
+                                            itemBuilder:
+                                                (BuildContext context, index) {
+                                              return StatefulBuilder(
+                                                builder: (BuildContext context,
+                                                    setState) {
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: IconButton(
+                                                        onPressed: () {
+                                                          if (!starred.contains(
+                                                              index)) {
+                                                            setState(() {
+                                                              starred
+                                                                  .add(index);
 
-                                                                stars;
-                                                              });
+                                                              stars;
+                                                            });
 
+                                                            print(
+                                                                starred.length);
+                                                            print(starredcolor);
+                                                            print(index);
+                                                          } else {
+                                                            setState(() {
+                                                              starred.remove(
+                                                                  index);
                                                               print(starred
                                                                   .length);
+                                                              stars;
                                                               print(
                                                                   starredcolor);
                                                               print(index);
-                                                            } else {
-                                                              setState(() {
-                                                                starred.remove(
-                                                                    index);
-                                                                print(starred
-                                                                    .length);
-                                                                stars;
-                                                                print(
-                                                                    starredcolor);
-                                                                print(index);
-                                                              });
-                                                            }
-                                                          },
-                                                          icon: Icon(Icons.star,
-                                                              size: 30,
-                                                              color: starred
-                                                                      .contains(
-                                                                          index)
-                                                                  ? starredcolor
-                                                                  : unstarredcolor)),
-                                                    );
-                                                  },
-                                                );
-                                              })))
-                                ],
-                              ),
+                                                            });
+                                                          }
+                                                        },
+                                                        icon: Icon(Icons.star,
+                                                            size: 30,
+                                                            color: starred
+                                                                    .contains(
+                                                                        index)
+                                                                ? starredcolor
+                                                                : unstarredcolor)),
+                                                  );
+                                                },
+                                              );
+                                            })))
+                              ],
                             ),
-                          );
-                        });
-                  },
-                  label: Text("Rate",
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
-                )),
-                Expanded(
-                    child: FloatingActionButton.extended(
-                  heroTag: "review",
-                  icon: Icon(Icons.edit),
-                  onPressed: () {
-                    showModalBottomSheet(
-                        backgroundColor: Colors.amber[100],
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(50),
-                                topRight: Radius.circular(50))),
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) {
-                          return FractionallySizedBox(
-                            child: Text("Write review"),
-                          );
-                        });
-                  },
-                  label: Text("Rreview",
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
-                ))
-              ])
-            ],
-          ),
+                          ),
+                        );
+                      });
+                },
+                label: Text("Rate",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              )),
+              Expanded(
+                  child: FloatingActionButton.extended(
+                heroTag: "review",
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  showModalBottomSheet(
+                      backgroundColor: Colors.amber[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(50),
+                              topRight: Radius.circular(50))),
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext context) {
+                        return FractionallySizedBox(
+                          child: Text("Write review"),
+                        );
+                      });
+                },
+                label: Text("Rreview",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ))
+            ])
+          ],
         ),
       ),
     );
@@ -968,4 +1091,13 @@ class Interoutes {
   bool pickup;
 
   Interoutes(this.name, this.pickup, this.stop);
+}
+
+class User {
+  String name;
+  String phone;
+  String email;
+  String city;
+  String region;
+  User(this.name, this.city, this.phone, this.email, this.region);
 }

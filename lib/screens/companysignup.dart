@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
@@ -251,7 +252,8 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                             if (_formKey2.currentState!.validate()) {
                               // Proceed with registration process.
 
-                              value.addCompany(
+                              value
+                                  .addCompany(
                                 companytype,
                                 name.text,
                                 phone.text,
@@ -259,13 +261,36 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                 regioncontroller.text,
                                 city.text,
                                 aptmnt.text,
-                              );
+                              )
+                                  .then((val) {
+                                if (val == companyStates.successful) {
+                                  FirebaseFirestore.instance
+                                      .collection("appstrings")
+                                      .doc("companynamestrings")
+                                      .update({
+                                        "companynames":FieldValue.arrayUnion([name.text.toString()])
+                                      });
+                                  setState(() {
+                                    errormesg =
+                                        "Info Addition complete.Lets get through verification";
+                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Material(
+                                          child: Center(
+                                            child: Text(errormesg),
+                                          ),
+                                        );
+                                      });
+                                }
+                              });
                             }
                           },
                           child: Text('Complete signup'),
                         ),
                       ),
-                      Text(value.signupmsg),
+                      Text(errormesg),
                     ],
                   ),
                 ),

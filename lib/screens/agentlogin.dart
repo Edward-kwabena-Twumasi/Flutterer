@@ -54,7 +54,7 @@ class MyCompApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.amberAccent,
+          backgroundColor: Colors.white,
           leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -64,7 +64,7 @@ class MyCompApp extends StatelessWidget {
             title: Text(
               "Travelling Companies",
               style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
             ),
           ),
           centerTitle: true,

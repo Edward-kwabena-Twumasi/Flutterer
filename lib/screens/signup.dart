@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
+import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 
 //MyForm
@@ -12,6 +13,7 @@ class SignupFormState extends State<SignupForm> {
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
   bool tonext = false;
+  bool ok = false;
   String errors = "";
   int currentindex = 0;
   TextEditingController email = TextEditingController();
@@ -89,15 +91,15 @@ class SignupFormState extends State<SignupForm> {
                                   .registerwithMPass(email.text, passwd.text)
                                   .then((rvalue) {
                                 if (rvalue == userStates.successful) {
-                                  setState(() {});
-                                  tonext = true;
-                                  value.registedmail = email.text;
-                                  print(value.registedmail);
-                                  //Navigator.pushNamed(context, '/home');
+                                  setState(() {
+                                    errors = "Succes!";
+                                    tonext = true;
+                                    value.registedmail = email.text;
+                                  });
                                 } else {
                                   print(value);
                                   setState(() {
-                                    errors = value.toString();
+                                    errors = rvalue.toString();
                                   });
                                 }
                               });
@@ -119,7 +121,11 @@ class SignupFormState extends State<SignupForm> {
             ),
           ),
           Step(
-            title: Text("Personal info",softWrap: true,overflow: TextOverflow.ellipsis,),
+            title: Text(
+              "Personal info",
+              softWrap: true,
+              overflow: TextOverflow.ellipsis,
+            ),
             content: Consumer<UserState>(
               builder: (context, value, child) => Form(
                 key: _formKey2,
@@ -188,7 +194,34 @@ class SignupFormState extends State<SignupForm> {
                                       regioncontroller.text)
                                   .then((rvalue) {
                                 if (value.isadded == userAdded.successful) {
-                                  Navigator.pushNamed(context, '/home');
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Material(
+                                          elevation: 5,
+                                          color: Colors.lightBlue[100],
+                                          child: Center(
+                                            child: ListTile(
+                                              subtitle: TextButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      ok = true;
+                                                    });
+                                                  },
+                                                  child: Text("OK ,got it")),
+                                              title: Text(
+                                                  "Account created successfully.You can now book or edit your profile"),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                  ok
+                                      ?  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => ButtomNav()),
+    
+  )
+                                      : print("Confirm");
                                 }
                               });
                             }

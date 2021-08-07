@@ -17,8 +17,8 @@ void main() {
       builder: (context, _) => DashApp(companytype: "Bus")));
 }
 
-TripClass onetrip =
-    TripClass("Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal");
+TripClass onetrip = TripClass(
+    "Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal", " ");
 String companyname = "";
 List<String> drivers = ["Driver id"];
 List<String> vehivles = ["Vehicle id"];
@@ -60,50 +60,47 @@ class DashAppState extends State<DashApp> {
     }
     bool value = false;
     return StatefulBuilder(builder: (BuildContext context, setstate) {
-      return Container(
-        height: 400,
-        child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: howmany,
-            itemBuilder: (BuildContext, index) {
-              return Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Card(
-                  elevation: 18,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: controls[index],
-                      ),
-                      SwitchListTile(
-                          title: Text("PIck up point"),
-                          subtitle: Text("switch on if a pickup point"),
-                          activeColor: Colors.lightBlue,
-                          value: pickstate[index],
-                          onChanged: (bool val) {
-                            setState(() {
-                              pickstate[index] = val;
-                              pickstate = pickstate;
-                            });
-                          }),
-                      SwitchListTile(
-                          title: Text("Stop point"),
-                          subtitle: Text("switch on if a stop point"),
-                          value: stopstate[index],
-                          onChanged: (bool val) {
-                            print(val);
-                            setState(() {
-                              stopstate[index] = val;
-                              stopstate = stopstate;
-                            });
-                          }),
-                      Divider(height: 4, indent: 3, color: Colors.lightBlue)
-                    ],
-                  ),
+      return ListView.builder(
+          shrinkWrap: true,
+          itemCount: howmany,
+          itemBuilder: (BuildContext, index) {
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Card(
+                elevation: 18,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: controls[index],
+                    ),
+                    SwitchListTile(
+                        title: Text("PIck up point"),
+                        subtitle: Text("switch on if a pickup point"),
+                        activeColor: Colors.lightBlue,
+                        value: pickstate[index],
+                        onChanged: (bool val) {
+                          setState(() {
+                            pickstate[index] = val;
+                            pickstate = pickstate;
+                          });
+                        }),
+                    SwitchListTile(
+                        title: Text("Stop point"),
+                        subtitle: Text("switch on if a stop point"),
+                        value: stopstate[index],
+                        onChanged: (bool val) {
+                          print(val);
+                          setState(() {
+                            stopstate[index] = val;
+                            stopstate = stopstate;
+                          });
+                        }),
+                    Divider(height: 4, indent: 3, color: Colors.lightBlue)
+                  ],
                 ),
-              );
-            }),
-      );
+              ),
+            );
+          });
     });
   }
 
@@ -140,6 +137,8 @@ class DashAppState extends State<DashApp> {
   PageController? pgcontrol;
   @override
   void initState() {
+    latitude.text = "0.0";
+    longitude.text = "0.0";
     routecontroller.text = routenum.toString();
     driverphone.addListener(() {
       setState(() {});
@@ -186,12 +185,18 @@ class DashAppState extends State<DashApp> {
         home: Scaffold(
             key: _scaffoldKey,
             appBar: AppBar(
+              backgroundColor: Colors.white,
               leading: IconButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
                   icon: Icon(Icons.arrow_back_ios)),
-              title: Text(companyname + "  Dashboard"),
+              centerTitle: true,
+              title: Text(
+                "DashBoard",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              elevation: 0,
               actions: [
                 IconButton(onPressed: _openDrawer, icon: Icon(Icons.menu))
               ],
@@ -276,7 +281,8 @@ class DashAppState extends State<DashApp> {
                                                 {
                                                   "name": busname.text,
                                                   "number": busnumber.text,
-                                                  "seats": int.parse(seatcontroller.text) ,
+                                                  "seats": int.parse(
+                                                      seatcontroller.text),
                                                   "image": imageurl,
                                                   "about": about.text
                                                 }
@@ -364,20 +370,6 @@ class DashAppState extends State<DashApp> {
                                                       print("Hello"));
                                             },
                                             icon: Icon(Icons.add)),
-                                        Row(
-                                          children: List.unmodifiable(() sync* {
-                                            for (var i = 0; i < 5; i++) {
-                                              yield Expanded(
-                                                child: IconButton(
-                                                  iconSize: 30,
-                                                  icon: Icon(Icons.ac_unit),
-                                                  color: Colors.green,
-                                                  onPressed: () {},
-                                                ),
-                                              );
-                                            }
-                                          }()),
-                                        )
                                       ])),
                                     ));
                               });
@@ -646,7 +638,7 @@ class DashAppState extends State<DashApp> {
                                         decoration:
                                             BoxDecoration(border: Border.all()),
                                         width: 500,
-                                        height: 60,
+                                        height: 40,
                                         child: Row(children: [
                                           Expanded(
                                             child: InputFields(
@@ -678,9 +670,7 @@ class DashAppState extends State<DashApp> {
                                               ))
                                         ]),
                                       ),
-                                     
-                                         interroutes(routenum!)
-                                     ,
+                                      interroutes(routenum!),
                                       StatefulBuilder(builder:
                                           (BuildContext context, setstate) {
                                         return OptionButton(
@@ -690,8 +680,8 @@ class DashAppState extends State<DashApp> {
                                       }),
                                       InputFields("Seats", seatcontroller,
                                           Icons.input, TextInputType.number),
-                                           InputFields("fare", fare,
-                                          Icons.input, TextInputType.number),
+                                      InputFields("fare", fare, Icons.input,
+                                          TextInputType.number),
                                       InputFields("distance/km", distcontroller,
                                           Icons.input, TextInputType.number),
                                       Row(
@@ -749,9 +739,9 @@ class DashAppState extends State<DashApp> {
                                                   seatcontroller.text),
                                               "company": companyname,
                                               "vehid": initialval,
-                                               "full": false,
-                                                "fare": int.parse(
-                                                  fare.text),
+                                              "full": false,
+                                              "chosen": [],
+                                              "fare": int.parse(fare.text),
                                               "driverid": initialval1,
                                               "triptype": companytype
                                             }).then((value) => print(
@@ -822,7 +812,6 @@ class DashboardState extends State<Dashboard> {
                     if (snapshot.data!.size > 0) {
                       companyname =
                           snapshot.data!.docs[0].get('registered_name');
-                     
                     }
 
                     print(companyname);
@@ -903,16 +892,19 @@ class DashboardState extends State<Dashboard> {
                                               : 0,
                                           itemBuilder:
                                               (BuildContext context, idx) {
-                                                if (!vehivles.contains(doc['vehicles'][idx]["number"]) ) {
-                                                  vehivles.add(
-                                                doc['vehicles'][idx]["number"]);
-                                                }
-                                            
+                                            if (!vehivles.contains(
+                                                doc['vehicles'][idx]
+                                                    ["number"])) {
+                                              vehivles.add(doc['vehicles'][idx]
+                                                  ["number"]);
+                                            }
+
                                             return ListTile(
                                                 title: Text(doc['vehicles'][idx]
                                                     ["name"]),
                                                 subtitle: Text(
-                                                  doc['vehicles'][idx]["number"],
+                                                  doc['vehicles'][idx]
+                                                      ["number"],
                                                 ));
                                           }),
                                     ],
@@ -956,14 +948,28 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
                 return new ListView(
                   shrinkWrap: true,
                   children: snapshot.data!.docs.map((data) {
-                    return new ListTile(
-                      title: new Text(data.id),
-                      subtitle: ListView(
-                        shrinkWrap: true,
-                        children: [
-                          new Text(data['from'] + " > " + data['to']),
-                          new Text("Vehicle id : " + data['vehid'].toString()),
-                        ],
+                    return Card(
+                      elevation:3,
+                      shape:RoundedRectangleBorder(
+                        borderRadius:BorderRadius.circular(20)
+                      ),
+                      child: Container(
+                        height:150,
+                        child: new ListTile(
+                          title: new Text(data.id),
+                          subtitle: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              new Text(data['from'] + " > " + data['to']),
+                              new Text("Vehicle id : " + data['vehid'].toString()),
+                              new Text("Total seats : " + data['seats'].toString()),
+                              new Text("Booked : " + data['chosen'].length.toString()),
+                              new Text("Remaining : " + (data['vehid']-data['chosen'].length).toString()),
+                              new Text("Take off : " + data['date'].toDate().toString().split(" ")[1]),
+
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   }).toList(),

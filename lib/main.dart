@@ -106,6 +106,8 @@ class AppHome extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
+        elevation:0,
+        
         title: ListTile(
           leading: Icon(Icons.star, color: Colors.amber),
           trailing: TextButton(

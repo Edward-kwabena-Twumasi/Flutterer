@@ -8,7 +8,6 @@ import 'package:myapp/providersPool/userStateProvider.dart';
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:image_picker/image_picker.dart';
 
 //text widget
@@ -71,7 +70,7 @@ class InputFields extends StatelessWidget {
 Widget niceChips(IconData icondata, String text, void Function() pressed) {
   return InputChip(
     side: BorderSide.none,
-    backgroundColor: Colors.grey,
+    backgroundColor: Colors.white,
     selected: false,
     selectedColor: Colors.green[100],
     label: Text(text),
@@ -169,8 +168,9 @@ class _menuButtonState extends State<menuButton> {
   }
 }
 
+
 TripClass onetrip =
-    TripClass("Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal");
+    TripClass("Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal", "");
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 
 class SearchLocs extends StatefulWidget {
@@ -187,7 +187,7 @@ class SearchLocs extends StatefulWidget {
 }
 
 class SearchLocsState extends State<SearchLocs> {
-  final FocusNode _focusNode = FocusNode();
+  final FocusNode focusNode = FocusNode();
   OverlayEntry? myoverlay;
   bool hideoverlay = false;
   bool foundinlist = false;
@@ -195,22 +195,27 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
+
+    widget.searchcontrol.addListener(() {
+      // widget.searchcontrol.text = widget.searchcontrol.text.substring(0,).toUpperCase()+
+      // widget.searchcontrol.text.substring(1);
+      suggestions = [];
+      for (var i in places) {
+        if ((i.startsWith(widget.searchcontrol.text) ||
+                i.contains(widget.searchcontrol.text)) &&
+            !suggestions.contains(i)) {
+          suggestions.add(i);
+        }
+      }
+    });
+
+    focusNode.addListener(() {
+      if (focusNode.hasFocus && suggestions.isNotEmpty) {
         this.myoverlay = createOverlay();
         Overlay.of(context)!.insert(this.myoverlay!);
-        widget.searchcontrol.addListener(() {
-          for (var i in places) {
-            if ((i.contains(widget.searchcontrol.text) || i.startsWith(widget.searchcontrol.text))&
-                !suggestions.contains(i)) {
-              suggestions.add(i);
-            }
-          }
-        });
-      } else if(hideoverlay ||!_focusNode.hasFocus){
-        this.myoverlay!.remove();
+      } else {
+        myoverlay!.remove();
       }
-      
     });
   }
 
@@ -234,10 +239,10 @@ class SearchLocsState extends State<SearchLocs> {
                         shape: RoundedRectangleBorder(),
                         key: Key(index.toString()),
                         onTap: () {
-                           setState(() {
-                           hideoverlay = true;
+                          setState(() {
+                            hideoverlay = true;
                           });
-
+                          this.myoverlay!.remove();
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
                           widget.searchcontrol.text = suggestions[index];
@@ -247,7 +252,6 @@ class SearchLocsState extends State<SearchLocs> {
                               : onetrip.toLoc = widget.searchcontrol.text;
                           suggestions = [];
                           print(mytripobj);
-                         
                         },
                         title: Text(
                           suggestions[index],
@@ -274,13 +278,13 @@ class SearchLocsState extends State<SearchLocs> {
     return ListTile(
       title: TextFormField(
         decoration: InputDecoration(
-            labelText: "Travel $widget.direction",
+            labelText: "Travel ${widget.direction}",
             fillColor: Colors.pink,
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none)),
         controller: widget.searchcontrol,
-        focusNode: this._focusNode,
+        focusNode: this.focusNode,
       ),
     );
   }
@@ -423,24 +427,3 @@ class _UploadPicState extends State<UploadPic> {
   }
 }
 
-class payment extends StatefulWidget {
-  const payment({Key? key}) : super(key: key);
-
-  @override
-  _paymentState createState() => _paymentState();
-}
-
-class _paymentState extends State<payment> {
-  var publicKey = '[YOUR_PAYSTACK_PUBLIC_KEY]';
-  final plugin = PaystackPlugin();
-
-  @override
-  void initState() {
-    plugin.initialize(publicKey: publicKey);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}

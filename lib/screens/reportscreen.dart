@@ -69,14 +69,16 @@ class ReporterState extends State<Reporter> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(Icons.arrow_back_ios)),
-        title: Text(
-          "Report",
-        ),
+       centerTitle:true,
+          title: Text("Reposts",style: TextStyle(fontWeight:FontWeight.bold ), ),
+          elevation: 0,
+        
       ),
       body: Consumer<UserState>(
         builder: (context, value, child) => Scaffold(
