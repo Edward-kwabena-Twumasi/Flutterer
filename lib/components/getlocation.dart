@@ -1,4 +1,4 @@
-import 'dart:async';
+//import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -21,9 +21,9 @@ class GeolocatorWidget extends StatefulWidget {
 }
 
 class _GeolocatorWidgetState extends State<GeolocatorWidget> {
-  final List<_PositionItem> _positionItems = <_PositionItem>[];
-  StreamSubscription<Position>? _positionStreamSubscription;
-  StreamSubscription<ServiceStatus>? _locationServiceStatusSubscription;
+  
+  late  Locationdetails locationdetails=Locationdetails("region", "subregion", "city");
+  // StreamSubscription<ServiceStatus>? _locationServiceStatusSubscription;
 
   @override
   Widget build(BuildContext context) {
@@ -31,57 +31,51 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text("Get location details")),
-      body:Text("Position"),
-      floatingActionButton: Stack(
-        children: <Widget>[
-       Positioned(
-        child: Center(
-          child: ListView.builder(
-            itemCount: _positionItems.length,
-            itemBuilder: (context, index) {
-              final positionItem = _positionItems[index];
-                return Card(
+      body: Center(
+          child:  Card(
                   child: ListTile(
                     tileColor: Colors.lightBlue,
-                    subtitle: Text(positionItem.placename,
+                    subtitle: Text(
+                      locationdetails.region,
                         style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold)),
                     title: Text(
-                      positionItem.displayValue,
+                      locationdetails.city+"  "+locationdetails.subregion
+                     ,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
-                );
-             
-            },
-          ),
+                )
+           
         ),
-      ),
+      floatingActionButton: Stack(
+        children: <Widget>[
+     
       
           Positioned(
-            bottom: 50.0,
-            right: 50.0,
+            bottom: 15.0,
+            right: 3.0,
             child: FloatingActionButton.extended(
                 onPressed: () async {
-                  var position = await Geolocator.getCurrentPosition(
+                   await Geolocator.getCurrentPosition(
                           desiredAccuracy: LocationAccuracy.best)
                       .then((value) async {
-                   var address = await GeocodingPlatform.instance.placemarkFromCoordinates(
+                    await GeocodingPlatform.instance.placemarkFromCoordinates(
                             value.latitude, value.longitude)
                         .then((value2) {
-                      _positionItems.add(_PositionItem(
-                          _PositionItemType.position,
-                          value2.first.locality.toString(),
-                          value2.first.name.toString()));
+                           setState(
+                    () {
+                    locationdetails=Locationdetails(value2.first.locality!, value2.first.subLocality!, value2.first.street!)
+                          ;
+                          }
+                  );
                       return value2;
                     });
                   });
 
-                  setState(
-                    () {},
-                  );
+                 
                 },
-                label: Text("Current Position")),
+                label: Text("Currently at")),
           ),
          
         ],
@@ -94,25 +88,17 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
 
   @override
   void dispose() {
-    if (_positionStreamSubscription != null) {
-      _positionStreamSubscription!.cancel();
-      _positionStreamSubscription = null;
-    }
+   
 
     super.dispose();
   }
 }
 
-enum _PositionItemType {
-  permission,
-  position,
-  locationServiceStatus,
-}
 
-class _PositionItem {
-  _PositionItem(this.type, this.displayValue, this.placename);
 
-  final _PositionItemType type;
-  final String displayValue;
-  final String placename;
+class Locationdetails {
+  Locationdetails(this.region, this.subregion, this.city);
+  final String region;
+  final String subregion;
+  final String city;
 }

@@ -47,7 +47,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
         currentStep: currentstep,
         onStepContinue: () {
           setState(() {
-            tonext == true ? currentstep++ : null;
+            tonext == true ? currentstep++ :currentstep+=0 ;
           });
         },
         onStepTapped: (int step) {
@@ -224,7 +224,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                 height: 10,
                               ),
                               Text("Region..."),
-                              menuButton(regioncontroller: regioncontroller),
+                              MenuButton(regioncontroller: regioncontroller),
                               SizedBox(
                                 height: 3,
                               ),

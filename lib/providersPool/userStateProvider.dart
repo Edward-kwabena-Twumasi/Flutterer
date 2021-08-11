@@ -46,6 +46,7 @@ class UserState extends ChangeNotifier {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+           print(userCredential.additionalUserInfo);
       signinstate = userStates.successful;
 
       print("we done");
@@ -69,6 +70,7 @@ class UserState extends ChangeNotifier {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
+           print(userCredential.additionalUserInfo);
       registedstate = userStates.successful;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

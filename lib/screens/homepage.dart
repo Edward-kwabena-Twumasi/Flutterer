@@ -323,10 +323,10 @@ class LocationsState extends State<Locations> {
                       FloatingActionButton.extended(
                         heroTag: "getpos",
                         onPressed: () async {
-                          var position = await Geolocator.getCurrentPosition(
+                          await Geolocator.getCurrentPosition(
                                   desiredAccuracy: LocationAccuracy.best)
                               .then((value) async {
-                            var address = await placemarkFromCoordinates(
+                            await placemarkFromCoordinates(
                                     value.latitude, value.longitude)
                                 .then((value2) {
                               from.text = value2.first.locality! +
@@ -394,7 +394,7 @@ class LocationsState extends State<Locations> {
                         onetrip.toLoc = to.text;
                         onetrip.triptype = widget.typeoftrip;
                         setState(() {
-                          widget.typeoftrip;
+                          // widget.typeoftrip;
                         });
                         print("clicked for : " + widget.typeoftrip);
                         print(onetrip.date);
@@ -415,6 +415,7 @@ class LocationsState extends State<Locations> {
         padding: EdgeInsets.all(10),
         margin: EdgeInsets.all(3));
 
+    // ignore: todo
     // TODO: implement build
   }
 }
@@ -825,13 +826,25 @@ class UserInfoClassState extends State<UserInfoClass> {
   Color starredcolor = Colors.red;
   Color unstarredcolor = Colors.grey;
   int stars = 5;
+  bool fetch = true;
   var starred = [];
   var healthinfo = [];
-  Future<void> userdata() async {
+  // void getopts() async {
+  //   await FirebaseFirestore.instance
+  //       .collection("appstrings")
+  //       .doc("companynames")
+  //       .get();
+  // }
+
+  User user = User("...", "...", "...", "...", "...");
+  Future<User> userdata() async {
+    print("getting your data");
+    User user = User("...", "...", "...", "...", "...");
     await FirebaseFirestore.instance
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get().then((doc) {
+        .get()
+        .then((doc) {
       if (doc.exists) {
         print("Document data:" + doc.data()!["phone"]);
         setState(() {
@@ -841,27 +854,28 @@ class UserInfoClassState extends State<UserInfoClass> {
           user.phone = doc.data()!["phone"];
           user.email = doc.data()!["email"];
           user.region = doc.data()!["region"];
+          fetch = false;
         });
-        
       } else {
         // doc.data() will be undefined in this case
         print("No such document!");
       }
     }).catchError((e) {
-      print(e);
+      print("this error occured" + e.toString());
     });
-    ;
+    return user;
   }
 
-  User user = User("name", "city", "phone", "email", "region");
   String setname = "Name";
-  // var info = FirebaseFirestore.instance
-  //     .collection("users")
-  //     .doc(FirebaseAuth.instance.currentUser!.uid)
-  //     .get();
+
   void initState() {
     super.initState();
-    userdata();
+    userdata().then((value) {
+      setState(() {
+        user = value;
+        setname = value.name;
+      });
+    });
   }
 
   @override
@@ -902,55 +916,78 @@ class UserInfoClassState extends State<UserInfoClass> {
               label: Text("Health info"),
               icon: Icon(Icons.local_hospital),
             )),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                title: Text("Name"),
-                subtitle: Text(user.name),
-              ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                  child:
+                      fetch ? CircularProgressIndicator() : Text("Your info")),
             ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                title: Text("Email"),
-                subtitle: Text(user.email),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                title: Text("Phone"),
-                subtitle: Text(user.phone),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              elevation: 10,
-              child: ListTile(
-                  title: Text("Address"),
-                  subtitle:
-                      ExpansionTile(title: Text("Adress info"), children: [
-                    ListTile(
-                      title: Text("Region"),
-                      subtitle: Text(user.region),
-                    ),
-                    ListTile(
-                      title: Text("City"),
-                      subtitle: Text(user.city),
-                    ),
-                    ListTile(
-                      title: Text("House Address"),
-                      subtitle: Text("House address"),
-                    ),
-                  ])),
-            ),
+            Padding(
+                padding: EdgeInsets.all(12),
+                child: ListView(shrinkWrap: true, children: [
+                  Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    elevation: 10,
+                    child: ListTile(
+                        title: Text("Name"),
+                        subtitle: Text(setname),
+                        trailing: IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.edit_attributes))),
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    elevation: 10,
+                    child: ListTile(
+                        title: Text("Email"),
+                        subtitle: Text(user.email),
+                        trailing: IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.edit_attributes))),
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    elevation: 10,
+                    child: ListTile(
+                        title: Text("Phone"),
+                        subtitle: Text(user.phone),
+                        trailing: IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.edit_attributes))),
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    elevation: 10,
+                    child: ListTile(
+                        title: Text("Address"),
+                        subtitle: ExpansionTile(
+                            title: Text("Adress info"),
+                            children: [
+                              ListTile(
+                                  title: Text("Region"),
+                                  subtitle: Text(user.region),
+                                  trailing: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.edit_attributes))),
+                              ListTile(
+                                  title: Text("City"),
+                                  subtitle: Text(user.city),
+                                  trailing: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.edit_attributes))),
+                              ListTile(
+                                  title: Text("House Address"),
+                                  subtitle: Text("House address"),
+                                  trailing: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.edit_attributes))),
+                            ])),
+                  ),
+                ])),
             Row(children: [
               Expanded(
                   child: FloatingActionButton.extended(
@@ -1001,7 +1038,7 @@ class UserInfoClassState extends State<UserInfoClass> {
                                                               starred
                                                                   .add(index);
 
-                                                              stars;
+                                                              // stars;
                                                             });
 
                                                             print(
@@ -1014,7 +1051,7 @@ class UserInfoClassState extends State<UserInfoClass> {
                                                                   index);
                                                               print(starred
                                                                   .length);
-                                                              stars;
+                                                              // stars;
                                                               print(
                                                                   starredcolor);
                                                               print(index);

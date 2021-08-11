@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:myapp/providersPool/userStateProvider.dart';
+//import 'package:myapp/providersPool/userStateProvider.dart';
 //import 'package:firebase_core/firebase_core.dart';
 
 enum companyStates {
@@ -47,6 +47,7 @@ class CompanyState extends ChangeNotifier {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+      print(userCredential.additionalUserInfo);
       signinstate = companyStates.successful;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -58,6 +59,7 @@ class CompanyState extends ChangeNotifier {
         signinstate = companyStates.wrongPassword;
       }
     }
+
     notifyListeners();
     return signinstate;
   }
@@ -67,6 +69,7 @@ class CompanyState extends ChangeNotifier {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
+           print(userCredential.additionalUserInfo);
       registedstate = companyStates.successful;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -83,8 +86,14 @@ class CompanyState extends ChangeNotifier {
     return registedstate;
   }
 
-  Future<companyStates> addCompany(String comptype, String compname, String phone,
-      String email, String region, String city, String apartment) async{
+  Future<companyStates> addCompany(
+      String comptype,
+      String compname,
+      String phone,
+      String email,
+      String region,
+      String city,
+      String apartment) async {
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference companies = FirebaseFirestore.instance
         .collection('companies')

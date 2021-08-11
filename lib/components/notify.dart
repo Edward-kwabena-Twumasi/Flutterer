@@ -17,64 +17,97 @@ class Notify extends StatefulWidget {
 }
 
 class _NotifyState extends State<Notify> {
+  bool checked = false;
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  late Future<bool> note;
+  late bool note = false;
 //user preferences to show them notice
   Future<bool> shownote() async {
     final SharedPreferences prefs = await _prefs;
-    final bool notepref = (prefs.getBool('notepref') ?? false);
 
-    return notepref;
+    return prefs.getBool('note') ?? true;
   }
 
   @override
   void initState() {
+    shownote().then((value) {
+      setState(() {
+        note = value;
+      });
+    });
+    // shownote().then((value) {
+    //   note = value;
+    // });
     super.initState();
   }
 
   void timer() {}
 
-  var height = 150.0;
+  var height = 200.0;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         home: Scaffold(
       body: Column(children: [
-        SizedBox(height: 20),
+        SizedBox(height: 30),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Card(
-            elevation: 2,
+            elevation: 15,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: AnimatedContainer(
-              duration: Duration(seconds: 2),
-              height: height,
-              child: Column(children: [
-                Padding(
-                  padding: const EdgeInsets.all(3.0),
-                  child: Text("Note this"),
-                ),
-                Divider(color: Colors.lightBlue),
-                Center(
-                    child: Text(
-                        "Welcome to travel mates.Please be sure to check out our privacy policy,special offers and check out notifications",
-                        style: TextStyle(color: Colors.green))),
-                Divider(color: Colors.lightBlue),
-                Row(
-                  children: [
-                    Expanded(
-                        child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                height = 0;
-                              });
-                            },
-                            child: Text("Ok Got IT ")))
-                  ],
-                )
-              ]),
-            ),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: note == true
+                ? AnimatedContainer(
+                    duration: Duration(seconds: 1),
+                    height: height,
+                    child: Column(children: [
+                      Padding(
+                        padding: const EdgeInsets.all(3.0),
+                        child: Text("! Quick note ",
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
+                      ),
+                      Divider(color: Colors.lightBlue),
+                      Center(
+                          child: Text(
+                              "Welcome to travel mates.Please be sure to check out our privacy policy,special offers and check out notifications",
+                              style: TextStyle(
+                                  color: Colors.black, fontSize: 17))),
+                      Divider(color: Colors.lightBlue),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Checkbox(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15)),
+                                side: BorderSide(color: Colors.red, width: 3),
+                                checkColor: Colors.lightBlue,
+                                activeColor: Colors.lightBlue,
+                                value: checked,
+                                onChanged: (bool? val)  {
+                                  setState(() {
+                                    checked = val!;
+                                   
+                                  });
+                                 
+                                }),
+                          )),
+                          Expanded(
+                              child: TextButton(
+                                  onPressed: ()async {
+                                    setState(() {
+                                      note = false;
+                                    });
+                                     final SharedPreferences prefs = await _prefs;
+                                  prefs.setBool("note", note);
+                                  },
+                                  child: Text("Ok Got it ")))
+                        ],
+                      )
+                    ]),
+                  )
+                : Text(" "),
           ),
         ),
         Padding(
@@ -89,7 +122,7 @@ class _NotifyState extends State<Notify> {
                   children: [
                     ElevatedButton(onPressed: () {}, child: Text("SET TIMER")),
                     ListTile(
-                      title: Text("Timer"),
+                      title: TextField(),
                     )
                   ],
                 )),

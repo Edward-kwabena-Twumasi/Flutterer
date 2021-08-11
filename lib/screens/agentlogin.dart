@@ -34,7 +34,7 @@ void main() {
 String companytype = "";
 
 class MyCompApp extends StatelessWidget {
-  var style = TextStyle(
+  final style = TextStyle(
     color: Colors.blueAccent,
     fontWeight: FontWeight.w500,
     fontFamily: 'Roboto',

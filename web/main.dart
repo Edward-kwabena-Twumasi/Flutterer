@@ -65,7 +65,7 @@ class _AppState extends State<App> {
 // }
 
 class MyApp extends StatelessWidget {
-  var style = TextStyle(
+  final style = TextStyle(
     color: Colors.blueAccent,
     fontWeight: FontWeight.w500,
     fontFamily: 'Roboto',

@@ -8,7 +8,7 @@ final _channel = WebSocketChannel.connect(
   Uri.parse('wss://echo.websocket.org'),
 );
 void _sendMessage() {
-  print(_controller.text);
+  
   if (_controller.text.isNotEmpty) {
     _channel.sink.add(_controller.text);
   }
@@ -38,6 +38,7 @@ class ChatApp extends StatelessWidget {
         ),
         body: ChatHomePage(
           title: title,
+          channel: _channel,
         ),
       ),
     );
@@ -48,9 +49,10 @@ class ChatHomePage extends StatefulWidget {
   const ChatHomePage({
     Key? key,
     required this.title,
+    required this.channel,
   }) : super(key: key);
   final String title;
-
+  final WebSocketChannel channel;
   @override
   _ChatHomePageState createState() => _ChatHomePageState();
 }
@@ -71,7 +73,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
           ),
           const SizedBox(height: 24),
           StreamBuilder(
-            stream: _channel.stream,
+            stream: widget.channel.stream,
             builder: (context, snapshot) {
               return Text(snapshot.hasData ? '${snapshot.data}' : '');
             },
@@ -85,7 +87,7 @@ class _ChatHomePageState extends State<ChatHomePage> {
 
   @override
   void dispose() {
-    _channel.sink.close();
+   widget.channel.sink.close();
     super.dispose();
   }
 }

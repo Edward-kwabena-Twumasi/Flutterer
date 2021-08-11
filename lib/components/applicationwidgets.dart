@@ -39,6 +39,7 @@ class InputFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: TextFormField(
+        autocorrect:true,
         style: TextStyle(color: Colors.black),
         keyboardType: inputtype,
         decoration: new InputDecoration(
@@ -80,20 +81,20 @@ Widget niceChips(IconData icondata, String text, void Function() pressed) {
   );
 }
 
-class menuButton extends StatefulWidget {
-  const menuButton({Key? key, required this.regioncontroller})
+class MenuButton extends StatefulWidget {
+  const MenuButton({Key? key, required this.regioncontroller})
       : super(key: key);
 
   final TextEditingController? regioncontroller;
 
   @override
-  State<menuButton> createState() => _menuButtonState(regioncontroller);
+  State<MenuButton> createState() => _MenuButtonState(regioncontroller);
 }
 
 /// This is the private State class that goes with MyStatefulWidget.
-class _menuButtonState extends State<menuButton> {
+class _MenuButtonState extends State<MenuButton> {
   final TextEditingController? regioncontroller;
-  _menuButtonState(this.regioncontroller);
+  _MenuButtonState(this.regioncontroller);
   void initState() {
     super.initState();
   }
@@ -266,7 +267,7 @@ class SearchLocsState extends State<SearchLocs> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    
 
     super.dispose();
   }

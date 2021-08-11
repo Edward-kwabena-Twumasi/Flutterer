@@ -34,8 +34,8 @@ class SignupFormState extends State<SignupForm> {
         currentStep: currentindex,
         onStepContinue: () {
           setState(() {
-            currentindex < 1 ? currentindex += 1 : null;
-            //tonext ? currentindex += 1 : null;
+           
+            tonext ? currentindex += 1 :currentindex += 0;
           });
         },
         onStepTapped: (int step) {
@@ -159,7 +159,7 @@ class SignupFormState extends State<SignupForm> {
                                 height: 10,
                               ),
                               Text("Region..."),
-                              menuButton(regioncontroller: regioncontroller),
+                              MenuButton(regioncontroller: regioncontroller),
                               SizedBox(
                                 height: 3,
                               ),

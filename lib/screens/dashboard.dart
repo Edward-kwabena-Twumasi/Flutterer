@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/agentStateProvider.dart';
@@ -7,7 +9,7 @@ import 'package:geocoding/geocoding.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -31,10 +33,10 @@ class DashApp extends StatefulWidget {
 
 class DashAppState extends State<DashApp> {
   List<TextEditingController> controls = [];
-  List<bool> stopstate = [];
-  List<bool> pickstate = [];
+  List<Route> route = [];
   String initialval = vehivles[0];
   String initialval1 = drivers[0];
+  bool stop = false, pickup = false;
   void changed(String? value) {
     setState(() {
       initialval = value!;
@@ -47,60 +49,54 @@ class DashAppState extends State<DashApp> {
     });
   }
 
-  Widget interroutes(int howmany) {
-    print(howmany);
-    controls = [];
-    stopstate = [];
-    pickstate = [];
-    for (var i = 0; i < howmany; i++) {
-      controls.add(
-          new TextEditingController(text: "enter route " + (i + 1).toString()));
-      pickstate.add(false);
-      stopstate.add(false);
-    }
-    bool value = false;
+  Widget interroutes() {
+    //bool value = false;
     return StatefulBuilder(builder: (BuildContext context, setstate) {
-      return ListView.builder(
-          shrinkWrap: true,
-          itemCount: howmany,
-          itemBuilder: (BuildContext, index) {
-            return Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Card(
-                elevation: 18,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: controls[index],
-                    ),
-                    SwitchListTile(
-                        title: Text("PIck up point"),
-                        subtitle: Text("switch on if a pickup point"),
-                        activeColor: Colors.lightBlue,
-                        value: pickstate[index],
-                        onChanged: (bool val) {
-                          setState(() {
-                            pickstate[index] = val;
-                            pickstate = pickstate;
-                          });
-                        }),
-                    SwitchListTile(
-                        title: Text("Stop point"),
-                        subtitle: Text("switch on if a stop point"),
-                        value: stopstate[index],
-                        onChanged: (bool val) {
-                          print(val);
-                          setState(() {
-                            stopstate[index] = val;
-                            stopstate = stopstate;
-                          });
-                        }),
-                    Divider(height: 4, indent: 3, color: Colors.lightBlue)
-                  ],
-                ),
-              ),
-            );
-          });
+      return Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Card(
+          elevation: 18,
+          child: Column(
+            children: [
+              TextField(controller: routecontroller),
+              SizedBox(),
+              SwitchListTile(
+                  title: Text("PIck up point"),
+                  subtitle: Text("switch on if a pickup point"),
+                  activeColor: Colors.lightBlue,
+                  value: pickup,
+                  onChanged: (bool val) {
+                    setState(() {
+                      pickup = val;
+                    });
+                  }),
+              Divider(height: 4, indent: 3, color: Colors.lightBlue),
+              SwitchListTile(
+                  title: Text("Stop point"),
+                  subtitle: Text("switch on if a stop point"),
+                  activeColor: Colors.lightBlue,
+                  value: stop,
+                  onChanged: (bool val) {
+                    print(val);
+                    setState(() {
+                      stop = val;
+                    });
+                  }),
+              ButtonBar(
+                children: [
+                  TextButton(
+                      onPressed: () {
+                        route.add(Route(routecontroller.text, stop, pickup));
+                      },
+                      child: Text("ADD ROUTE")),
+                  TextButton(
+                      onPressed: () {}, child: Text("ADD ANOTHER ROUTE")),
+                ],
+              )
+            ],
+          ),
+        ),
+      );
     });
   }
 
@@ -403,7 +399,7 @@ class DashAppState extends State<DashApp> {
                                 child: SingleChildScrollView(
                                     child: Column(
                                   children: [
-                                    menuButton(
+                                    MenuButton(
                                         regioncontroller: regioncontroller),
                                     Text(showregions),
                                     FloatingActionButton.extended(
@@ -415,7 +411,7 @@ class DashAppState extends State<DashApp> {
                                             showregions += i.toString() + " ,";
                                           }
                                           setState(() {
-                                            showregions;
+                                            //showregions;
                                           });
 
                                           print(showregions);
@@ -634,43 +630,8 @@ class DashAppState extends State<DashApp> {
                                         locations: places,
                                         searchcontrol: searchto,
                                       ),
-                                      Container(
-                                        decoration:
-                                            BoxDecoration(border: Border.all()),
-                                        width: 500,
-                                        height: 40,
-                                        child: Row(children: [
-                                          Expanded(
-                                            child: InputFields(
-                                                "how many inter routes?",
-                                                routecontroller,
-                                                Icons.input,
-                                                TextInputType.text),
-                                          ),
-                                          TextButton(
-                                              style: ButtonStyle(),
-                                              onPressed: () {
-                                                print(routenum);
-                                                int num = int.parse(
-                                                    routecontroller.text);
-                                                setState(() {
-                                                  routenum = num;
-                                                });
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  "add them",
-                                                  style: TextStyle(
-                                                      backgroundColor:
-                                                          Colors.amber,
-                                                      color: Colors.black),
-                                                ),
-                                              ))
-                                        ]),
-                                      ),
-                                      interroutes(routenum!),
+                                      SizedBox(),
+                                      interroutes(),
                                       StatefulBuilder(builder:
                                           (BuildContext context, setstate) {
                                         return OptionButton(
@@ -711,17 +672,6 @@ class DashAppState extends State<DashApp> {
                                       }),
                                       FloatingActionButton.extended(
                                           onPressed: () {
-                                            for (int i = 0;
-                                                i < controls.length;
-                                                i++) {
-                                              interoutes.add([
-                                                {
-                                                  "routename": controls[i].text,
-                                                  "stop": stopstate[i],
-                                                  "pickup": pickstate[i]
-                                                }
-                                              ]);
-                                            }
                                             FirebaseFirestore.instance
                                                 .collection("trips")
                                                 .add({
@@ -949,24 +899,30 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
                   shrinkWrap: true,
                   children: snapshot.data!.docs.map((data) {
                     return Card(
-                      elevation:3,
-                      shape:RoundedRectangleBorder(
-                        borderRadius:BorderRadius.circular(20)
-                      ),
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
                       child: Container(
-                        height:150,
+                        height: 150,
                         child: new ListTile(
                           title: new Text(data.id),
                           subtitle: ListView(
                             shrinkWrap: true,
                             children: [
                               new Text(data['from'] + " > " + data['to']),
-                              new Text("Vehicle id : " + data['vehid'].toString()),
-                              new Text("Total seats : " + data['seats'].toString()),
-                              new Text("Booked : " + data['chosen'].length.toString()),
-                              new Text("Remaining : " + (data['vehid']-data['chosen'].length).toString()),
-                              new Text("Take off : " + data['date'].toDate().toString().split(" ")[1]),
-
+                              new Text(
+                                  "Vehicle id : " + data['vehid'].toString()),
+                              new Text(
+                                  "Total seats : " + data['seats'].toString()),
+                              new Text("Booked : " +
+                                  data['chosen'].length.toString()),
+                              new Text(
+                                  "Remaining : " + data['seats'].toString()),
+                              new Text("Take off : " +
+                                  data['date']
+                                      .toDate()
+                                      .toString()
+                                      .split(" ")[1]),
                             ],
                           ),
                         ),
@@ -982,6 +938,16 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
     );
   }
 }
+
+// class SimpleCardPaint extends CustomPaint {
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     var radius = 24.0;
+//     var paint = Paint();
+//     paint.shader=Gradient.linear(from, to, colors)
+
+//   }
+// }
 
 class FlightCompany extends StatefulWidget {
   const FlightCompany({Key? key}) : super(key: key);
@@ -1005,4 +971,11 @@ class Driver {
 class Bus {
   Bus(this.id);
   String id;
+}
+
+class Route {
+  String name;
+  bool stop;
+  bool pickup;
+  Route(this.name, this.stop, this.pickup);
 }

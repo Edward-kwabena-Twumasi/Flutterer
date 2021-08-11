@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
-
+import 'package:myapp/components/notifications.dart';
+ 
 void main() => runApp(const Admin());
 
 class Admin extends StatelessWidget {
@@ -13,7 +14,6 @@ class Admin extends StatelessWidget {
     return MaterialApp(
       title: title,
       home: Scaffold(
-        
           appBar: AppBar(
             backgroundColor: Colors.white,
             title: Text("Admin panel"),
@@ -176,9 +176,15 @@ class _AdminPageState extends State<AdminPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: FloatingActionButton.extended(
-                        heroTag: "authorize",
-                        onPressed: () {},
-                        label: Text("Authorize")),
+                        heroTag: "notify",
+                        onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) =>Notifies()),
+                      );
+     
+                        },
+                        label: Text("Notifications")),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),

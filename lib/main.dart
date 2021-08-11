@@ -75,7 +75,7 @@ class _AppState extends State<App> {
 // }
 
 class MyApp extends StatelessWidget {
-  var style = TextStyle(
+ final  style = TextStyle(
     color: Colors.blueAccent,
     fontWeight: FontWeight.w500,
     fontFamily: 'Roboto',
@@ -83,11 +83,7 @@ class MyApp extends StatelessWidget {
     fontSize: 30,
   );
 
-  // var input =
-  // final controller = TextEditingController();
-  // final controller1 = TextEditingController();
-  // final controller2 = TextEditingController();
-  // @override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
