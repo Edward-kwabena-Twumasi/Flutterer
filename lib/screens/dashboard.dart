@@ -33,7 +33,8 @@ class DashApp extends StatefulWidget {
 
 class DashAppState extends State<DashApp> {
   List<TextEditingController> controls = [];
-  List<Route> route = [];
+  String feedback = "";
+  List route = [];
   String initialval = vehivles[0];
   String initialval1 = drivers[0];
   bool stop = false, pickup = false;
@@ -51,7 +52,7 @@ class DashAppState extends State<DashApp> {
 
   Widget interroutes() {
     //bool value = false;
-    return StatefulBuilder(builder: (BuildContext context, setstate) {
+   
       return Padding(
         padding: const EdgeInsets.all(10.0),
         child: Card(
@@ -60,44 +61,64 @@ class DashAppState extends State<DashApp> {
             children: [
               TextField(controller: routecontroller),
               SizedBox(),
-              SwitchListTile(
+               StatefulBuilder(builder: (BuildContext context, setstate) {
+             return SwitchListTile(
                   title: Text("PIck up point"),
                   subtitle: Text("switch on if a pickup point"),
                   activeColor: Colors.lightBlue,
+                  selectedTileColor: Colors.lightBlue,
                   value: pickup,
+                  selected: pickup,
                   onChanged: (bool val) {
                     setState(() {
                       pickup = val;
                     });
-                  }),
+                  });}),
               Divider(height: 4, indent: 3, color: Colors.lightBlue),
+               StatefulBuilder(builder: (BuildContext context, setstate) {
+             return
               SwitchListTile(
                   title: Text("Stop point"),
                   subtitle: Text("switch on if a stop point"),
                   activeColor: Colors.lightBlue,
+                  selectedTileColor: Colors.lightBlue,
                   value: stop,
+                  selected: stop,
                   onChanged: (bool val) {
                     print(val);
                     setState(() {
                       stop = val;
                     });
-                  }),
+                  });}),
               ButtonBar(
                 children: [
                   TextButton(
                       onPressed: () {
-                        route.add(Route(routecontroller.text, stop, pickup));
+                        setState(() {
+                          route.add({
+                            "routename": routecontroller.text,
+                            "stop": stop,
+                            "pickup": pickup
+                          });
+                        });
                       },
                       child: Text("ADD ROUTE")),
                   TextButton(
-                      onPressed: () {}, child: Text("ADD ANOTHER ROUTE")),
+                      onPressed: () {
+                        setState(() {
+                          routecontroller.text = "";
+                          stop = false;
+                          pickup = false;
+                        });
+                      },
+                      child: Text("ADD ANOTHER ROUTE")),
                 ],
               )
             ],
           ),
         ),
       );
-    });
+    
   }
 
   List<String> places = [];
@@ -135,7 +156,7 @@ class DashAppState extends State<DashApp> {
   void initState() {
     latitude.text = "0.0";
     longitude.text = "0.0";
-    routecontroller.text = routenum.toString();
+    datecontroller.text = DateTime.now().toString().split(" ")[0];
     driverphone.addListener(() {
       setState(() {});
     });
@@ -677,7 +698,7 @@ class DashAppState extends State<DashApp> {
                                                 .add({
                                               "from": searchfrom.text,
                                               "to": searchto.text,
-                                              "interoutes": interoutes,
+                                              "interoutes": route,
                                               "distance": int.parse(
                                                   distcontroller.text),
                                               "date": DateTime.parse(
@@ -694,10 +715,17 @@ class DashAppState extends State<DashApp> {
                                               "fare": int.parse(fare.text),
                                               "driverid": initialval1,
                                               "triptype": companytype
-                                            }).then((value) => print(
-                                                    "Trip added successfullly"));
+                                            }).then((value) {
+                                              setState(() {
+                                                feedback =
+                                                    "Trip added successfullly";
+                                              });
+                                              print("Trip added successfullly");
+                                            });
                                           },
-                                          label: Text("Add Trip"))
+                                          label: Text("Add Trip")),
+                                      Text(feedback,
+                                          style: TextStyle(color: Colors.green))
                                     ]),
                                   ),
                                 ),
@@ -731,138 +759,138 @@ class Dashboard extends StatefulWidget {
 class DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Center(
-        child: SingleChildScrollView(
-            child: StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('companies')
-                    .doc(widget.companytype)
-                    .collection('Registered Companies')
-                    .where('id',
-                        isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                    .snapshots(),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (!snapshot.hasData &&
-                      !(snapshot.connectionState == ConnectionState.done)) {
-                    return Center(
-                        child: Card(
-                            elevation: 8,
-                            child: Column(
-                              children: [
-                                CircularProgressIndicator(),
-                                SizedBox(
-                                  height: 5,
-                                ),
-                                Text("Loading data...")
-                              ],
-                            )));
-                  } else if (snapshot.hasError) {
-                    print(snapshot.error);
-                  } else if (snapshot.hasData) {
-                    if (snapshot.data!.size > 0) {
-                      companyname =
-                          snapshot.data!.docs[0].get('registered_name');
-                    }
-
-                    print(companyname);
-                  }
-
-                  return ListView(
-                      shrinkWrap: true,
-                      children: snapshot.data!.docs
-                          .map((doc) => Center(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      Text("Not verified",
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red)),
-                                      Text(doc['registered_name'],
-                                          style: TextStyle(
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.bold)),
-                                      ListView.builder(
-                                          shrinkWrap: true,
-                                          itemCount: doc['regions'].length,
-                                          itemBuilder: (context, index) {
-                                            return ExpansionTile(
-                                                title:
-                                                    Text(doc['regions'][index]),
-                                                children: doc['stations']
-                                                            .length <
-                                                        1
-                                                    ? [Text("Add stations")]
-                                                    : List.unmodifiable(
-                                                        () sync* {
-                                                        for (var i = 0;
-                                                            i <
-                                                                doc['stations']
-                                                                    .length;
-                                                            i++) {
-                                                          if (doc['stations'][i]
-                                                                  ['region'] ==
-                                                              doc['regions']
-                                                                  [index]) {
-                                                            yield ListTile(
-                                                              title: Text(
-                                                                  doc['stations']
-                                                                          [i]
-                                                                      ['name']),
-                                                            );
-                                                          }
-                                                        }
-                                                      }()));
-                                          }),
-                                      ListView.builder(
-                                          shrinkWrap: true,
-                                          itemCount: doc['drivers'].length > 0
-                                              ? doc['drivers'].length
-                                              : 0,
-                                          itemBuilder:
-                                              (BuildContext context, idx) {
-                                            if (!drivers.contains(
-                                                doc['drivers'][idx]["phone"])) {
-                                              drivers.add(
-                                                  doc['drivers'][idx]["phone"]);
-                                            }
-
-                                            return ListTile(
-                                                title: Text(doc['drivers'][idx]
-                                                    ["name"]),
-                                                subtitle: Text(
-                                                  doc['drivers'][idx]["phone"],
-                                                ));
-                                          }),
-                                      ListView.builder(
-                                          shrinkWrap: true,
-                                          itemCount: doc['vehicles'].length > 0
-                                              ? doc['vehicles'].length
-                                              : 0,
-                                          itemBuilder:
-                                              (BuildContext context, idx) {
-                                            if (!vehivles.contains(
-                                                doc['vehicles'][idx]
-                                                    ["number"])) {
-                                              vehivles.add(doc['vehicles'][idx]
-                                                  ["number"]);
-                                            }
-
-                                            return ListTile(
-                                                title: Text(doc['vehicles'][idx]
-                                                    ["name"]),
-                                                subtitle: Text(
-                                                  doc['vehicles'][idx]
-                                                      ["number"],
-                                                ));
-                                          }),
-                                    ],
+        child: Card(
+          child: SingleChildScrollView(
+              child: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('companies')
+                      .doc(widget.companytype)
+                      .collection('Registered Companies')
+                      .where('id',
+                          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (!snapshot.hasData &&
+                        !(snapshot.connectionState == ConnectionState.done)) {
+                      return Center(
+                          child: Card(
+                              elevation: 8,
+                              child: Column(
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(
+                                    height: 5,
                                   ),
-                                ),
-                              ))
-                          .toList());
-                })));
+                                  Text("Loading data...")
+                                ],
+                              )));
+                    } else if (snapshot.hasError) {
+                      print(snapshot.error);
+                    } else if (snapshot.hasData) {
+                      if (snapshot.data!.size > 0) {
+                        companyname =
+                            snapshot.data!.docs[0].get('registered_name');
+                      }
+        
+                      print(companyname);
+                    }
+        
+                    return SingleChildScrollView(
+                      child: ListView(
+                          shrinkWrap: true,
+                          children: snapshot.data!.docs
+                              .map((doc) => Center(
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        children: [
+                                         
+                                          Text(doc['registered_name'],
+                                              style: TextStyle(
+                                                  fontSize: 30,
+                                                  fontWeight: FontWeight.bold)),
+                                          ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount: doc['regions'].length,
+                                              itemBuilder: (context, index) {
+                                                return ExpansionTile(
+                                                    title:
+                                                        Text(doc['regions'][index]),
+                                                    children: doc['stations']
+                                                                .length <
+                                                            1
+                                                        ? [Text("Add stations")]
+                                                        : List.unmodifiable(
+                                                            () sync* {
+                                                            for (var i = 0;
+                                                                i <
+                                                                    doc['stations']
+                                                                        .length;
+                                                                i++) {
+                                                              if (doc['stations'][i]
+                                                                      ['region'] ==
+                                                                  doc['regions']
+                                                                      [index]) {
+                                                                yield ListTile(
+                                                                  title: Text(
+                                                                      doc['stations']
+                                                                              [i]
+                                                                          ['name']),
+                                                                );
+                                                              }
+                                                            }
+                                                          }()));
+                                              }),
+                                          ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount: doc['drivers'].length > 0
+                                                  ? doc['drivers'].length
+                                                  : 0,
+                                              itemBuilder:
+                                                  (BuildContext context, idx) {
+                                                if (!drivers.contains(
+                                                    doc['drivers'][idx]["phone"])) {
+                                                  drivers.add(
+                                                      doc['drivers'][idx]["phone"]);
+                                                }
+                    
+                                                return ListTile(
+                                                    title: Text(doc['drivers'][idx]
+                                                        ["name"]),
+                                                    subtitle: Text(
+                                                      doc['drivers'][idx]["phone"],
+                                                    ));
+                                              }),
+                                          ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount: doc['vehicles'].length > 0
+                                                  ? doc['vehicles'].length
+                                                  : 0,
+                                              itemBuilder:
+                                                  (BuildContext context, idx) {
+                                                if (!vehivles.contains(
+                                                    doc['vehicles'][idx]
+                                                        ["number"])) {
+                                                  vehivles.add(doc['vehicles'][idx]
+                                                      ["number"]);
+                                                }
+                    
+                                                return ListTile(
+                                                    title: Text(doc['vehicles'][idx]
+                                                        ["name"]),
+                                                    subtitle: Text(
+                                                      doc['vehicles'][idx]
+                                                          ["number"],
+                                                    ));
+                                              }),
+                                        ],
+                                      ),
+                                    ),
+                                  ))
+                              .toList()),
+                    );
+                  })),
+        ));
   }
 }
 

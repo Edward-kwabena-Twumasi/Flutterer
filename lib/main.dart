@@ -1,5 +1,7 @@
 import 'dart:async';
 
+//import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
@@ -13,6 +15,7 @@ import 'package:myapp/screens/signup.dart';
 
 // Import the firebase_core plugin
 import 'package:firebase_core/firebase_core.dart';
+// import 'package:myapp/screens/websocket.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -75,7 +78,7 @@ class _AppState extends State<App> {
 // }
 
 class MyApp extends StatelessWidget {
- final  style = TextStyle(
+  final style = TextStyle(
     color: Colors.blueAccent,
     fontWeight: FontWeight.w500,
     fontFamily: 'Roboto',
@@ -102,8 +105,7 @@ class AppHome extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation:0,
-        
+        elevation: 0,
         title: ListTile(
           leading: Icon(Icons.star, color: Colors.amber),
           trailing: TextButton(
@@ -167,6 +169,7 @@ class MyForm extends StatefulWidget {
 class MyFormState extends State<MyForm> {
   final _formKey = GlobalKey<FormState>();
   bool allowlogin = false;
+  bool isuser = true;
   bool retry = true;
   var correctLogin = "";
   bool request = false;
@@ -177,9 +180,17 @@ class MyFormState extends State<MyForm> {
   @override
   void initState() {
     super.initState();
+// if (isuser) {
+  
 
-    // Start listening to changes.
-    // myController.addListener(_printLatestValue);
+//     var auth = FirebaseAuth.instance.currentUser;
+//     if (auth != null) {
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(builder: (context) => ButtomNav()),
+//       );
+//     }
+//     }
   }
 
   @override

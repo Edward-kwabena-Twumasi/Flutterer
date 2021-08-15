@@ -117,13 +117,24 @@ class _NotifyState extends State<Notify> {
                 leading: Icon(Icons.watch_later),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
-                title: Text("Set timers"),
+                title: Text("Set Reminders and notices"),
                 subtitle: Column(
                   children: [
-                    ElevatedButton(onPressed: () {}, child: Text("SET TIMER")),
                     ListTile(
-                      title: TextField(),
-                    )
+                      title: Text("Remind me"),
+                      subtitle:TextField(
+
+                      )
+                    ),
+                     ListTile(
+                        title: Text("Price matches"),
+                      subtitle: TextField(),
+                    ),
+                     ListTile(
+                        title: Text("Notify availability"),
+                      subtitle: TextField(),
+                    ),
+
                   ],
                 )),
           ),

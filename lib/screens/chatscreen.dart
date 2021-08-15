@@ -2,17 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/material.dart';
 
+
+
 void main() => runApp(const ChatApp());
-final TextEditingController _controller = TextEditingController();
-final _channel = WebSocketChannel.connect(
-  Uri.parse('wss://echo.websocket.org'),
-);
-void _sendMessage() {
-  
-  if (_controller.text.isNotEmpty) {
-    _channel.sink.add(_controller.text);
-  }
-}
 
 class ChatApp extends StatelessWidget {
   const ChatApp({Key? key}) : super(key: key);
@@ -21,73 +13,80 @@ class ChatApp extends StatelessWidget {
     const title = 'Chat assistant';
     return MaterialApp(
       title: title,
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Text(title),
-          leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.arrow_back_ios)),
+      home:  ChatHomePage(
+          title: title,        
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _sendMessage,
-          tooltip: 'Send message',
-          child: const Icon(Icons.send),
-        ),
-        body: ChatHomePage(
-          title: title,
-          channel: _channel,
-        ),
-      ),
     );
   }
 }
+
+
 
 class ChatHomePage extends StatefulWidget {
   const ChatHomePage({
     Key? key,
     required this.title,
-    required this.channel,
+   
   }) : super(key: key);
   final String title;
-  final WebSocketChannel channel;
+  
   @override
   _ChatHomePageState createState() => _ChatHomePageState();
 }
 
 class _ChatHomePageState extends State<ChatHomePage> {
+  final TextEditingController controller = TextEditingController();
+
+late final WebSocketChannel channel;
+  void initState() {
+    super.initState();
+    channel = WebSocketChannel.connect(
+  Uri.parse('wss://echo.websocket.org'),
+
+);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Form(
-            child: TextFormField(
-              controller: _controller,
-              decoration: const InputDecoration(labelText: 'Send a message'),
+    return Scaffold(
+       floatingActionButton: FloatingActionButton(
+          onPressed:(){
+ if (controller.text.isNotEmpty) {
+    channel.sink.add(controller.text);
+  }
+          },
+          tooltip:'Send message',
+          child: const Icon(Icons.send),
+        ),
+     body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Form(
+              child: TextFormField(
+                controller: controller,
+                decoration: const InputDecoration(labelText: 'Enter search here'),
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          StreamBuilder(
-            stream: widget.channel.stream,
-            builder: (context, snapshot) {
-              return Text(snapshot.hasData ? '${snapshot.data}' : '');
-            },
-          )
-        ],
+            const SizedBox(height: 24),
+            StreamBuilder(
+              stream:channel.stream,
+              builder: (context, snapshot) {
+                return Text(snapshot.hasData ? '${snapshot.data}' : '');
+              },
+            )
+          ],
+        ),
+    
+        // This trailing comma makes auto-formatting nicer for build methods.
       ),
-
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
   @override
   void dispose() {
-   widget.channel.sink.close();
+   channel.sink.close();
     super.dispose();
   }
 }

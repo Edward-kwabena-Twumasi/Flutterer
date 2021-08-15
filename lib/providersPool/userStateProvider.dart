@@ -46,7 +46,7 @@ class UserState extends ChangeNotifier {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-           print(userCredential.additionalUserInfo);
+      print(userCredential.additionalUserInfo);
       signinstate = userStates.successful;
 
       print("we done");
@@ -70,7 +70,7 @@ class UserState extends ChangeNotifier {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-           print(userCredential.additionalUserInfo);
+      print(userCredential.additionalUserInfo);
       registedstate = userStates.successful;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -110,3 +110,26 @@ class UserState extends ChangeNotifier {
     });
   } //adduser
 } //end class
+
+Future<void> saveTokenToDatabase(String token) async {
+  // Assume user is logged in for this example
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  await FirebaseFirestore.instance.collection('users').doc(userId).update({
+    'tokens': FieldValue.arrayUnion([token]),
+  });
+}
+
+Future<String> getToken(String id) async {
+  // Assume user is logged in for this example
+  //String userId = FirebaseAuth.instance.currentUser!.uid;
+  String token="";
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(id)
+      .get()
+      .then((value) {
+    token = value["tokens"][(value["tokens"].length-1)];
+  });
+  return token;
+}

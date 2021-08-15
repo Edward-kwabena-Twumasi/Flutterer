@@ -39,7 +39,7 @@ class InputFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: TextFormField(
-        autocorrect:true,
+        autocorrect: true,
         style: TextStyle(color: Colors.black),
         keyboardType: inputtype,
         decoration: new InputDecoration(
@@ -71,10 +71,12 @@ class InputFields extends StatelessWidget {
 Widget niceChips(IconData icondata, String text, void Function() pressed) {
   return InputChip(
     side: BorderSide.none,
-    backgroundColor: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(topLeft:Radius.circular(15),bottomRight:Radius.circular(15)  )
+    ),
     selected: false,
-    selectedColor: Colors.green[100],
-    label: Text(text),
+    selectedColor: Colors.red[50],
+    label: Text(text,style: TextStyle(fontSize:20,color: Colors.red ), ),
     avatar: Icon(icondata),
     labelPadding: EdgeInsets.all(8),
     onPressed: pressed,
@@ -168,7 +170,6 @@ class _MenuButtonState extends State<MenuButton> {
     );
   }
 }
-
 
 TripClass onetrip =
     TripClass("Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal", "");
@@ -267,9 +268,8 @@ class SearchLocsState extends State<SearchLocs> {
 
   @override
   void dispose() {
-    
-
     super.dispose();
+    myoverlay?.remove();
   }
 
   List<String> suggestions = [];
@@ -428,3 +428,128 @@ class _UploadPicState extends State<UploadPic> {
   }
 }
 
+class Policy extends StatefulWidget {
+  const Policy({Key? key}) : super(key: key);
+
+  @override
+  _PolicyState createState() => _PolicyState();
+}
+
+class _PolicyState extends State<Policy> {
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    return Container(
+        height: height,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: ListTile(
+                    title: Text("Usage policy"),
+                    subtitle: Text(
+                        "Respect all rules laid down on this app.Amy malicious ...")),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: ListTile(
+                    title: Text("Refund policy"),
+                    subtitle: Text(
+                        "Refunds will be done under the following conditions")),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: ListTile(
+                    title: Text("Transfer policy"),
+                    subtitle: Text(
+                        "Users who have bought tickets ,also called transactors can transfer their tickets to other accounts")),
+              ),
+            ]),
+          ),
+        ));
+  }
+}
+
+class Compareprice extends StatefulWidget {
+  const Compareprice({Key? key}) : super(key: key);
+
+  @override
+  _ComparepriceState createState() => _ComparepriceState();
+}
+
+class _ComparepriceState extends State<Compareprice> {
+  TextEditingController origin = TextEditingController();
+  TextEditingController destin = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    return Container(
+      height: height,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                    child: InputFields("from", origin, Icons.location_city,
+                        TextInputType.text)),
+                Expanded(
+                    child: InputFields(
+                        "to", destin, Icons.location_city, TextInputType.text))
+              ],
+            ),
+          ),
+          ButtonBar(
+            children: [
+              TextButton(onPressed: () {}, child: Text("List comparisons"))
+            ],
+          ),
+          Card(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("20 GHS"),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("30 GHS"),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("100 GHS"),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class FindateTrips extends StatefulWidget {
+  const FindateTrips({Key? key}) : super(key: key);
+
+  @override
+  _FindateTripsState createState() => _FindateTripsState();
+}
+
+class _FindateTripsState extends State<FindateTrips> {
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    return Container(
+      height: height,
+    );
+  }
+}

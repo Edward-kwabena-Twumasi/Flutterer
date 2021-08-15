@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -50,47 +51,7 @@ class ButtomNav extends StatefulWidget {
 class ButtomNavState extends State<ButtomNav> {
   static List<Widget> pages = [
     Column(
-      children: [
-        Expanded(child: TabBarDemo()),
-        Container(
-            color: Colors.amber[100],
-            height: 70,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Card(
-                      elevation: 3,
-                      child: FloatingActionButton.extended(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)),
-                          onPressed: () {},
-                          label: Text("Policy"))),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Card(
-                      elevation: 3,
-                      child: FloatingActionButton.extended(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)),
-                          onPressed: () {},
-                          label: Text(" offers"))),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Card(
-                      elevation: 3,
-                      child: FloatingActionButton.extended(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)),
-                          onPressed: () {},
-                          label: Text("Find"))),
-                ),
-              ],
-            ))
-      ],
+      children: [Expanded(child: TabBarDemo()), Primary()],
     ),
     HelpClass(),
     Notify(),
@@ -102,6 +63,23 @@ class ButtomNavState extends State<ButtomNav> {
     setState(() {
       currentindx = value;
     });
+  }
+
+  Future<void> getSavetoken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+
+    // Save the initial token to the database
+    await saveTokenToDatabase(token!);
+
+    // Any time the token refreshes, store this in the database too.
+    FirebaseMessaging.instance.onTokenRefresh.listen(saveTokenToDatabase);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    getSavetoken();
   }
 
   Widget build(BuildContext context) {
@@ -434,9 +412,29 @@ class Trips extends StatefulWidget {
 }
 
 class TripsState extends State<Trips> {
-  // String gttriptype ;
-  companyFilters filter = companyFilters.VIP;
   bool isfound = true;
+
+  String getday(int tripday, int searchday) {
+    
+    String particular = "Today  "   ;
+    List days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+      "Tomorrow"
+    ];
+    if ((tripday - searchday) == 1) {
+      particular = days[7];
+    } else if ((tripday - searchday) > 1) {
+      particular = days[tripday];     
+    }
+
+    return particular;
+  }
 
   List filterquery = ["ALL"];
   void filterall() {
@@ -475,11 +473,30 @@ class TripsState extends State<Trips> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: Icon(Icons.arrow_back_ios)),
+              icon: Icon(Icons.arrow_back_ios, color: Colors.black)),
           centerTitle: true,
-          title: Text(
-            "Search Results",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          title: Row(
+            children: [
+              Text(
+                "Search Results for  ",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.lightBlue),
+              ),
+              DecoratedBox(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: Colors.red,
+                          width: 2,
+                          style: BorderStyle.solid)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Text(
+                      widget._tripdata.triptype,
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ))
+            ],
           ),
           elevation: 0,
         ),
@@ -487,43 +504,62 @@ class TripsState extends State<Trips> {
           child: SingleChildScrollView(
             child: Column(children: [
               Container(
-                color: Colors.amber[100],
-                height: 50,
-                margin: EdgeInsets.all(10),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount:
-                          filterquery.length > 0 ? filterquery.length : 0,
-                      itemBuilder: (BuildContext context, idx) {
-                        return Container(
-                            margin: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                            child: niceChips(
-                                Icons.filter, filterquery[idx], filterall));
-                      },
-                    ),
-                  ),
+                height: 30,
+                child: FutureBuilder(
+                    future: FirebaseFirestore.instance
+                        .collection("appstrings")
+                        .doc("companynamestrings")
+                        .get(),
+                    builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                      if (snapshot.hasError) {
+                        print(snapshot.error.toString());
+                        return Text(snapshot.error.toString());
+                      }
+                      return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: snapshot.data!["companynamestrings"].length,
+                          itemBuilder: (lcontext, index) {
+                            return niceChips(
+                                Icons.filter,
+                                snapshot.data!["companynamestrings"][index]["name"],
+                                filterall);
+                          });
+                    }),
+              ),
+              ListTile(
+                title: Center(child: Text("compare")),
+                subtitle: ButtonBar(
+                  children: [
+                    niceChips(Icons.bus_alert, "Bus", filterall),
+                    niceChips(Icons.bus_alert, "Train", filterall)
+                  ],
                 ),
               ),
               SingleChildScrollView(
                   child: Column(
                 children: [
-                  Text(
-                      widget._tripdata.triptype +
-                          "s " +
-                          " from " +
-                          widget._tripdata.fromLoc +
-                          " to " +
-                          widget._tripdata.toLoc +
-                          " . " +
-                          results.toString() +
-                          " found",
-                      style: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          color: Colors.lightBlue,
-                          fontSize: 20)),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: Colors.red,
+                            width: 1,
+                            style: BorderStyle.solid)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                          widget._tripdata.triptype +
+                              "s " +
+                              " from " +
+                              widget._tripdata.fromLoc +
+                              " to " +
+                              widget._tripdata.toLoc,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.lightBlue,
+                          )),
+                    ),
+                  ),
                   StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('trips')
@@ -536,8 +572,8 @@ class TripsState extends State<Trips> {
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (!snapshot.hasData &&
-                            !(snapshot.connectionState ==
-                                ConnectionState.done)) {
+                            (snapshot.connectionState ==
+                                ConnectionState.waiting)) {
                           return Center(
                               child: Card(
                                   elevation: 8,
@@ -552,116 +588,95 @@ class TripsState extends State<Trips> {
                                   )));
                         } else if (snapshot.hasError) {
                           print(snapshot.error);
+                          return Text(
+                              "Sorry an error occured.Probably may be due to internet issues.Try again later");
+                        } else if ((snapshot.connectionState ==
+                                ConnectionState.done) &&
+                            snapshot.data!.size < 1) {
+                          return Text(
+                              "Couldnt find matching results .Please try another search or contact us on 0501658160");
                         } else if (snapshot.hasData) {
-                          print(snapshot.data!.size);
-                          // ignore: unnecessary_statements
-                          results += snapshot.data!.size;
-                          isfound = true;
-                        } else if (snapshot.data!.size < 1) {
-                          isfound = false;
+                          return ListView(
+                              shrinkWrap: true,
+                              children: snapshot.data!.docs.map((doc) {
+                                return Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  elevation: 5,
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        leading: Text(getday(
+                                            doc['date'].toDate().day,
+                                            widget._tripdata.date.day)),
+                                        subtitle: Row(
+                                          children: [
+                                            Text(doc['company'].toString()),
+                                            Text("                 Leaving - " +
+                                                doc['date']
+                                                    .toDate()
+                                                    .toString()
+                                                    .split(" ")[1]),
+                                          ],
+                                        ),
+                                        title: DecoratedBox(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(25),
+                                                border: Border.all(
+                                                    color: Colors.green)),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                  doc['seats'].toString() +
+                                                      "  seats remaining"),
+                                            )),
+                                        trailing: FloatingActionButton(
+                                            heroTag: "book",
+                                            onPressed: () {
+                                              for (var i = 0;
+                                                  i < doc["interoutes"].length;
+                                                  i++) {
+                                                routes.add(Interoutes(
+                                                    doc["interoutes"][i]
+                                                        ['routename'],
+                                                    doc['interoutes'][i]
+                                                        ['pickup'],
+                                                    doc['interoutes'][i]
+                                                        ['stop']));
+                                              }
+                                              seat.vehid = doc["vehid"];
+                                              seat.from = doc["from"];
+                                              seat.to = doc["to"];
+                                              seat.seats = (doc["seats"] +
+                                                  doc["chosen"].length);
+                                              seat.unitprice = doc["fare"];
+                                              seat.tripid = doc.id.toString();
+                                              print('clicked');
+                                              Navigator.pushNamed(
+                                                  context, "/completebook");
+                                            },
+                                            child: Text("Book")),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              }).toList());
                         }
-                        return isfound
-                            ? ListView(
-                                shrinkWrap: true,
-                                children: snapshot.data!.docs.map((doc) {
-                                  results += 1;
-                                  filterquery.add(doc['date']);
-                                  return Card(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    elevation: 5,
-                                    child: Column(
-                                      children: [
-                                        ListTile(
-                                            tileColor:
-                                                widget._tripdata.date.day ==
-                                                        doc['date'].toDate().day
-                                                    ? Colors.amber[100]
-                                                    : Colors.red,
-                                            title: Row(
-                                              children: [
-                                                Text(doc['from'],
-                                                    style: TextStyle(
-                                                        color: Colors.black,
-                                                        backgroundColor:
-                                                            Colors.amber,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                Text("  to   "),
-                                                Text(doc['to'],
-                                                    style: TextStyle(
-                                                        color: Colors.black,
-                                                        backgroundColor:
-                                                            Colors.blueGrey,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                              ],
-                                            ),
-                                            subtitle: Text(doc['company'])),
-                                        ListTile(
-                                            trailing: Text(
-                                                doc['fare'].toString() + ' Cdz',
-                                                style: TextStyle(
-                                                    fontSize: 30,
-                                                    color: Colors.lightBlue)),
-                                            leading: Icon(
-                                              Icons.chair,
-                                              size: 40,
-                                            ),
-                                            title: Text(
-                                                doc['seats'].toString() +
-                                                    " Available"),
-                                            subtitle: Row(
-                                              children: [
-                                                Text(widget._tripdata.date
-                                                            .day ==
-                                                        doc['date'].toDate().day
-                                                    ? "Today"
-                                                    : doc['date']
-                                                            .toDate()
-                                                            .day
-                                                            .toString() +
-                                                        "   "),
-                                                FloatingActionButton(
-                                                    heroTag: "book",
-                                                    onPressed: () {
-                                                      for (var i = 0;
-                                                          i <
-                                                              doc["interoutes"]
-                                                                  .length;
-                                                          i++) {
-                                                        routes.add(Interoutes(
-                                                            doc["interoutes"][i]
-                                                                ['routename'],
-                                                            doc['interoutes'][i]
-                                                                ['pickup'],
-                                                            doc['interoutes'][i]
-                                                                ['stop']));
-                                                      }
-                                                      seat.vehid = doc["vehid"];
-                                                      seat.from = doc["from"];
-                                                      seat.to = doc["to"];
-                                                      seat.seats = doc["seats"];
-                                                      seat.unitprice =
-                                                          doc["fare"];
-                                                      seat.tripid =
-                                                          doc.id.toString();
-                                                      print('clicked');
-                                                      Navigator.pushNamed(
-                                                          context,
-                                                          "/completebook");
-                                                    },
-                                                    child: Text("Book")),
-                                              ],
-                                            ))
-                                      ],
-                                    ),
-                                  );
-                                }).toList())
-                            : Text("Couldnt find matching search");
+
+                        return Text(
+                          "No data found for search",
+                          style: TextStyle(color: Colors.red),
+                        );
                       }),
                 ],
               )),
+              //  ButtonBar(
+              //    children: [
+
+              //    ],
+              //  )
             ]),
           ),
         ),
@@ -829,53 +844,17 @@ class UserInfoClassState extends State<UserInfoClass> {
   bool fetch = true;
   var starred = [];
   var healthinfo = [];
-  // void getopts() async {
-  //   await FirebaseFirestore.instance
-  //       .collection("appstrings")
-  //       .doc("companynames")
-  //       .get();
-  // }
-
-  User user = User("...", "...", "...", "...", "...");
-  Future<User> userdata() async {
-    print("getting your data");
-    User user = User("...", "...", "...", "...", "...");
+  void getopts() async {
     await FirebaseFirestore.instance
-        .collection("users")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((doc) {
-      if (doc.exists) {
-        print("Document data:" + doc.data()!["phone"]);
-        setState(() {
-          healthinfo = doc.data()!["healthinfo"];
-          user.name = doc.data()!["full_name"];
-          user.city = doc.data()!["city"];
-          user.phone = doc.data()!["phone"];
-          user.email = doc.data()!["email"];
-          user.region = doc.data()!["region"];
-          fetch = false;
-        });
-      } else {
-        // doc.data() will be undefined in this case
-        print("No such document!");
-      }
-    }).catchError((e) {
-      print("this error occured" + e.toString());
-    });
-    return user;
+        .collection("appstrings")
+        .doc("companynamestrings")
+        .get();
   }
 
   String setname = "Name";
 
   void initState() {
     super.initState();
-    userdata().then((value) {
-      setState(() {
-        user = value;
-        setname = value.name;
-      });
-    });
   }
 
   @override
@@ -886,225 +865,257 @@ class UserInfoClassState extends State<UserInfoClass> {
         centerTitle: true,
         title: Text(
           "Profile",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(150),
-                child: Container(
-                    color: Colors.amber,
-                    height: 100,
-                    width: 100,
-                    child: Stack(children: [
-                      Positioned.fill(child: Text("Hi")),
-                      Positioned(
-                          right: 5,
-                          bottom: 2,
-                          child: IconButton(
-                              onPressed: () {}, icon: Icon(Icons.photo_camera)))
-                    ])),
-              ),
-            ),
-            Center(
-                child: FloatingActionButton.extended(
-              onPressed: () {},
-              label: Text("Health info"),
-              icon: Icon(Icons.local_hospital),
-            )),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                  child:
-                      fetch ? CircularProgressIndicator() : Text("Your info")),
-            ),
-            Padding(
-                padding: EdgeInsets.all(12),
-                child: ListView(shrinkWrap: true, children: [
+        child: FutureBuilder(
+            future: FirebaseFirestore.instance
+                .collection("users")
+                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .get(),
+            builder: (context, AsyncSnapshot<dynamic> snapshot) {
+              if (!snapshot.hasData) {
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                print(snapshot.error);
+              }
+
+              return Column(
+                children: [
                   Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
                     elevation: 10,
-                    child: ListTile(
-                        title: Text("Name"),
-                        subtitle: Text(setname),
-                        trailing: IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.edit_attributes))),
-                  ),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
-                    elevation: 10,
-                    child: ListTile(
-                        title: Text("Email"),
-                        subtitle: Text(user.email),
-                        trailing: IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.edit_attributes))),
-                  ),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
-                    elevation: 10,
-                    child: ListTile(
-                        title: Text("Phone"),
-                        subtitle: Text(user.phone),
-                        trailing: IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.edit_attributes))),
-                  ),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
-                    elevation: 10,
-                    child: ListTile(
-                        title: Text("Address"),
-                        subtitle: ExpansionTile(
-                            title: Text("Adress info"),
-                            children: [
-                              ListTile(
-                                  title: Text("Region"),
-                                  subtitle: Text(user.region),
-                                  trailing: IconButton(
+                    child: Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(150),
+                        child: Container(
+                            color: Colors.amber,
+                            height: 160,
+                            width: 160,
+                            child: Stack(children: [
+                              Image.network("imgUrl!",
+                                  cacheHeight: 120, cacheWidth: 120),
+                              Positioned(
+                                  right: 5,
+                                  bottom: 2,
+                                  child: IconButton(
                                       onPressed: () {},
-                                      icon: Icon(Icons.edit_attributes))),
-                              ListTile(
-                                  title: Text("City"),
-                                  subtitle: Text(user.city),
-                                  trailing: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(Icons.edit_attributes))),
-                              ListTile(
-                                  title: Text("House Address"),
-                                  subtitle: Text("House address"),
-                                  trailing: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(Icons.edit_attributes))),
+                                      icon: Icon(Icons.photo_camera)))
                             ])),
+                      ),
+                    ),
                   ),
-                ])),
-            Row(children: [
-              Expanded(
-                  child: FloatingActionButton.extended(
-                heroTag: "rate",
-                icon: Icon(Icons.star),
-                onPressed: () {
-                  showModalBottomSheet(
-                      backgroundColor: Colors.amber[100],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(50),
-                              topRight: Radius.circular(50))),
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (BuildContext context) {
-                        return FractionallySizedBox(
-                          heightFactor: 0.5,
-                          child: Center(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Rate",
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 35),
-                                ),
-                                Expanded(
-                                    child: ListTile(
-                                        title: ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: stars,
-                                            itemBuilder:
-                                                (BuildContext context, index) {
-                                              return StatefulBuilder(
-                                                builder: (BuildContext context,
-                                                    setState) {
-                                                  return Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: IconButton(
-                                                        onPressed: () {
-                                                          if (!starred.contains(
-                                                              index)) {
-                                                            setState(() {
-                                                              starred
-                                                                  .add(index);
-
-                                                              // stars;
-                                                            });
-
-                                                            print(
-                                                                starred.length);
-                                                            print(starredcolor);
-                                                            print(index);
-                                                          } else {
-                                                            setState(() {
-                                                              starred.remove(
-                                                                  index);
-                                                              print(starred
-                                                                  .length);
-                                                              // stars;
-                                                              print(
-                                                                  starredcolor);
-                                                              print(index);
-                                                            });
-                                                          }
-                                                        },
-                                                        icon: Icon(Icons.star,
-                                                            size: 30,
-                                                            color: starred
+                  Center(
+                      child: FloatingActionButton.extended(
+                    onPressed: () {},
+                    label: Text("Health info"),
+                    icon: Icon(Icons.local_hospital),
+                  )),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                        child: fetch
+                            ? CircularProgressIndicator()
+                            : Text("Your info")),
+                  ),
+                  Padding(
+                      padding: EdgeInsets.all(12),
+                      child: ListView(shrinkWrap: true, children: [
+                        Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          elevation: 10,
+                          child: ListTile(
+                              title: Text("Name"),
+                              subtitle: Text(snapshot.data["full_name"]),
+                              trailing: IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(Icons.edit_attributes))),
+                        ),
+                        Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          elevation: 10,
+                          child: ListTile(
+                              title: Text("Email"),
+                              subtitle: Text(snapshot.data["contact"]["email"]),
+                              trailing: IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(Icons.edit_attributes))),
+                        ),
+                        Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          elevation: 10,
+                          child: ListTile(
+                              title: Text("Phone"),
+                              subtitle: Text(snapshot.data["contact"]["phone"]),
+                              trailing: IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(Icons.edit_attributes))),
+                        ),
+                        Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          elevation: 10,
+                          child: ListTile(
+                              title: Text("Address"),
+                              subtitle: ExpansionTile(
+                                  title: Text("Adress info"),
+                                  children: [
+                                    ListTile(
+                                        title: Text("Region"),
+                                        subtitle: Text(
+                                            snapshot.data["address"]["region"]),
+                                        trailing: IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.edit_attributes))),
+                                    ListTile(
+                                        title: Text("City"),
+                                        subtitle: Text(
+                                            snapshot.data["address"]["city"]),
+                                        trailing: IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.edit_attributes))),
+                                    ListTile(
+                                        title: Text("House Address"),
+                                        subtitle: Text(
+                                            snapshot.data["address"]["house"]),
+                                        trailing: IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.edit_attributes))),
+                                  ])),
+                        ),
+                      ])),
+                  Row(children: [
+                    Expanded(
+                        child: FloatingActionButton.extended(
+                      heroTag: "rate",
+                      icon: Icon(Icons.star),
+                      onPressed: () {
+                        showModalBottomSheet(
+                            backgroundColor: Colors.amber[100],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return FractionallySizedBox(
+                                heightFactor: 0.9,
+                                child: Center(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Rate",
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 35),
+                                      ),
+                                      Expanded(
+                                          child: ListTile(
+                                              title: ListView.builder(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  itemCount: stars,
+                                                  itemBuilder:
+                                                      (BuildContext context,
+                                                          index) {
+                                                    return StatefulBuilder(
+                                                      builder:
+                                                          (BuildContext context,
+                                                              setState) {
+                                                        return Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: IconButton(
+                                                              onPressed: () {
+                                                                if (!starred
                                                                     .contains(
-                                                                        index)
-                                                                ? starredcolor
-                                                                : unstarredcolor)),
-                                                  );
-                                                },
-                                              );
-                                            })))
-                              ],
-                            ),
-                          ),
-                        );
-                      });
-                },
-                label: Text("Rate",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              )),
-              Expanded(
-                  child: FloatingActionButton.extended(
-                heroTag: "review",
-                icon: Icon(Icons.edit),
-                onPressed: () {
-                  showModalBottomSheet(
-                      backgroundColor: Colors.amber[100],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(50),
-                              topRight: Radius.circular(50))),
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (BuildContext context) {
-                        return FractionallySizedBox(
-                          child: Text("Write review"),
-                        );
-                      });
-                },
-                label: Text("Rreview",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
-              ))
-            ])
-          ],
-        ),
+                                                                        index)) {
+                                                                  setState(() {
+                                                                    starred.add(
+                                                                        index);
+
+                                                                    // stars;
+                                                                  });
+
+                                                                  print(starred
+                                                                      .length);
+                                                                  print(
+                                                                      starredcolor);
+                                                                  print(index);
+                                                                } else {
+                                                                  setState(() {
+                                                                    starred.remove(
+                                                                        index);
+                                                                    print(starred
+                                                                        .length);
+                                                                    // stars;
+                                                                    print(
+                                                                        starredcolor);
+                                                                    print(
+                                                                        index);
+                                                                  });
+                                                                }
+                                                              },
+                                                              icon: Icon(
+                                                                  Icons.star,
+                                                                  size: 30,
+                                                                  color: starred
+                                                                          .contains(
+                                                                              index)
+                                                                      ? starredcolor
+                                                                      : unstarredcolor)),
+                                                        );
+                                                      },
+                                                    );
+                                                  })))
+                                    ],
+                                  ),
+                                ),
+                              );
+                            });
+                      },
+                      label: Text("Rate",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    )),
+                    Expanded(
+                        child: FloatingActionButton.extended(
+                      heroTag: "review",
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        showModalBottomSheet(
+                            backgroundColor: Colors.amber[100],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return FractionallySizedBox(
+                                child: Text("Write review"),
+                              );
+                            });
+                      },
+                      label: Text("Rreview",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ))
+                  ])
+                ],
+              );
+            }),
       ),
     );
   }
@@ -1132,9 +1143,124 @@ class Interoutes {
 
 class User {
   String name;
-  String phone;
-  String email;
-  String city;
-  String region;
-  User(this.name, this.city, this.phone, this.email, this.region);
+  Map address;
+  Map contact;
+
+  Map healthinfo;
+  User(this.name, this.address, this.contact, this.healthinfo);
+}
+
+class Primary extends StatefulWidget {
+  const Primary({Key? key}) : super(key: key);
+
+  @override
+  _PrimaryState createState() => _PrimaryState();
+}
+
+class _PrimaryState extends State<Primary> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: [0.6, 0.95],
+            ),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15), topRight: Radius.circular(15))),
+        height: 70,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Card(
+                  elevation: 3,
+                  child: FloatingActionButton.extended(
+                      heroTag: "policy",
+                      backgroundColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      onPressed: () {
+                        showModalBottomSheet(
+                            backgroundColor: Colors.amber[100],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return FractionallySizedBox(
+                                  heightFactor: 0.9, child: Policy());
+                            });
+                      },
+                      label: Text("Policy",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black)))),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Card(
+                  elevation: 3,
+                  child: FloatingActionButton.extended(
+                      heroTag: "offers",
+                      backgroundColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      onPressed: () {},
+                      label: Text(" offers",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black)))),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Card(
+                  elevation: 3,
+                  child: FloatingActionButton.extended(
+                      heroTag: "find",
+                      backgroundColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      onPressed: () {},
+                      label: Text("Find",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black)))),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Card(
+                  elevation: 3,
+                  child: FloatingActionButton.extended(
+                      heroTag: "comp",
+                      backgroundColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      onPressed: () {
+                        showModalBottomSheet(
+                            backgroundColor: Colors.amber[100],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return FractionallySizedBox(
+                                  heightFactor: 0.9, child: Compareprice());
+                            });
+                      },
+                      label: Text("Compare",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black)))),
+            ),
+          ],
+        ));
+  }
 }

@@ -268,7 +268,8 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                       .collection("appstrings")
                                       .doc("companynamestrings")
                                       .update({
-                                        "companynames":FieldValue.arrayUnion([name.text.toString()])
+                                        "companynamestrings":FieldValue.arrayUnion([{"name": name.text.toString(),
+                                        "type":companytype}])
                                       });
                                   setState(() {
                                     errormesg =

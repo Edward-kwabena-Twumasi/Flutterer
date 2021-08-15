@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
+import 'package:myapp/screens/payweb.dart';
 
 void main() {
   runApp(Booking());
@@ -33,7 +34,9 @@ class Book extends StatefulWidget {
 class BookState extends State<Book> {
   String message = "";
   bool bookingsuccess = false;
+  String transactor = FirebaseAuth.instance.currentUser!.uid;
   bool showlist = false;
+  var accesscode;
   var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
   final plugin = PaystackPlugin();
   var seatids = [];
@@ -108,107 +111,110 @@ class BookState extends State<Book> {
                   }
                   return GridView.builder(
                       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 200,
-                          childAspectRatio: 3 / 2,
-                          crossAxisSpacing: 5,
+                          maxCrossAxisExtent: 150,
+                          childAspectRatio: 1.2,
+                          crossAxisSpacing: 10,
                           mainAxisSpacing: 10),
                       itemCount: widget.seat.seats,
                       itemBuilder: (BuildContext ctx, index) {
                         seatids = snapshots.data!["chosen"];
-                        return FloatingActionButton.extended(
-                          label: Text((index + 1).toString()),
-                          icon: Icon(
-                            Icons.chair,
-                          ),
-                          heroTag: index.toString(),
-                          key: Key("Seat numbers" + index.toString()),
-                          backgroundColor:
-                              snapshots.data!["chosen"].contains(index)
-                                  ? Colors.green[300]
-                                  : seatcolor,
-                          onPressed: () {
-                            print(index);
-                            print(seatids);
-                            if (!snapshots.data!["chosen"].contains(index)) {
-                              setState(() {
-                                chosen += 1;
-                                total = (chosen * unitprice);
-                              });
+                        return SizedBox(
+                          height: 110,
+                          width: 110,
+                          child: FloatingActionButton.extended(
+                            label: Text((index + 1).toString()),
+                            icon: Icon(
+                              Icons.chair,
+                            ),
+                            heroTag: index.toString(),
+                            key: Key("Seat numbers" + index.toString()),
+                            backgroundColor:
+                                snapshots.data!["chosen"].contains(index)
+                                    ? Colors.green[300]
+                                    : seatcolor,
+                            onPressed: () {
 
-                              FirebaseFirestore.instance
-                                  .runTransaction((transaction) async {
-                                DocumentSnapshot freshap = await transaction
-                                    .get(snapshots.data!.reference);
-                                transaction.update(freshap.reference, {
-                                  "seats": (freshap["seats"] - 1),
-                                  "chosen": FieldValue.arrayUnion([index])
-                                });
-                              }).then((value) {
-                                print(value.toString());
+//verify transactors
+// if (!snapshots.data!["chosen"].contains({index,transactor})) {
+                               
+//                                 }
+
+
+                              if (!snapshots.data!["chosen"].contains(index)) {
                                 setState(() {
-                                  showlist = true;
+                                  chosen += 1;
+                                  total = (chosen * unitprice);
                                 });
-                              });
-                            } else {
-                              print("seat already chosen");
-                              setState(() {
-                                snapshots.data!["chosen"].remove(index + 1);
-                                chosen -= 1;
-                                total = (chosen * unitprice);
-                              });
-                              FirebaseFirestore.instance
-                                  .runTransaction((transaction) async {
-                                DocumentSnapshot freshap = await transaction
-                                    .get(snapshots.data!.reference);
-                                transaction.update(freshap.reference, {
-                                  "seats": (freshap["seats"] + 1),
-                                  "chosen": FieldValue.arrayRemove([index])
+
+                                FirebaseFirestore.instance
+                                    .runTransaction((transaction) async {
+                                  DocumentSnapshot freshap = await transaction
+                                      .get(snapshots.data!.reference);
+                                  transaction.update(freshap.reference, {
+                                    "seats": (freshap["seats"] - 1),
+                                    "chosen": FieldValue.arrayUnion([index])
+                                  });
+                                }).then((value) {
+                                  setState(() {
+                                    showlist = true;
+                                  });
                                 });
-                              }).then((value) {
-                                print(value.toString());
+                              } else {
+                                print("seat already chosen");
                                 setState(() {
-                                  showlist = true;
+                                  chosen -= 1;
+                                  total = (chosen * unitprice);
                                 });
-                              });
-                            }
-                            showlist
-                                ? showModalBottomSheet(
-                                    backgroundColor: Colors.indigo[100],
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(50),
-                                            topRight: Radius.circular(50))),
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return FractionallySizedBox(
-                                        heightFactor: 0.99,
-                                        child: SingleChildScrollView(
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  "Ticket Details",
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.white),
+                                FirebaseFirestore.instance
+                                    .runTransaction((transaction) async {
+                                  DocumentSnapshot freshap = await transaction
+                                      .get(snapshots.data!.reference);
+                                  transaction.update(freshap.reference, {
+                                    "seats": (freshap["seats"] + 1),
+                                    "chosen": FieldValue.arrayRemove([index])
+                                  });
+                                }).then((value) {
+                                  setState(() {
+                                    showlist = true;
+                                  });
+                                });
+                              }
+                              showlist
+                                  ? showModalBottomSheet(
+                                      backgroundColor: Colors.indigo[100],
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(50),
+                                              topRight: Radius.circular(50))),
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return FractionallySizedBox(
+                                          heightFactor: 0.99,
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                    "Ticket Details",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white),
+                                                  ),
                                                 ),
-                                              ),
-                                              SizedBox(height: 12),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: SingleChildScrollView(
+                                                SizedBox(height: 12),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
                                                   child: Card(
                                                     shape:
                                                         RoundedRectangleBorder(),
                                                     elevation: 10,
                                                     child:
                                                         SingleChildScrollView(
-                                                      child: ListView(
-                                                        shrinkWrap: true,
+                                                      child: Column(
                                                         children: [
                                                           Text(
                                                               "Number of seats : " +
@@ -230,16 +236,12 @@ class BookState extends State<Book> {
                                                                   Text("Seats"),
                                                               subtitle:
                                                                   SingleChildScrollView(
-                                                                child: ListView
-                                                                    .builder(
-                                                                        shrinkWrap:
-                                                                            true,
-                                                                        itemCount:
-                                                                            seatids
-                                                                                .length,
-                                                                        itemBuilder:
-                                                                            (BuildContext context,
-                                                                                indx) {
+                                                                child: Column(
+                                                                  children: [
+                                                                    ListView.builder(
+                                                                        shrinkWrap: true,
+                                                                        itemCount: snapshots.data!["chosen"].length,
+                                                                        itemBuilder: (BuildContext context, indx) {
                                                                           return Padding(
                                                                             padding:
                                                                                 const EdgeInsets.all(3.0),
@@ -247,11 +249,11 @@ class BookState extends State<Book> {
                                                                                 ListTile(
                                                                               tileColor: Colors.grey[200],
                                                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                                              title: Text((seatids[indx] + 1).toString()),
+                                                                              title: Text((snapshots.data!["chosen"][indx] + 1).toString()),
                                                                               trailing: IconButton(
                                                                                   onPressed: () {
                                                                                     setState(() {
-                                                                                      seatids.remove((indx));
+                                                                                      snapshots.data!["chosen"].remove((indx));
                                                                                     });
                                                                                     print("cancel");
                                                                                   },
@@ -263,96 +265,113 @@ class BookState extends State<Book> {
                                                                             ),
                                                                           );
                                                                         }),
+                                                                  ],
+                                                                ),
                                                               ),
                                                             ),
+                                                          ),
+                                                          Center(
+                                                            child: ButtonBar(children: [
+                                                              FloatingActionButton
+                                                                  .extended(
+                                                                      onPressed:
+                                                                          () {
+                                                                        _getAccessCodeFrmInitialization(
+                                                                                double.parse(total
+                                                                                    .toString()),
+                                                                                "sk_test_0846b828ca9fc48ec400aafbb07665d0be878d76",
+                                                                                "createdliving1000@gmail.com")
+                                                                            .then(
+                                                                                (value) {
+                                                                          setState(
+                                                                              () {
+                                 accesscode =value.data["authorization_url"].toString()+ "/" +value.data["access_code"].toString();
+                                                                                
+                                                                                
+                                                                             
+                                                                          });
+                                                                           Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => WebViewpg(pageurl: accesscode))
+                      );
+                                                                          print(accesscode +
+                                                                              " " +
+                                                                              value.data["authorization_url"].toString());
+                                                                        }).catchError(
+                                                                                (e) {
+                                                                          print(e
+                                                                              .toString());
+                                                                        });
+                                                                      },
+                                                                      label: Text(
+                                                                          "Momo")),
+                                                              FloatingActionButton
+                                                                  .extended(
+                                                                      heroTag:
+                                                                          "pay",
+                                                                      onPressed:
+                                                                          () async {
+                                                                        Charge charge = Charge()
+                                                                          ..amount = (total * 100)
+                                                                          ..reference = Timestamp.now().toString()
+
+                                                                          // or ..accessCode = _getAccessCodeFrmInitialization()
+                                                                          ..email = FirebaseAuth.instance.currentUser!.email!
+                                                                          ..putMetaData("payment by", "You");
+                                                                        // CheckoutResponse
+                                                                        //     response =
+                                                                            await plugin
+                                                                                .checkout(
+                                                                          context,
+                                                                          method:
+                                                                              CheckoutMethod.card, // Defaults to CheckoutMethod.selectable
+                                                                          charge:
+                                                                              charge,
+                                                                        )
+                                                                                .then((value) {
+                                                                          setState(
+                                                                              () {
+                                                                            message =
+                                                                                value.message;
+                                                                          });
+                                                                          return value;
+                                                                        }).catchError((e) {
+                                                                          setState(
+                                                                              () {
+                                                                            message =
+                                                                                e.toString();
+                                                                          });
+                                                                          print(e +
+                                                                              " Error occcured during payment");
+                                                                        });
+
+                                                                       
+                                                                       
+
+                                                                        setState(
+                                                                            () {
+                                                                          bookingsuccess =
+                                                                              true;
+                                                                        });
+                                                                      },
+                                                                      label: Text(
+                                                                          "Card")),
+                                                            ]),
                                                           )
                                                         ],
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                              SizedBox(),
-                                              FloatingActionButton.extended(
-                                                  heroTag: "pay",
-                                                  onPressed: () async {
-                                                    _getAccessCodeFrmInitialization(
-                                                            double.parse(total
-                                                                .toString()),
-
-                                                            "email",
-                                                            "issadot@gmail.com"
-                                                                
-                                                                )
-                                                        .then((value) {
-                                                      print(value.message +
-                                                          " " +
-                                                          value.status
-                                                              .toString());
-                                                    }).catchError((e) {
-                                                      print(e.toString());
-                                                    });
-                                                    // Charge charge = Charge()
-                                                    //   ..amount = (total * 100)
-                                                    //   ..reference =
-                                                    //       Timestamp.now()
-                                                    //           .toString()
-
-                                                    //   // or ..accessCode = _getAccessCodeFrmInitialization()
-                                                    //   ..email = FirebaseAuth
-                                                    //       .instance
-                                                    //       .currentUser!
-                                                    //       .email!
-                                                    //   ..putMetaData(
-                                                    //       "payment by", "You");
-                                                    // CheckoutResponse response =
-                                                    //     await plugin
-                                                    //         .checkout(
-                                                    //   context,
-                                                    //   method: CheckoutMethod
-                                                    //       .card, // Defaults to CheckoutMethod.selectable
-                                                    //   charge: charge,
-                                                    // )
-                                                    //         .then((value) {
-                                                    //   setState(() {
-                                                    //     message = value.message;
-                                                    //   });
-                                                    //   return value;
-                                                    // }).catchError((e) {
-                                                    //   setState(() {
-                                                    //     message = e.toString();
-                                                    //   });
-                                                    //   print(e +
-                                                    //       " Error occcured during payment");
-                                                    // });
-
-                                                    // print(response.message);
-                                                    // print(response.reference);
-                                                    // print(response.status);
-
-                                                    // showDialog(
-                                                    //     context: context,
-                                                    //     builder:
-                                                    //         (BuildContext context) {
-                                                    //       return Material(
-                                                    //         child: ListTile(
-                                                    //             title: Text(
-                                                    //                 "Payment Successful!")),
-                                                    //       );
-                                                    //     });
-
-                                                    setState(() {
-                                                      bookingsuccess = true;
-                                                    });
-                                                  },
-                                                  label: Text("Pay now"))
-                                            ],
+                                                SizedBox(),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    })
-                                : print("Waiting for new list");
-                          },
+                                        );
+                                      })
+                                  : print("Waiting for new list");
+                            },
+                          ),
                         );
                       });
                 },
@@ -408,7 +427,7 @@ class Ticket {
 
 class Initresponse {
   String message;
-  Map<String, String> data;
+  Map<String, dynamic> data;
   bool status;
   Initresponse(
       {required this.message, required this.data, required this.status});
@@ -422,7 +441,31 @@ class Initresponse {
 Future<Initresponse> _getAccessCodeFrmInitialization(
     double amount, String key, String email) async {
   final response = await http.post(
-    Uri.parse("uri"),
+    Uri.parse("https://api.paystack.co/transaction/initialize"),
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      HttpHeaders.authorizationHeader: 'Bearer $key',
+    },
+    body: jsonEncode(<String, dynamic>{'amount': amount, "email": email}),
+  );
+
+  if (response.statusCode == 200) {
+// If the server did return a 200 ok response,
+// then parse the JSON.
+    return Initresponse.fromJson(jsonDecode(response.body));
+  } else {
+// If the server did not return a 201 CREATED response,
+// then throw an exception.
+    throw Exception('Failed to initialise transaction.');
+  }
+}
+
+
+
+Future<Initresponse> verifytransaction(
+    double amount, String key, String email) async {
+  final response = await http.post(
+    Uri.parse("https://api.paystack.co/transaction/initialize"),
     headers: {
       'Content-Type': 'application/json; charset=UTF-8',
       HttpHeaders.authorizationHeader: 'Bearer $key',
