@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 //import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,17 +54,17 @@ class DashAppState extends State<DashApp> {
 
   Widget interroutes() {
     //bool value = false;
-   
-      return Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Card(
-          elevation: 18,
-          child: Column(
-            children: [
-              TextField(controller: routecontroller),
-              SizedBox(),
-               StatefulBuilder(builder: (BuildContext context, setstate) {
-             return SwitchListTile(
+
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Card(
+        elevation: 18,
+        child: Column(
+          children: [
+            TextField(controller: routecontroller),
+            SizedBox(),
+            StatefulBuilder(builder: (BuildContext context, setstate) {
+              return SwitchListTile(
                   title: Text("PIck up point"),
                   subtitle: Text("switch on if a pickup point"),
                   activeColor: Colors.lightBlue,
@@ -73,11 +75,11 @@ class DashAppState extends State<DashApp> {
                     setState(() {
                       pickup = val;
                     });
-                  });}),
-              Divider(height: 4, indent: 3, color: Colors.lightBlue),
-               StatefulBuilder(builder: (BuildContext context, setstate) {
-             return
-              SwitchListTile(
+                  });
+            }),
+            Divider(height: 4, indent: 3, color: Colors.lightBlue),
+            StatefulBuilder(builder: (BuildContext context, setstate) {
+              return SwitchListTile(
                   title: Text("Stop point"),
                   subtitle: Text("switch on if a stop point"),
                   activeColor: Colors.lightBlue,
@@ -89,36 +91,36 @@ class DashAppState extends State<DashApp> {
                     setState(() {
                       stop = val;
                     });
-                  });}),
-              ButtonBar(
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        setState(() {
-                          route.add({
-                            "routename": routecontroller.text,
-                            "stop": stop,
-                            "pickup": pickup
-                          });
+                  });
+            }),
+            ButtonBar(
+              children: [
+                TextButton(
+                    onPressed: () {
+                      setState(() {
+                        route.add({
+                          "routename": routecontroller.text,
+                          "stop": stop,
+                          "pickup": pickup
                         });
-                      },
-                      child: Text("ADD ROUTE")),
-                  TextButton(
-                      onPressed: () {
-                        setState(() {
-                          routecontroller.text = "";
-                          stop = false;
-                          pickup = false;
-                        });
-                      },
-                      child: Text("ADD ANOTHER ROUTE")),
-                ],
-              )
-            ],
-          ),
+                      });
+                    },
+                    child: Text("ADD ROUTE")),
+                TextButton(
+                    onPressed: () {
+                      setState(() {
+                        routecontroller.text = "";
+                        stop = false;
+                        pickup = false;
+                      });
+                    },
+                    child: Text("ADD ANOTHER ROUTE")),
+              ],
+            )
+          ],
         ),
-      );
-    
+      ),
+    );
   }
 
   List<String> places = [];
@@ -758,8 +760,51 @@ class Dashboard extends StatefulWidget {
 
 class DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
-    return Center(
-        child: Card(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListTile(
+            title: Center(child: Text("Complete account setup")),
+            subtitle: TextButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (buildContext) {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: ListTile(
+                                leading: Text("1"),
+                                title: Text("Create paystack account if you dont have one.This will be used to receive payments"),
+                               subtitle: ElevatedButton(onPressed: (){
+                              Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => RegPayment())
+                      );
+                                }, child:Text("Register")),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: ListTile(
+                                leading: Text("2"),
+                                title: Text("Mail us your account details on travelmates@gmail.com"),
+                               subtitle: ElevatedButton(onPressed: (){
+                              
+                                }, child:Text("Register")),
+                              ),
+                            ),
+                          ],
+                        );
+                      });
+                },
+                child: Text("Complete setup")),
+          ),
+        ),
+        Center(
+            child: Card(
           child: SingleChildScrollView(
               child: StreamBuilder(
                   stream: FirebaseFirestore.instance
@@ -792,10 +837,10 @@ class DashboardState extends State<Dashboard> {
                         companyname =
                             snapshot.data!.docs[0].get('registered_name');
                       }
-        
+
                       print(companyname);
                     }
-        
+
                     return SingleChildScrollView(
                       child: ListView(
                           shrinkWrap: true,
@@ -804,7 +849,6 @@ class DashboardState extends State<Dashboard> {
                                     child: SingleChildScrollView(
                                       child: Column(
                                         children: [
-                                         
                                           Text(doc['registered_name'],
                                               style: TextStyle(
                                                   fontSize: 30,
@@ -814,8 +858,8 @@ class DashboardState extends State<Dashboard> {
                                               itemCount: doc['regions'].length,
                                               itemBuilder: (context, index) {
                                                 return ExpansionTile(
-                                                    title:
-                                                        Text(doc['regions'][index]),
+                                                    title: Text(
+                                                        doc['regions'][index]),
                                                     children: doc['stations']
                                                                 .length <
                                                             1
@@ -827,15 +871,18 @@ class DashboardState extends State<Dashboard> {
                                                                     doc['stations']
                                                                         .length;
                                                                 i++) {
-                                                              if (doc['stations'][i]
-                                                                      ['region'] ==
+                                                              if (doc['stations']
+                                                                          [i][
+                                                                      'region'] ==
                                                                   doc['regions']
                                                                       [index]) {
                                                                 yield ListTile(
                                                                   title: Text(
                                                                       doc['stations']
-                                                                              [i]
-                                                                          ['name']),
+                                                                              [
+                                                                              i]
+                                                                          [
+                                                                          'name']),
                                                                 );
                                                               }
                                                             }
@@ -843,41 +890,45 @@ class DashboardState extends State<Dashboard> {
                                               }),
                                           ListView.builder(
                                               shrinkWrap: true,
-                                              itemCount: doc['drivers'].length > 0
-                                                  ? doc['drivers'].length
-                                                  : 0,
+                                              itemCount:
+                                                  doc['drivers'].length > 0
+                                                      ? doc['drivers'].length
+                                                      : 0,
                                               itemBuilder:
                                                   (BuildContext context, idx) {
                                                 if (!drivers.contains(
-                                                    doc['drivers'][idx]["phone"])) {
-                                                  drivers.add(
-                                                      doc['drivers'][idx]["phone"]);
+                                                    doc['drivers'][idx]
+                                                        ["phone"])) {
+                                                  drivers.add(doc['drivers']
+                                                      [idx]["phone"]);
                                                 }
-                    
+
                                                 return ListTile(
-                                                    title: Text(doc['drivers'][idx]
-                                                        ["name"]),
+                                                    title: Text(doc['drivers']
+                                                        [idx]["name"]),
                                                     subtitle: Text(
-                                                      doc['drivers'][idx]["phone"],
+                                                      doc['drivers'][idx]
+                                                          ["phone"],
                                                     ));
                                               }),
                                           ListView.builder(
                                               shrinkWrap: true,
-                                              itemCount: doc['vehicles'].length > 0
-                                                  ? doc['vehicles'].length
-                                                  : 0,
+                                              itemCount:
+                                                  doc['vehicles'].length > 0
+                                                      ? doc['vehicles'].length
+                                                      : 0,
                                               itemBuilder:
                                                   (BuildContext context, idx) {
                                                 if (!vehivles.contains(
                                                     doc['vehicles'][idx]
                                                         ["number"])) {
-                                                  vehivles.add(doc['vehicles'][idx]
-                                                      ["number"]);
+                                                  vehivles.add(doc['vehicles']
+                                                      [idx]["number"]);
                                                 }
-                    
+
                                                 return ListTile(
-                                                    title: Text(doc['vehicles'][idx]
-                                                        ["name"]),
+                                                    title: Text(doc['vehicles']
+                                                        [idx]["name"]),
                                                     subtitle: Text(
                                                       doc['vehicles'][idx]
                                                           ["number"],
@@ -890,7 +941,9 @@ class DashboardState extends State<Dashboard> {
                               .toList()),
                     );
                   })),
-        ));
+        )),
+      ],
+    );
   }
 }
 
@@ -1006,4 +1059,54 @@ class Route {
   bool stop;
   bool pickup;
   Route(this.name, this.stop, this.pickup);
+}
+
+class RegPayment extends  StatefulWidget {
+  // RegPayment({required this.pageurl});
+  // final String pageurl;
+  @override
+ RegPaymentState createState() => RegPaymentState();
+}
+
+class RegPaymentState extends State<RegPayment> {
+  @override
+  void initState() {
+    super.initState();
+    // Enable hybrid composition.
+    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back_ios)),
+          centerTitle: true,
+          title: Text("Make payment"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Card(
+            elevation: 5,
+            child: WebView(
+              debuggingEnabled: true,
+              initialUrl:'https://dashboard.paystack.com/#/signup?_id=8a190335-9d74-4014-87db-198e37e1c9a5R',
+              javascriptMode: JavascriptMode.unrestricted,
+              navigationDelegate: (navigation) {
+                if (navigation.url == '') {
+                 
+                }
+                 return NavigationDecision.navigate;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

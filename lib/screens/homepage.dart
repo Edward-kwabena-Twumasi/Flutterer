@@ -413,10 +413,10 @@ class Trips extends StatefulWidget {
 
 class TripsState extends State<Trips> {
   bool isfound = true;
-
+  String filter1 = '';
+  String filter2 = '';
   String getday(int tripday, int searchday) {
-    
-    String particular = "Today  "   ;
+    String particular = "Today  ";
     List days = [
       "Monday",
       "Tuesday",
@@ -428,36 +428,26 @@ class TripsState extends State<Trips> {
       "Tomorrow"
     ];
     if ((tripday - searchday) == 1) {
-      particular = days[7];
-    } else if ((tripday - searchday) > 1) {
-      particular = days[tripday];     
+      setState(() {
+        particular = days[7];
+      });
+    } else {
+      setState(() {
+        particular = days[tripday];
+      });
     }
 
     return particular;
   }
 
-  List filterquery = ["ALL"];
-  void filterall() {
-    setState(() {
-      filterquery = ["VIP", "STC", "MMT"];
-    });
-  }
+  List filterquery = [""];
 
-  void filtervip() {
-    setState(() {
-      filterquery = ["VIP"];
-    });
-  }
+  
 
-  void filterstc() {
+  void initState() {
+    super.initState();
     setState(() {
-      filterquery = ["STC"];
-    });
-  }
-
-  void filtermmt() {
-    setState(() {
-      filterquery = ["MMT"];
+      filter1 = widget._tripdata.triptype;
     });
   }
 
@@ -504,7 +494,7 @@ class TripsState extends State<Trips> {
           child: SingleChildScrollView(
             child: Column(children: [
               Container(
-                height: 30,
+                height: 50,
                 child: FutureBuilder(
                     future: FirebaseFirestore.instance
                         .collection("appstrings")
@@ -517,12 +507,22 @@ class TripsState extends State<Trips> {
                       }
                       return ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: snapshot.data!["companynamestrings"].length,
+                          itemCount:
+                              snapshot.data!["companynamestrings"].length,
                           itemBuilder: (lcontext, index) {
-                            return niceChips(
-                                Icons.filter,
-                                snapshot.data!["companynamestrings"][index]["name"],
-                                filterall);
+                            return snapshot.data!["companynamestrings"][index]
+                                        ["type"] ==
+                                    filter1
+                                ? Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: niceChips(
+                                        Icons.filter,
+                                        snapshot.data!["companynamestrings"]
+                                            [index]["name"], () {
+                                      setState(() {});
+                                    }),
+                                  )
+                                : Text("");
                           });
                     }),
               ),
@@ -530,8 +530,16 @@ class TripsState extends State<Trips> {
                 title: Center(child: Text("compare")),
                 subtitle: ButtonBar(
                   children: [
-                    niceChips(Icons.bus_alert, "Bus", filterall),
-                    niceChips(Icons.bus_alert, "Train", filterall)
+                    niceChips(Icons.bus_alert, "Bus", () {
+                      setState(() {
+                        filter1 = 'Bus';
+                      });
+                    }),
+                    niceChips(Icons.bus_alert, "Train", () {
+                      setState(() {
+                        filter1 = 'Train';
+                      });
+                    })
                   ],
                 ),
               ),
@@ -566,8 +574,7 @@ class TripsState extends State<Trips> {
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
                           //  .where("company", whereIn: filterquery)
-                          .where("triptype",
-                              isEqualTo: widget._tripdata.triptype)
+                          .where("triptype", isEqualTo: filter1)
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {

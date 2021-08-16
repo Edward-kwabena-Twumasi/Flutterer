@@ -178,12 +178,12 @@ class _NotifiesState extends State<Notifies> {
                   TextButton(
                       onPressed: () async {
 if (kIsWeb) {
- // FirebaseMessaging messaging = FirebaseMessaging.instance;
+ FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-// use the returned token to send messages to users from your custom server
-// String? token = await messaging.getToken(
-//   vapidKey: "BGpdLRs......",
-// );
+//use the returned token to send messages to users from your custom server
+String? token = await messaging.getToken(
+  vapidKey: "BGpdLRs......",
+);
   
 }                          else 
                         flutterLocalNotificationsPlugin.show(

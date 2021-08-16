@@ -462,24 +462,3 @@ Future<Initresponse> _getAccessCodeFrmInitialization(
 
 
 
-Future<Initresponse> verifytransaction(
-    double amount, String key, String email) async {
-  final response = await http.post(
-    Uri.parse("https://api.paystack.co/transaction/initialize"),
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      HttpHeaders.authorizationHeader: 'Bearer $key',
-    },
-    body: jsonEncode(<String, dynamic>{'amount': amount, "email": email}),
-  );
-
-  if (response.statusCode == 200) {
-// If the server did return a 201 CREATED response,
-// then parse the JSON.
-    return Initresponse.fromJson(jsonDecode(response.body));
-  } else {
-// If the server did not return a 201 CREATED response,
-// then throw an exception.
-    throw Exception('Failed to create album.');
-  }
-}
