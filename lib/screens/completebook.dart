@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/homepage.dart';
-import 'package:flutter_paystack/flutter_paystack.dart';
+//import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart' as http;
 import 'package:myapp/screens/payweb.dart';
 
@@ -37,8 +37,8 @@ class BookState extends State<Book> {
   String transactor = FirebaseAuth.instance.currentUser!.uid;
   bool showlist = false;
   var accesscode;
-  var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
-  final plugin = PaystackPlugin();
+  //var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
+  //final plugin = PaystackPlugin();
   var seatids = [];
   int unitprice = 10;
   int chosen = 0;
@@ -51,7 +51,7 @@ class BookState extends State<Book> {
     unitprice = widget.seat.unitprice;
     chosen = 0;
     total = chosen * unitprice;
-    plugin.initialize(publicKey: publicKey);
+    //plugin.initialize(publicKey: publicKey);
     super.initState();
   }
 
@@ -64,7 +64,10 @@ class BookState extends State<Book> {
             appBar: AppBar(
                 leading: IconButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                       Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ButtomNav( )),
+                      );
                     },
                     icon: Icon(Icons.arrow_back_ios)),
                 backgroundColor: Colors.white,
@@ -111,7 +114,7 @@ class BookState extends State<Book> {
                   }
                   return GridView.builder(
                       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 150,
+                          maxCrossAxisExtent: 6,
                           childAspectRatio: 1.2,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10),
@@ -129,7 +132,7 @@ class BookState extends State<Book> {
                             heroTag: index.toString(),
                             key: Key("Seat numbers" + index.toString()),
                             backgroundColor:
-                                snapshots.data!["chosen"].contains(index)
+                                snapshots.data!["chosen"].contains({index,transactor})
                                     ? Colors.green[300]
                                     : seatcolor,
                             onPressed: () {
@@ -140,7 +143,7 @@ class BookState extends State<Book> {
 //                                 }
 
 
-                              if (!snapshots.data!["chosen"].contains(index)) {
+                              if (!snapshots.data!["chosen"].contains({index,transactor})) {
                                 setState(() {
                                   chosen += 1;
                                   total = (chosen * unitprice);
@@ -152,7 +155,7 @@ class BookState extends State<Book> {
                                       .get(snapshots.data!.reference);
                                   transaction.update(freshap.reference, {
                                     "seats": (freshap["seats"] - 1),
-                                    "chosen": FieldValue.arrayUnion([index])
+                                    "chosen": FieldValue.arrayUnion([{index,transactor}])
                                   });
                                 }).then((value) {
                                   setState(() {
@@ -171,7 +174,7 @@ class BookState extends State<Book> {
                                       .get(snapshots.data!.reference);
                                   transaction.update(freshap.reference, {
                                     "seats": (freshap["seats"] + 1),
-                                    "chosen": FieldValue.arrayRemove([index])
+                                    "chosen": FieldValue.arrayRemove([{index,transactor}])
                                   });
                                 }).then((value) {
                                   setState(() {
@@ -179,8 +182,7 @@ class BookState extends State<Book> {
                                   });
                                 });
                               }
-                              showlist
-                                  ? showModalBottomSheet(
+                               showModalBottomSheet(
                                       backgroundColor: Colors.indigo[100],
                                       shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.only(
@@ -249,7 +251,7 @@ class BookState extends State<Book> {
                                                                                 ListTile(
                                                                               tileColor: Colors.grey[200],
                                                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                                              title: Text((snapshots.data!["chosen"][indx] + 1).toString()),
+                                                                              title: Text((snapshots.data!["chosen"][indx][0] + 1).toString()),
                                                                               trailing: IconButton(
                                                                                   onPressed: () {
                                                                                     setState(() {
@@ -279,20 +281,20 @@ class BookState extends State<Book> {
                                                                         _getAccessCodeFrmInitialization(
                                                                                 double.parse(total
                                                                                     .toString()),
-                                                                                "sk_test_0846b828ca9fc48ec400aafbb07665d0be878d76",
+                                                                "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351",
                                                                                 "createdliving1000@gmail.com")
                                                                             .then(
                                                                                 (value) {
                                                                           setState(
                                                                               () {
-                                 accesscode =value.data["authorization_url"].toString()+ "/" +value.data["access_code"].toString();
+                                 accesscode =value.data["authorization_url"].toString()+ "/" + value.data["access_code"].toString();
                                                                                 
                                                                                 
                                                                              
                                                                           });
                                                                            Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => WebViewpg(pageurl: accesscode))
+                        MaterialPageRoute(builder: (context) => WebViewpg(pageurl: accesscode,ref:value.data["reference"] ) )
                       );
                                                                           print(accesscode +
                                                                               " " +
@@ -311,48 +313,9 @@ class BookState extends State<Book> {
                                                                           "pay",
                                                                       onPressed:
                                                                           () async {
-                                                                        Charge charge = Charge()
-                                                                          ..amount = (total * 100)
-                                                                          ..reference = Timestamp.now().toString()
-
-                                                                          // or ..accessCode = _getAccessCodeFrmInitialization()
-                                                                          ..email = FirebaseAuth.instance.currentUser!.email!
-                                                                          ..putMetaData("payment by", "You");
-                                                                        // CheckoutResponse
-                                                                        //     response =
-                                                                            await plugin
-                                                                                .checkout(
-                                                                          context,
-                                                                          method:
-                                                                              CheckoutMethod.card, // Defaults to CheckoutMethod.selectable
-                                                                          charge:
-                                                                              charge,
-                                                                        )
-                                                                                .then((value) {
-                                                                          setState(
-                                                                              () {
-                                                                            message =
-                                                                                value.message;
-                                                                          });
-                                                                          return value;
-                                                                        }).catchError((e) {
-                                                                          setState(
-                                                                              () {
-                                                                            message =
-                                                                                e.toString();
-                                                                          });
-                                                                          print(e +
-                                                                              " Error occcured during payment");
-                                                                        });
-
-                                                                       
-                                                                       
-
-                                                                        setState(
-                                                                            () {
-                                                                          bookingsuccess =
-                                                                              true;
-                                                                        });
+                                                                        
+                                                                            
+                                                                             
                                                                       },
                                                                       label: Text(
                                                                           "Card")),
@@ -369,7 +332,7 @@ class BookState extends State<Book> {
                                           ),
                                         );
                                       })
-                                  : print("Waiting for new list");
+                                  ;
                             },
                           ),
                         );

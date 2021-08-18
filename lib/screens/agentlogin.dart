@@ -230,7 +230,7 @@ class AgentFormState extends State<AgentForm> {
                       InputFields(" Password", password, Icons.password,
                           TextInputType.text),
                       Center(
-                        child: Row(
+                        child:Column(
                           children: [
                             Padding(
                               padding:

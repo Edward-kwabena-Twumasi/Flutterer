@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/components/notify.dart';
@@ -160,18 +163,7 @@ class TabBarDemoState extends State<TabBarDemo> {
             ),
             elevation: 0,
             backgroundColor: Colors.white,
-            actions: [
-              IconButton(
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut().then((value) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => App()),
-                      );
-                    });
-                  },
-                  icon: Icon(Icons.logout))
-            ],
+           
             bottom: TabBar(
               indicatorColor: Colors.lightGreen,
               tabs: [
@@ -428,21 +420,15 @@ class TripsState extends State<Trips> {
       "Tomorrow"
     ];
     if ((tripday - searchday) == 1) {
-      setState(() {
-        particular = days[7];
-      });
+      particular = days[7];
     } else {
-      setState(() {
-        particular = days[tripday];
-      });
+      particular = days[tripday % 7];
     }
 
     return particular;
   }
 
   List filterquery = [""];
-
-  
 
   void initState() {
     super.initState();
@@ -501,7 +487,23 @@ class TripsState extends State<Trips> {
                         .doc("companynamestrings")
                         .get(),
                     builder: (context, AsyncSnapshot<dynamic> snapshot) {
-                      if (snapshot.hasError) {
+
+         if (!snapshot.hasData &&
+                            (snapshot.connectionState ==
+                                ConnectionState.waiting)) {
+                          return Center(
+                              child: Card(
+                                  elevation: 8,
+                                  child: Column(
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(
+                                        height: 5,
+                                      )
+                                    ],
+                                  )));
+                        }
+                     else if (snapshot.hasError) {
                         print(snapshot.error.toString());
                         return Text(snapshot.error.toString());
                       }
@@ -519,7 +521,11 @@ class TripsState extends State<Trips> {
                                         Icons.filter,
                                         snapshot.data!["companynamestrings"]
                                             [index]["name"], () {
-                                      setState(() {});
+                                      setState(() {
+                                        filter2 =
+                                            snapshot.data!["companynamestrings"]
+                                                [index]["name"];
+                                      });
                                     }),
                                   )
                                 : Text("");
@@ -533,6 +539,11 @@ class TripsState extends State<Trips> {
                     niceChips(Icons.bus_alert, "Bus", () {
                       setState(() {
                         filter1 = 'Bus';
+                      });
+                    }),
+                    niceChips(Icons.bus_alert, "Fligth", () {
+                      setState(() {
+                        filter1 = 'Fligth';
                       });
                     }),
                     niceChips(Icons.bus_alert, "Train", () {
@@ -618,12 +629,17 @@ class TripsState extends State<Trips> {
                                             widget._tripdata.date.day)),
                                         subtitle: Row(
                                           children: [
-                                            Text(doc['company'].toString()),
-                                            Text("                 Leaving - " +
-                                                doc['date']
-                                                    .toDate()
-                                                    .toString()
-                                                    .split(" ")[1]),
+                                            Expanded(
+                                                child: Text(
+                                                    doc['company'].toString())),
+                                            Expanded(
+                                              child: Text(
+                                                  "                 Leaving - " +
+                                                      doc['date']
+                                                          .toDate()
+                                                          .toString()
+                                                          .split(" ")[1]),
+                                            ),
                                           ],
                                         ),
                                         title: DecoratedBox(
@@ -679,11 +695,11 @@ class TripsState extends State<Trips> {
                       }),
                 ],
               )),
-              //  ButtonBar(
-              //    children: [
-
-              //    ],
-              //  )
+              ButtonBar(
+                children: [
+                  TextButton(onPressed: () {}, child: Text(" Today "))
+                ],
+              )
             ]),
           ),
         ),
@@ -859,6 +875,7 @@ class UserInfoClassState extends State<UserInfoClass> {
   }
 
   String setname = "Name";
+  bool notdone = true;
 
   void initState() {
     super.initState();
@@ -868,6 +885,18 @@ class UserInfoClassState extends State<UserInfoClass> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+         actions: [
+              IconButton(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut().then((value) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => App()),
+                      );
+                    });
+                  },
+                  icon: Icon(Icons.logout,color:Colors.red ,))
+            ],
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
@@ -883,9 +912,23 @@ class UserInfoClassState extends State<UserInfoClass> {
                 .doc(FirebaseAuth.instance.currentUser!.uid)
                 .get(),
             builder: (context, AsyncSnapshot<dynamic> snapshot) {
-              if (!snapshot.hasData) {
-                return CircularProgressIndicator();
-              } else if (snapshot.hasError) {
+
+              if (!snapshot.hasData &&
+                            (snapshot.connectionState ==
+                                ConnectionState.waiting)) {
+                          return Center(
+                              child: Card(
+                                  elevation: 8,
+                                  child: Column(
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text("fetching info")
+                                    ],
+                                  )));
+                        } else if (snapshot.hasError) {
                 print(snapshot.error);
               }
 
@@ -906,9 +949,47 @@ class UserInfoClassState extends State<UserInfoClass> {
                               Positioned(
                                   right: 5,
                                   bottom: 2,
-                                  child: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(Icons.photo_camera)))
+                                  child: DecoratedBox(
+                                    decoration:
+                                        BoxDecoration(shape: BoxShape.circle),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: IconButton(
+                                          onPressed: () async {
+                                            final picker = ImagePicker();
+                                            XFile? image;
+                                            image = await picker.pickImage(
+                                                source: ImageSource.gallery);
+
+                                            var file = File(image!.path);
+                                           
+                                            // ignore: unnecessary_null_comparison
+                                            if (file != null) {
+                                             
+                                              var snapshot =
+                                                  await FirebaseStorage.instance
+                                                      .ref(FirebaseAuth.instance
+                                                              .currentUser!.uid
+                                                              .substring(0, 5) +
+                                                          "profile")
+                                                      .child("profpic")
+                                                      .putFile(file)
+                                                      .whenComplete(() {
+                                                setState(() {
+                                                  notdone = false;
+                                                });
+                                                print("done");
+                                              });
+                                              var geturl = await snapshot.ref
+                                                  .getDownloadURL();
+                                              setState(() {
+                                                imgUrl = geturl;
+                                              });
+                                            }
+                                          },
+                                          icon: Icon(Icons.photo_camera)),
+                                    ),
+                                  ))
                             ])),
                       ),
                     ),
@@ -1024,6 +1105,44 @@ class UserInfoClassState extends State<UserInfoClass> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 35),
                                       ),
+                                       Container(
+                height: 100,
+                child: FutureBuilder(
+                    future: FirebaseFirestore.instance
+                        .collection("appstrings")
+                        .doc("companynamestrings")
+                        .get(),
+                    builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                      if (snapshot.hasError) {
+                        print(snapshot.error.toString());
+                        return Text(snapshot.error.toString());
+                      }
+                      return GridView.builder(
+                        gridDelegate:SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 50,
+                          childAspectRatio: 1.2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10),
+                          scrollDirection: Axis.horizontal,
+                          itemCount:
+                              snapshot.data!["companynamestrings"].length,
+                          itemBuilder: (lcontext, index) {
+                           return Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: niceChips(
+                                        Icons.filter,
+                                        snapshot.data!["companynamestrings"]
+                                            [index]["name"], () {
+                                      setState(() {
+                                      
+                                      });
+                                    }),
+                                  )
+                               ;
+                          });
+                    }),
+              ),
+                                     
                                       Expanded(
                                           child: ListTile(
                                               title: ListView.builder(
@@ -1170,10 +1289,10 @@ class _PrimaryState extends State<Primary> {
     return Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+              colors: [Colors.white, Colors.green.withOpacity(0.7)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              stops: [0.6, 0.95],
+              stops: [0.7, 0.8],
             ),
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15), topRight: Radius.circular(15))),
@@ -1182,8 +1301,10 @@ class _PrimaryState extends State<Primary> {
           scrollDirection: Axis.horizontal,
           children: [
             Padding(
-              padding: const EdgeInsets.all(2.0),
+              padding: const EdgeInsets.all(10.0),
               child: Card(
+                 shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                   elevation: 3,
                   child: FloatingActionButton.extended(
                       heroTag: "policy",
@@ -1210,8 +1331,10 @@ class _PrimaryState extends State<Primary> {
                               color: Colors.black)))),
             ),
             Padding(
-              padding: const EdgeInsets.all(2.0),
+              padding: const EdgeInsets.all(10.0),
               child: Card(
+                 shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                   elevation: 3,
                   child: FloatingActionButton.extended(
                       heroTag: "offers",
@@ -1224,49 +1347,8 @@ class _PrimaryState extends State<Primary> {
                               fontWeight: FontWeight.bold,
                               color: Colors.black)))),
             ),
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: Card(
-                  elevation: 3,
-                  child: FloatingActionButton.extended(
-                      heroTag: "find",
-                      backgroundColor: Colors.grey[100],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
-                      onPressed: () {},
-                      label: Text("Find",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black)))),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: Card(
-                  elevation: 3,
-                  child: FloatingActionButton.extended(
-                      heroTag: "comp",
-                      backgroundColor: Colors.grey[100],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
-                      onPressed: () {
-                        showModalBottomSheet(
-                            backgroundColor: Colors.amber[100],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                  heightFactor: 0.9, child: Compareprice());
-                            });
-                      },
-                      label: Text("Compare",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black)))),
-            ),
+           
+           
           ],
         ));
   }

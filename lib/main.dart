@@ -2,6 +2,8 @@ import 'dart:async';
 
 //import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
@@ -71,11 +73,12 @@ class _AppState extends State<App> {
     );
   }
 }
-//firebase
+//firebase acheamponghuttel95@gmail.com
 
 // void main() {
 //   runApp(MyApp());
 // }
+bool retry = true;
 
 class MyApp extends StatelessWidget {
   final style = TextStyle(
@@ -170,7 +173,7 @@ class MyFormState extends State<MyForm> {
   final _formKey = GlobalKey<FormState>();
   bool allowlogin = false;
   bool isuser = true;
-  bool retry = true;
+
   var correctLogin = "";
   bool request = false;
   final username = TextEditingController();
@@ -180,17 +183,6 @@ class MyFormState extends State<MyForm> {
   @override
   void initState() {
     super.initState();
-// if (isuser) {
-  
-
-//     var auth = FirebaseAuth.instance.currentUser;
-//     if (auth != null) {
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(builder: (context) => ButtomNav()),
-//       );
-//     }
-//     }
   }
 
   @override
@@ -212,6 +204,7 @@ class MyFormState extends State<MyForm> {
         correctLogin = "You are not a registered user!";
       });
     } else if (state == userStates.wrongPassword) {
+
       setState(() {
         correctLogin = "You entered wrong password for this account";
       });
@@ -231,6 +224,7 @@ class MyFormState extends State<MyForm> {
               child: Form(
                 key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.all(12.0),
@@ -253,7 +247,7 @@ class MyFormState extends State<MyForm> {
                     InputFields("Enter Password", userpass, Icons.password,
                         TextInputType.visiblePassword),
                     Center(
-                      child: Row(
+                      child: Column(
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -280,7 +274,18 @@ class MyFormState extends State<MyForm> {
                                       setState(() {
                                         request = false;
                                       });
-                                      Navigator.pushNamed(context, '/home');
+                                      FirebaseAuth.instance.currentUser!
+                                              .emailVerified
+                                          ? Navigator.pushNamed(
+                                              context, '/home')
+                                          :
+                                           setState(() {
+       
+        correctLogin = "Please check and verify your email";
+      });
+                                           print("Please verify your email ");
+                                      FirebaseAuth.instance.currentUser!
+                                          .sendEmailVerification();
                                     }
                                   });
                                 }

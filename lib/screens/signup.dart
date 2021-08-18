@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
@@ -34,8 +35,7 @@ class SignupFormState extends State<SignupForm> {
         currentStep: currentindex,
         onStepContinue: () {
           setState(() {
-           
-            tonext ? currentindex += 1 :currentindex += 0;
+            tonext ? currentindex += 1 : currentindex += 0;
           });
         },
         onStepTapped: (int step) {
@@ -150,6 +150,7 @@ class SignupFormState extends State<SignupForm> {
                           margin: EdgeInsets.all(10),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(" Address ",
                                   style: TextStyle(
@@ -194,34 +195,43 @@ class SignupFormState extends State<SignupForm> {
                                       regioncontroller.text)
                                   .then((rvalue) {
                                 if (value.isadded == userAdded.successful) {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Material(
-                                          elevation: 5,
-                                          color: Colors.lightBlue[100],
-                                          child: Center(
-                                            child: ListTile(
-                                              subtitle: TextButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      ok = true;
-                                                    });
-                                                  },
-                                                  child: Text("OK ,got it")),
-                                              title: Text(
-                                                  "Account created successfully.You can now book or edit your profile"),
-                                            ),
-                                          ),
-                                        );
-                                      });
-                                  ok
-                                      ?  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => ButtomNav()),
-    
-  )
-                                      : print("Confirm");
+                                  FirebaseAuth
+                                          .instance.currentUser!.emailVerified
+                                      ? Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ButtomNav()),
+                                        )
+                                      : () {
+                                          print("Print verify your email");
+                                          FirebaseAuth.instance.currentUser!
+                                              .sendEmailVerification();
+                                        };
+                                  //                                 showDialog(
+                                  //                                     context: context,
+                                  //                                     builder: (BuildContext context) {
+                                  //                                       return Material(
+                                  //                                         elevation: 5,
+                                  //                                         color: Colors.lightBlue[100],
+                                  //                                         child: Center(
+                                  //                                           child: ListTile(
+                                  //                                             subtitle: TextButton(
+                                  //                                                 onPressed: () {
+                                  //                                                   setState(() {
+                                  //                                                     ok = true;
+                                  //                                                   });
+                                  //                                                 },
+                                  //                                                 child: Text("OK ,got it")),
+                                  //                                             title: Text(
+                                  //                                                 "Account created successfully.You can now book or edit your profile"),
+                                  //                                           ),
+                                  //                                         ),
+                                  //                                       );
+                                  //                                     });
+                                  //                                 ok
+
+                                  //                                     : print("Confirm");
                                 }
                               });
                             }

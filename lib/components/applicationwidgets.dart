@@ -212,7 +212,7 @@ class SearchLocsState extends State<SearchLocs> {
     });
 
     focusNode.addListener(() {
-      if (focusNode.hasFocus && suggestions.isNotEmpty) {
+      if (focusNode.hasFocus || suggestions.isNotEmpty) {
         this.myoverlay = createOverlay();
         Overlay.of(context)!.insert(this.myoverlay!);
       } else {
@@ -241,9 +241,7 @@ class SearchLocsState extends State<SearchLocs> {
                         shape: RoundedRectangleBorder(),
                         key: Key(index.toString()),
                         onTap: () {
-                          setState(() {
-                            hideoverlay = true;
-                          });
+                          
                           this.myoverlay!.remove();
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
@@ -253,6 +251,7 @@ class SearchLocsState extends State<SearchLocs> {
                               ? onetrip.fromLoc = widget.searchcontrol.text
                               : onetrip.toLoc = widget.searchcontrol.text;
                           suggestions = [];
+                          print(suggestions);
                           print(mytripobj);
                         },
                         title: Text(

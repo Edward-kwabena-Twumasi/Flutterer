@@ -86,72 +86,137 @@ class _AdminPageState extends State<AdminPage> {
                     mainAxisSpacing: 2,
                     childAspectRatio: 0.5,
                     children: [
-                      FloatingActionButton(
-                          heroTag: "b1",
-                          onPressed: () {
-                            setState(() {
-                              match += "9";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
-                      FloatingActionButton(
-                          heroTag: "b2",
-                          onPressed: () {
-                            setState(() {
-                              match += "I";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
-                      FloatingActionButton(heroTag: "b3", onPressed: () {}),
-                      FloatingActionButton(heroTag: "b4", onPressed: () {}),
-                      FloatingActionButton(
-                          heroTag: "b5",
-                          onPressed: () {
-                            setState(() {
-                              match += "THE";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
-                      FloatingActionButton(heroTag: "b6", onPressed: () {}),
-                      FloatingActionButton(
-                          heroTag: "b7",
-                          onPressed: () {
-                            setState(() {
-                              match += "8";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
-                      FloatingActionButton(
-                          heroTag: "b8",
-                          onPressed: () {
-                            setState(() {
-                              match += "AM";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
-                      FloatingActionButton(
-                          heroTag: "b9",
-                          onPressed: () {
-                            setState(() {
-                              match += "ADMIN";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
-                      FloatingActionButton(
-                          heroTag: "b10",
-                          onPressed: () {
-                            setState(() {
-                              match += "1";
-                              track += 1;
-                              handlelogin();
-                            });
-                          }),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b1",
+                            onPressed: () {
+                              setState(() {
+                                match += "9";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b2",
+                            onPressed: () {
+                              setState(() {
+                                match += "I";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(heroTag: "b3", onPressed: () {
+                           setState(() {
+                            track += 1;
+                          });
+                        })),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(heroTag: "b4", onPressed: () {
+                           setState(() {
+                            track += 1;
+                          });
+                        })),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b5",
+                            onPressed: () {
+                              setState(() {
+                                match += "THE";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(heroTag: "b6", onPressed: () {
+                          setState(() {
+                            track += 1;
+                          });
+                        })),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b7",
+                            onPressed: () {
+                              setState(() {
+                                match += "8";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b8",
+                            onPressed: () {
+                              setState(() {
+                                match += "AM";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b9",
+                            onPressed: () {
+                              setState(() {
+                                match += "ADMIN";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                      SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(
+                            heroTag: "b10",
+                            onPressed: () {
+                              setState(() {
+                                match += "1";
+                                track += 1;
+                                handlelogin();
+                              });
+                            }),
+                      ),
+                       SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(heroTag: "b11", onPressed: () {
+                           setState(() {
+                            track += 1;
+                          });
+                        })),
+                         SizedBox(
+                        height:60,
+                        width:60,
+                        child: FloatingActionButton(heroTag: "b12", onPressed: () {
+                           setState(() {
+                            track += 1;
+                          });
+                        })),
                     ],
                   ),
                   Center(

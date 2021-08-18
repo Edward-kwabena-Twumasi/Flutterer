@@ -5,14 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main(List<String> args) {
-  runApp(WebViewpg(
-    pageurl: 'flutter.dev',
-  ));
+  runApp(WebViewpg(pageurl: 'flutter.dev', ref: 'ref'));
 }
 
 class WebViewpg extends StatefulWidget {
-  WebViewpg({required this.pageurl});
+  WebViewpg({
+    required this.pageurl,
+    required this.ref,
+  });
   final String pageurl;
+  final String ref;
   @override
   WebViewpgState createState() => WebViewpgState();
 }
@@ -47,10 +49,15 @@ class WebViewpgState extends State<WebViewpg> {
               initialUrl: widget.pageurl,
               javascriptMode: JavascriptMode.unrestricted,
               navigationDelegate: (navigation) {
-                if (navigation.url == '') {
-                 
+                if (navigation.url == 'https://successful.com') {
+                  verifytransaction(widget.ref,
+                          "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351")
+                      .then((value) {
+                    print(value.status.toString() + " " + value.message);
+                  });
+                  Navigator.of(context).pop();
                 }
-                 return NavigationDecision.navigate;
+                return NavigationDecision.navigate;
               },
             ),
           ),
@@ -59,7 +66,6 @@ class WebViewpgState extends State<WebViewpg> {
     );
   }
 }
-
 
 class Initresponse {
   String message;
@@ -74,15 +80,12 @@ class Initresponse {
   }
 }
 
-Future<Initresponse> verifytransaction(
-    String key, String ref) async {
-  final response = await http.get(
-    Uri.parse("https://api.paystack.co/transaction/verify"),
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      HttpHeaders.authorizationHeader: 'Bearer $key',
-    }
-  );
+Future<Initresponse> verifytransaction(String key, String ref) async {
+  final response = await http
+      .get(Uri.parse("https://api.paystack.co/transaction/verify/"+ref), headers: {
+
+    HttpHeaders.authorizationHeader: 'Bearer $key',
+  });
 
   if (response.statusCode == 200) {
 // If the server did return a 201 CREATED response,

@@ -217,7 +217,9 @@ class DashAppState extends State<DashApp> {
               ),
               elevation: 0,
               actions: [
-                IconButton(onPressed: _openDrawer, icon: Icon(Icons.menu))
+               FloatingActionButton.extended(
+                 label:Text("More"),
+                 onPressed: _openDrawer, icon: Icon(Icons.menu))
               ],
             ),
             drawer: Drawer(
@@ -745,9 +747,54 @@ class DashAppState extends State<DashApp> {
                   Dashboard(companytype: widget.companytype),
                   ShedulesInfo(),
                   Container(
-                      child: Center(
-                    child: Text("Statistics"),
-                  ))
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            Center(
+                                          child: Text("Statistics"),
+
+                                        ),
+
+                                        SizedBox(),
+
+                                        Card(
+                                          child:Column(
+                                            children:[
+                                              Center(
+                                                child:Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Text("Daily active users"),
+                                                )
+                                              ),
+                                             
+                                              Text("20"),
+                                               Divider(),
+                                                Center(
+                                                child:Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Text("Trips in session"),
+                                                )
+                                              ),
+                                             
+                                              Text("20"),
+                                            Divider(),
+                                             Center(
+                                                child:Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Text("Completed trips"),
+                                                )
+                                              ),
+                                             
+                                              Text("10"),
+
+                                            ]
+                                          )
+                                        )
+
+                                        
+                          ],
+                        ),
+                      ))
                 ])));
   }
 }
@@ -760,189 +807,189 @@ class Dashboard extends StatefulWidget {
 
 class DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListTile(
-            title: Center(child: Text("Complete account setup")),
-            subtitle: TextButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                      context: context,
-                      builder: (buildContext) {
-                        return Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: ListTile(
-                                leading: Text("1"),
-                                title: Text("Create paystack account if you dont have one.This will be used to receive payments"),
-                               subtitle: ElevatedButton(onPressed: (){
-                              Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RegPayment())
-                      );
-                                }, child:Text("Register")),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: ListTile(
-                                leading: Text("2"),
-                                title: Text("Mail us your account details on travelmates@gmail.com"),
-                               subtitle: ElevatedButton(onPressed: (){
-                              
-                                }, child:Text("Register")),
-                              ),
-                            ),
-                          ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListTile(
+              title: Center(child: Text("Complete account setup")),
+              subtitle: TextButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (buildContext) {
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: ListTile(
+                                  leading: Text("1"),
+                                  title: Text("Create paystack account if you dont have one.This will be used to receive payments"),
+                                 subtitle: ElevatedButton(onPressed: (){
+                                Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => RegPayment())
                         );
-                      });
-                },
-                child: Text("Complete setup")),
+                                  }, child:Text("Register")),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: ListTile(
+                                  leading: Text("2"),
+                                  title: Text("Mail us your account details on travelmates@gmail.com"),
+                                
+                                ),
+                              ),
+                            ],
+                          );
+                        });
+                  },
+                  child: Text("Complete setup")),
+            ),
           ),
-        ),
-        Center(
-            child: Card(
-          child: SingleChildScrollView(
-              child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('companies')
-                      .doc(widget.companytype)
-                      .collection('Registered Companies')
-                      .where('id',
-                          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                      .snapshots(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (!snapshot.hasData &&
-                        !(snapshot.connectionState == ConnectionState.done)) {
-                      return Center(
-                          child: Card(
-                              elevation: 8,
-                              child: Column(
-                                children: [
-                                  CircularProgressIndicator(),
-                                  SizedBox(
-                                    height: 5,
-                                  ),
-                                  Text("Loading data...")
-                                ],
-                              )));
-                    } else if (snapshot.hasError) {
-                      print(snapshot.error);
-                    } else if (snapshot.hasData) {
-                      if (snapshot.data!.size > 0) {
-                        companyname =
-                            snapshot.data!.docs[0].get('registered_name');
-                      }
-
-                      print(companyname);
-                    }
-
-                    return SingleChildScrollView(
-                      child: ListView(
-                          shrinkWrap: true,
-                          children: snapshot.data!.docs
-                              .map((doc) => Center(
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        children: [
-                                          Text(doc['registered_name'],
-                                              style: TextStyle(
-                                                  fontSize: 30,
-                                                  fontWeight: FontWeight.bold)),
-                                          ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount: doc['regions'].length,
-                                              itemBuilder: (context, index) {
-                                                return ExpansionTile(
-                                                    title: Text(
-                                                        doc['regions'][index]),
-                                                    children: doc['stations']
-                                                                .length <
-                                                            1
-                                                        ? [Text("Add stations")]
-                                                        : List.unmodifiable(
-                                                            () sync* {
-                                                            for (var i = 0;
-                                                                i <
-                                                                    doc['stations']
-                                                                        .length;
-                                                                i++) {
-                                                              if (doc['stations']
-                                                                          [i][
-                                                                      'region'] ==
-                                                                  doc['regions']
-                                                                      [index]) {
-                                                                yield ListTile(
-                                                                  title: Text(
-                                                                      doc['stations']
-                                                                              [
-                                                                              i]
-                                                                          [
-                                                                          'name']),
-                                                                );
-                                                              }
-                                                            }
-                                                          }()));
-                                              }),
-                                          ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount:
-                                                  doc['drivers'].length > 0
-                                                      ? doc['drivers'].length
-                                                      : 0,
-                                              itemBuilder:
-                                                  (BuildContext context, idx) {
-                                                if (!drivers.contains(
-                                                    doc['drivers'][idx]
-                                                        ["phone"])) {
-                                                  drivers.add(doc['drivers']
-                                                      [idx]["phone"]);
-                                                }
-
-                                                return ListTile(
-                                                    title: Text(doc['drivers']
-                                                        [idx]["name"]),
-                                                    subtitle: Text(
-                                                      doc['drivers'][idx]
-                                                          ["phone"],
-                                                    ));
-                                              }),
-                                          ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount:
-                                                  doc['vehicles'].length > 0
-                                                      ? doc['vehicles'].length
-                                                      : 0,
-                                              itemBuilder:
-                                                  (BuildContext context, idx) {
-                                                if (!vehivles.contains(
-                                                    doc['vehicles'][idx]
-                                                        ["number"])) {
-                                                  vehivles.add(doc['vehicles']
-                                                      [idx]["number"]);
-                                                }
-
-                                                return ListTile(
-                                                    title: Text(doc['vehicles']
-                                                        [idx]["name"]),
-                                                    subtitle: Text(
-                                                      doc['vehicles'][idx]
-                                                          ["number"],
-                                                    ));
-                                              }),
-                                        ],
-                                      ),
+          Center(
+              child: Card(
+            child: SingleChildScrollView(
+                child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('companies')
+                        .doc(widget.companytype)
+                        .collection('Registered Companies')
+                        .where('id',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (!snapshot.hasData &&
+                          !(snapshot.connectionState == ConnectionState.done)) {
+                        return Center(
+                            child: Card(
+                                elevation: 8,
+                                child: Column(
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(
+                                      height: 5,
                                     ),
-                                  ))
-                              .toList()),
-                    );
-                  })),
-        )),
-      ],
+                                    Text("Loading data...")
+                                  ],
+                                )));
+                      } else if (snapshot.hasError) {
+                        print(snapshot.error);
+                      } else if (snapshot.hasData) {
+                        if (snapshot.data!.size > 0) {
+                          companyname =
+                              snapshot.data!.docs[0].get('registered_name');
+                        }
+    
+                        print(companyname);
+                      }
+    
+                      return SingleChildScrollView(
+                        child: ListView(
+                            shrinkWrap: true,
+                            children: snapshot.data!.docs
+                                .map((doc) => Center(
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            Text(doc['registered_name'],
+                                                style: TextStyle(
+                                                    fontSize: 30,
+                                                    fontWeight: FontWeight.bold)),
+                                            ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount: doc['regions'].length,
+                                                itemBuilder: (context, index) {
+                                                  return ExpansionTile(
+                                                      title: Text(
+                                                          doc['regions'][index]),
+                                                      children: doc['stations']
+                                                                  .length <
+                                                              1
+                                                          ? [Text("Add stations")]
+                                                          : List.unmodifiable(
+                                                              () sync* {
+                                                              for (var i = 0;
+                                                                  i <
+                                                                      doc['stations']
+                                                                          .length;
+                                                                  i++) {
+                                                                if (doc['stations']
+                                                                            [i][
+                                                                        'region'] ==
+                                                                    doc['regions']
+                                                                        [index]) {
+                                                                  yield ListTile(
+                                                                    title: Text(
+                                                                        doc['stations']
+                                                                                [
+                                                                                i]
+                                                                            [
+                                                                            'name']),
+                                                                  );
+                                                                }
+                                                              }
+                                                            }()));
+                                                }),
+                                            ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount:
+                                                    doc['drivers'].length > 0
+                                                        ? doc['drivers'].length
+                                                        : 0,
+                                                itemBuilder:
+                                                    (BuildContext context, idx) {
+                                                  if (!drivers.contains(
+                                                      doc['drivers'][idx]
+                                                          ["phone"])) {
+                                                    drivers.add(doc['drivers']
+                                                        [idx]["phone"]);
+                                                  }
+    
+                                                  return ListTile(
+                                                      title: Text(doc['drivers']
+                                                          [idx]["name"]),
+                                                      subtitle: Text(
+                                                        doc['drivers'][idx]
+                                                            ["phone"],
+                                                      ));
+                                                }),
+                                            ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount:
+                                                    doc['vehicles'].length > 0
+                                                        ? doc['vehicles'].length
+                                                        : 0,
+                                                itemBuilder:
+                                                    (BuildContext context, idx) {
+                                                  if (!vehivles.contains(
+                                                      doc['vehicles'][idx]
+                                                          ["number"])) {
+                                                    vehivles.add(doc['vehicles']
+                                                        [idx]["number"]);
+                                                  }
+    
+                                                  return ListTile(
+                                                      title: Text(doc['vehicles']
+                                                          [idx]["name"]),
+                                                      subtitle: Text(
+                                                        doc['vehicles'][idx]
+                                                            ["number"],
+                                                      ));
+                                                }),
+                                          ],
+                                        ),
+                                      ),
+                                    ))
+                                .toList()),
+                      );
+                    })),
+          )),
+        ],
+      ),
     );
   }
 }
