@@ -92,7 +92,7 @@ class SignupFormState extends State<SignupForm> {
                                   .then((rvalue) {
                                 if (rvalue == userStates.successful) {
                                   setState(() {
-                                    errors = "Succes!";
+                                    errors = "First step complete!";
                                     tonext = true;
                                     value.registedmail = email.text;
                                   });
@@ -133,6 +133,12 @@ class SignupFormState extends State<SignupForm> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: Text("! Please do well to verify your email after registration !",style:TextStyle(color:Colors.red ) ,),
+                        ),
+                      ),
                       SizedBox(
                         height: 7,
                       ),
@@ -195,43 +201,19 @@ class SignupFormState extends State<SignupForm> {
                                       regioncontroller.text)
                                   .then((rvalue) {
                                 if (value.isadded == userAdded.successful) {
-                                  FirebaseAuth
-                                          .instance.currentUser!.emailVerified
-                                      ? Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ButtomNav()),
-                                        )
-                                      : () {
-                                          print("Print verify your email");
-                                          FirebaseAuth.instance.currentUser!
-                                              .sendEmailVerification();
-                                        };
-                                  //                                 showDialog(
-                                  //                                     context: context,
-                                  //                                     builder: (BuildContext context) {
-                                  //                                       return Material(
-                                  //                                         elevation: 5,
-                                  //                                         color: Colors.lightBlue[100],
-                                  //                                         child: Center(
-                                  //                                           child: ListTile(
-                                  //                                             subtitle: TextButton(
-                                  //                                                 onPressed: () {
-                                  //                                                   setState(() {
-                                  //                                                     ok = true;
-                                  //                                                   });
-                                  //                                                 },
-                                  //                                                 child: Text("OK ,got it")),
-                                  //                                             title: Text(
-                                  //                                                 "Account created successfully.You can now book or edit your profile"),
-                                  //                                           ),
-                                  //                                         ),
-                                  //                                       );
-                                  //                                     });
-                                  //                                 ok
-
-                                  //                                     : print("Confirm");
+                                  // FirebaseAuth
+                                  //         .instance.currentUser!.emailVerified
+                                  //     ?
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ButtomNav()),
+                                  );
+                                 
+                                      FirebaseAuth.instance.currentUser!
+                                          .sendEmailVerification();
+                                 
+                                 
                                 }
                               });
                             }

@@ -173,7 +173,7 @@ class MyFormState extends State<MyForm> {
   final _formKey = GlobalKey<FormState>();
   bool allowlogin = false;
   bool isuser = true;
-
+  bool verified = true;
   var correctLogin = "";
   bool request = false;
   final username = TextEditingController();
@@ -183,6 +183,17 @@ class MyFormState extends State<MyForm> {
   @override
   void initState() {
     super.initState();
+    if (FirebaseAuth.instance.currentUser != null) {
+      if (FirebaseAuth.instance.currentUser!.emailVerified) {
+        setState(() {
+          verified = true;
+        });
+      } else {
+        setState(() {
+          verified = false;
+        });
+      }
+    }
   }
 
   @override
@@ -204,7 +215,6 @@ class MyFormState extends State<MyForm> {
         correctLogin = "You are not a registered user!";
       });
     } else if (state == userStates.wrongPassword) {
-
       setState(() {
         correctLogin = "You entered wrong password for this account";
       });
@@ -229,10 +239,21 @@ class MyFormState extends State<MyForm> {
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Center(
-                        child: Text("Login ",
-                            style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.bold)),
-                      ),
+                          child: verified
+                              ? Text("Login ",
+                                  style: TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.bold))
+                              : FloatingActionButton.extended(
+                                  onPressed: () {
+                                    print("verify");
+                                    FirebaseAuth.instance.currentUser!
+                                        .sendEmailVerification()
+                                        .then((value) {
+                                      print("email verification sent");
+                                    });
+                                  },
+                                  label: Text("Verify mail"))),
                     ),
                     InputFields("Enter Username", username, Icons.input,
                         TextInputType.text),
@@ -278,14 +299,9 @@ class MyFormState extends State<MyForm> {
                                               .emailVerified
                                           ? Navigator.pushNamed(
                                               context, '/home')
-                                          :
-                                           setState(() {
-       
-        correctLogin = "Please check and verify your email";
-      });
-                                           print("Please verify your email ");
-                                      FirebaseAuth.instance.currentUser!
-                                          .sendEmailVerification();
+                                          : setState(() {
+                                              verified = false;
+                                            });
                                     }
                                   });
                                 }
@@ -344,6 +360,17 @@ class MyFormState extends State<MyForm> {
                             fontWeight: FontWeight.w300),
                       ),
                     ),
+                    FirebaseAuth.instance.currentUser == null
+                        ? Text("")
+                        : Center(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/home');
+                              },
+                              child: Text("Resume"),
+                              style: ButtonStyle(),
+                            ),
+                          )
                   ],
                 ),
               ),

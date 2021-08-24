@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,7 +36,9 @@ class BookState extends State<Book> {
   String message = "";
   bool bookingsuccess = false;
   String transactor = FirebaseAuth.instance.currentUser!.uid;
+  String? transactormail = FirebaseAuth.instance.currentUser!.email;
   bool showlist = false;
+  bool ischosen = true;
   var accesscode;
   //var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
   //final plugin = PaystackPlugin();
@@ -64,9 +67,9 @@ class BookState extends State<Book> {
             appBar: AppBar(
                 leading: IconButton(
                     onPressed: () {
-                       Navigator.push(
+                      Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ButtomNav( )),
+                        MaterialPageRoute(builder: (context) => ButtomNav()),
                       );
                     },
                     icon: Icon(Icons.arrow_back_ios)),
@@ -114,13 +117,14 @@ class BookState extends State<Book> {
                   }
                   return GridView.builder(
                       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 6,
+                          maxCrossAxisExtent: 120,
                           childAspectRatio: 1.2,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10),
                       itemCount: widget.seat.seats,
                       itemBuilder: (BuildContext ctx, index) {
-                        seatids = snapshots.data!["chosen"];
+                        String selected = index.toString() + "_";
+
                         return SizedBox(
                           height: 110,
                           width: 110,
@@ -132,38 +136,39 @@ class BookState extends State<Book> {
                             heroTag: index.toString(),
                             key: Key("Seat numbers" + index.toString()),
                             backgroundColor:
-                                snapshots.data!["chosen"].contains({index,transactor})
+                                // match(snapshots.data!["chosen"],
+                                //           (index.toString() + "_"))
+                                match(snapshots.data!["chosen"], selected) > 0
                                     ? Colors.green[300]
                                     : seatcolor,
                             onPressed: () {
-
-//verify transactors
-// if (!snapshots.data!["chosen"].contains({index,transactor})) {
-                               
-//                                 }
-
-
-                              if (!snapshots.data!["chosen"].contains({index,transactor})) {
-                                setState(() {
-                                  chosen += 1;
-                                  total = (chosen * unitprice);
-                                });
-
-                                FirebaseFirestore.instance
-                                    .runTransaction((transaction) async {
-                                  DocumentSnapshot freshap = await transaction
-                                      .get(snapshots.data!.reference);
-                                  transaction.update(freshap.reference, {
-                                    "seats": (freshap["seats"] - 1),
-                                    "chosen": FieldValue.arrayUnion([{index,transactor}])
-                                  });
-                                }).then((value) {
+                              String find = index.toString() + "_" + transactor;
+                              String noselct = index.toString() + "_";
+                              if (!snapshots.data!["chosen"].contains(find)) {
+                                if (snapshots.data!["seats"] > 0 &&
+                                    match(snapshots.data!["chosen"], noselct) <
+                                        1) {
                                   setState(() {
-                                    showlist = true;
+                                    chosen += 1;
+                                    total = (chosen * unitprice);
                                   });
-                                });
-                              } else {
-                                print("seat already chosen");
+                                  FirebaseFirestore.instance
+                                      .runTransaction((transaction) async {
+                                    DocumentSnapshot freshap = await transaction
+                                        .get(snapshots.data!.reference);
+                                    transaction.update(freshap.reference, {
+                                      "seats": (freshap["seats"] - 1),
+                                      "chosen": FieldValue.arrayUnion([find])
+                                    });
+                                  }).then((value) {
+                                    setState(() {
+                                      showlist = true;
+                                      seatids.add(find);
+                                    });
+                                  });
+                                }
+                              } else if (snapshots.data!["chosen"]
+                                  .contains(find)) {
                                 setState(() {
                                   chosen -= 1;
                                   total = (chosen * unitprice);
@@ -174,181 +179,177 @@ class BookState extends State<Book> {
                                       .get(snapshots.data!.reference);
                                   transaction.update(freshap.reference, {
                                     "seats": (freshap["seats"] + 1),
-                                    "chosen": FieldValue.arrayRemove([{index,transactor}])
+                                    "chosen": FieldValue.arrayRemove([find])
                                   });
                                 }).then((value) {
                                   setState(() {
                                     showlist = true;
+                                    seatids.remove(find);
                                   });
                                 });
                               }
-                               showModalBottomSheet(
-                                      backgroundColor: Colors.indigo[100],
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(50),
-                                              topRight: Radius.circular(50))),
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return FractionallySizedBox(
-                                          heightFactor: 0.99,
-                                          child: SingleChildScrollView(
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    "Ticket Details",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white),
-                                                  ),
-                                                ),
-                                                SizedBox(height: 12),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Card(
-                                                    shape:
-                                                        RoundedRectangleBorder(),
-                                                    elevation: 10,
-                                                    child:
-                                                        SingleChildScrollView(
-                                                      child: Column(
-                                                        children: [
-                                                          Text(
-                                                              "Number of seats : " +
-                                                                  chosen
-                                                                      .toString(),
-                                                              style: TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize: 18,
-                                                                  color: Colors
-                                                                      .white)),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: ListTile(
-                                                              title:
-                                                                  Text("Seats"),
-                                                              subtitle:
-                                                                  SingleChildScrollView(
-                                                                child: Column(
-                                                                  children: [
-                                                                    ListView.builder(
-                                                                        shrinkWrap: true,
-                                                                        itemCount: snapshots.data!["chosen"].length,
-                                                                        itemBuilder: (BuildContext context, indx) {
-                                                                          return Padding(
-                                                                            padding:
-                                                                                const EdgeInsets.all(3.0),
-                                                                            child:
-                                                                                ListTile(
-                                                                              tileColor: Colors.grey[200],
-                                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                                              title: Text((snapshots.data!["chosen"][indx][0] + 1).toString()),
-                                                                              trailing: IconButton(
-                                                                                  onPressed: () {
-                                                                                    setState(() {
-                                                                                      snapshots.data!["chosen"].remove((indx));
-                                                                                    });
-                                                                                    print("cancel");
-                                                                                  },
-                                                                                  icon: Icon(
-                                                                                    Icons.cancel,
-                                                                                    size: 30,
-                                                                                    color: Colors.red,
-                                                                                  )),
-                                                                            ),
-                                                                          );
+                              showModalBottomSheet(
+                                  backgroundColor: Colors.indigo[100],
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(50),
+                                          topRight: Radius.circular(50))),
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return FractionallySizedBox(
+                                      heightFactor: 0.99,
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                "Ticket Details",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            SizedBox(height: 12),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Card(
+                                                shape: RoundedRectangleBorder(),
+                                                elevation: 10,
+                                                child: SingleChildScrollView(
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                          "Number of seats : " +
+                                                              chosen.toString(),
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 18,
+                                                              color: Colors
+                                                                  .white)),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: ListTile(
+                                                          title: Text("Seats"),
+                                                          subtitle:
+                                                              SingleChildScrollView(
+                                                            child: Column(
+                                                              children: [
+                                                                ListView
+                                                                    .builder(
+                                                                        shrinkWrap:
+                                                                            true,
+                                                                        itemCount: snapshots
+                                                                            .data![
+                                                                                "chosen"]
+                                                                            .length,
+                                                                        itemBuilder:
+                                                                            (BuildContext context,
+                                                                                indx) {
+                                                                          return snapshots.data!["chosen"][indx].split("_")[1] == transactor
+                                                                              ? Padding(
+                                                                                  padding: const EdgeInsets.all(3.0),
+                                                                                  child: ListTile(
+                                                                                    tileColor: Colors.grey[200],
+                                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                                                                    title: Text((int.parse(snapshots.data!["chosen"][indx].split("_")[0]) + 1).toString()),
+                                                                                    trailing: IconButton(
+                                                                                        onPressed: () {
+                                                                                          setState(() {
+                                                                                            snapshots.data!["chosen"].remove((indx));
+                                                                                          });
+                                                                                          print("cancel");
+                                                                                        },
+                                                                                        icon: Icon(
+                                                                                          Icons.cancel,
+                                                                                          size: 30,
+                                                                                          color: Colors.red,
+                                                                                        )),
+                                                                                  ),
+                                                                                )
+                                                                              : Text("");
                                                                         }),
-                                                                  ],
-                                                                ),
-                                                              ),
+                                                              ],
                                                             ),
                                                           ),
-                                                          Center(
-                                                            child: ButtonBar(children: [
+                                                        ),
+                                                      ),
+                                                      Center(
+                                                        child: ButtonBar(
+                                                            children: [
                                                               FloatingActionButton
                                                                   .extended(
                                                                       onPressed:
                                                                           () {
-                                                                        _getAccessCodeFrmInitialization(
-                                                                                double.parse(total
-                                                                                    .toString()),
-                                                                "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351",
-                                                                                "createdliving1000@gmail.com")
-                                                                            .then(
-                                                                                (value) {
+                                                                        _getAccessCodeFrmInitialization(double.parse(total.toString()), "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351", transactormail!).then(
+                                                                            (value) {
                                                                           setState(
                                                                               () {
-                                 accesscode =value.data["authorization_url"].toString()+ "/" + value.data["access_code"].toString();
-                                                                                
-                                                                                
-                                                                             
+                                                                            accesscode = value.data["authorization_url"].toString() +
+                                                                                "/" +
+                                                                                value.data["access_code"].toString();
                                                                           });
-                                                                           Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => WebViewpg(pageurl: accesscode,ref:value.data["reference"] ) )
-                      );
+                                                                          Navigator.push(
+                                                                              context,
+                                                                              MaterialPageRoute(builder: (context) => WebViewpg(pageurl: accesscode, ref: value.data["reference"])));
                                                                           print(accesscode +
                                                                               " " +
                                                                               value.data["authorization_url"].toString());
                                                                         }).catchError(
-                                                                                (e) {
-                                                                          print(e
-                                                                              .toString());
+                                                                            (e) {
+                                                                          print(
+                                                                              e.toString());
                                                                         });
                                                                       },
                                                                       label: Text(
-                                                                          "Momo")),
-                                                              FloatingActionButton
-                                                                  .extended(
-                                                                      heroTag:
-                                                                          "pay",
-                                                                      onPressed:
-                                                                          () async {
-                                                                        
-                                                                            
-                                                                             
-                                                                      },
-                                                                      label: Text(
-                                                                          "Card")),
+                                                                          "Pay now")),
                                                             ]),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
+                                                      )
+                                                    ],
                                                   ),
                                                 ),
-                                                SizedBox(),
-                                              ],
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      })
-                                  ;
+                                            SizedBox(),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  });
                             },
                           ),
                         );
                       });
                 },
               ),
-              Column(
-                children: [
-                  Text("Pickup points"),
-                  ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: widget.seat.routes.length,
-                      itemBuilder: (BuildContext context, index) {
-                        return Text(widget.seat.routes[index].name);
-                      })
-                ],
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Text("Select pickup point"),
+                      ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: widget.seat.routes.length,
+                          itemBuilder: (BuildContext context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GestureDetector(
+                                  onTap: () {
+                                    print(widget.seat.routes[index].name + "  is your pickup point");
+                                  },
+                                  child: Text(widget.seat.routes[index].name)),
+                            );
+                          })
+                    ],
+                  ),
+                ),
               ),
               Column(
                 children: [
@@ -357,7 +358,12 @@ class BookState extends State<Book> {
                       shrinkWrap: true,
                       itemCount: widget.seat.routes.length,
                       itemBuilder: (BuildContext context, index) {
-                        return Text(widget.seat.routes[index].name);
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                              onTap: () {},
+                              child: Text(widget.seat.routes[index].name)),
+                        );
                       })
                 ],
               )
@@ -378,14 +384,16 @@ class BookState extends State<Book> {
 }
 
 class Ticket {
-  Ticket(this.from, this.to, this.seatnumber, this.nofseats, this.time,
-      this.total);
-  int seatnumber;
-  int nofseats;
+  String booker;
+  String tripid;
+  String busid;
   String from;
   String to;
-  int time;
+  List<dynamic> chosen;
+  DateTime? time;
   int total;
+  Ticket(this.from, this.to, this.busid, this.tripid, this.time, this.chosen,
+      this.total, this.booker);
 }
 
 class Initresponse {
@@ -418,10 +426,19 @@ Future<Initresponse> _getAccessCodeFrmInitialization(
     return Initresponse.fromJson(jsonDecode(response.body));
   } else {
 // If the server did not return a 201 CREATED response,
-// then throw an exception.
+// then throw an exception.match
     throw Exception('Failed to initialise transaction.');
   }
 }
 
+int match(List<dynamic> arr, String startwt) {
+  int on = 0;
+  arr.forEach((element) {
+    if (element.toString().contains(startwt)) {
+      on += 1;
+      print(on);
+    }
+  });
 
-
+  return on;
+}

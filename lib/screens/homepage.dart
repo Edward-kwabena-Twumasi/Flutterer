@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/components/notifications.dart';
 import 'package:myapp/components/notify.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/screens/chatscreen.dart';
@@ -57,7 +58,7 @@ class ButtomNavState extends State<ButtomNav> {
       children: [Expanded(child: TabBarDemo()), Primary()],
     ),
     HelpClass(),
-    Notify(),
+    Notifies(),
     UserInfoClass(),
   ];
   int currentindx = 0;
@@ -163,7 +164,6 @@ class TabBarDemoState extends State<TabBarDemo> {
             ),
             elevation: 0,
             backgroundColor: Colors.white,
-           
             bottom: TabBar(
               indicatorColor: Colors.lightGreen,
               tabs: [
@@ -268,7 +268,7 @@ class LocationsState extends State<Locations> {
   bool stripcity = false;
   TextEditingController from = TextEditingController();
   TextEditingController to = TextEditingController();
-
+  bool wait = false;
   void initState() {
     super.initState();
     datecontroller.text = time.toString();
@@ -285,49 +285,6 @@ class LocationsState extends State<Locations> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      FloatingActionButton.extended(
-                        heroTag: "getpos",
-                        onPressed: () async {
-                          await Geolocator.getCurrentPosition(
-                                  desiredAccuracy: LocationAccuracy.best)
-                              .then((value) async {
-                            await placemarkFromCoordinates(
-                                    value.latitude, value.longitude)
-                                .then((value2) {
-                              from.text = value2.first.locality! +
-                                  "," +
-                                  value2.first.subLocality!;
-                              return value2;
-                            });
-                          });
-
-                          setState(
-                            () {
-                              stripcity = true;
-                            },
-                          );
-                        },
-                        label: Text("Current loc"),
-                        icon: Icon(Icons.location_on),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                      Expanded(
-                          child: FloatingActionButton.extended(
-                              heroTag: "seemap",
-                              onPressed: () {
-                                Navigator.pushNamed(context, "/map");
-                              },
-                              label: Text("view  map")))
-                    ],
-                  ),
-                ),
-              ),
               SearchLocs(
                   direction: 'from', locations: places, searchcontrol: from),
               SearchLocs(
@@ -343,7 +300,47 @@ class LocationsState extends State<Locations> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  //add time chooser
+                  FloatingActionButton.extended(
+                    heroTag: "getpos",
+                    onPressed: () async {
+                      setState(
+                        () {
+                          wait = true;
+                        },
+                      );
+                      await Geolocator.getCurrentPosition(
+                              desiredAccuracy: LocationAccuracy.best)
+                          .then((value) async {
+                        await placemarkFromCoordinates(
+                                value.latitude, value.longitude)
+                            .then((value2) {
+                          from.text = value2.first.locality! +
+                              "," +
+                              value2.first.subLocality!;
+                          setState(
+                            () {
+                              wait = false;
+                            },
+                          );
+                          return value2;
+                        });
+                      });
+
+                      setState(
+                        () {
+                          stripcity = true;
+                        },
+                      );
+                    },
+                    label: wait
+                        ? CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(""),
+                    icon: Icon(Icons.location_on),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                   SizedBox(
                     height: 40,
                     child: MyStatefulWidget(
@@ -428,7 +425,7 @@ class TripsState extends State<Trips> {
     return particular;
   }
 
-  List filterquery = [""];
+  List filterquery = [];
 
   void initState() {
     super.initState();
@@ -487,23 +484,21 @@ class TripsState extends State<Trips> {
                         .doc("companynamestrings")
                         .get(),
                     builder: (context, AsyncSnapshot<dynamic> snapshot) {
-
-         if (!snapshot.hasData &&
-                            (snapshot.connectionState ==
-                                ConnectionState.waiting)) {
-                          return Center(
-                              child: Card(
-                                  elevation: 8,
-                                  child: Column(
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(
-                                        height: 5,
-                                      )
-                                    ],
-                                  )));
-                        }
-                     else if (snapshot.hasError) {
+                      if (!snapshot.hasData &&
+                          (snapshot.connectionState ==
+                              ConnectionState.waiting)) {
+                        return Center(
+                            child: Card(
+                                elevation: 8,
+                                child: Column(
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(
+                                      height: 5,
+                                    )
+                                  ],
+                                )));
+                      } else if (snapshot.hasError) {
                         print(snapshot.error.toString());
                         return Text(snapshot.error.toString());
                       }
@@ -512,6 +507,8 @@ class TripsState extends State<Trips> {
                           itemCount:
                               snapshot.data!["companynamestrings"].length,
                           itemBuilder: (lcontext, index) {
+                            filterquery.add(snapshot.data!["companynamestrings"]
+                                [index]["name"]);
                             return snapshot.data!["companynamestrings"][index]
                                         ["type"] ==
                                     filter1
@@ -522,9 +519,10 @@ class TripsState extends State<Trips> {
                                         snapshot.data!["companynamestrings"]
                                             [index]["name"], () {
                                       setState(() {
-                                        filter2 =
-                                            snapshot.data!["companynamestrings"]
-                                                [index]["name"];
+                                        filterquery = [
+                                          snapshot.data!["companynamestrings"]
+                                              [index]["name"]
+                                        ];
                                       });
                                     }),
                                   )
@@ -534,7 +532,7 @@ class TripsState extends State<Trips> {
               ),
               ListTile(
                 title: Center(child: Text("compare")),
-                subtitle: ButtonBar(
+                subtitle: Row(
                   children: [
                     niceChips(Icons.bus_alert, "Bus", () {
                       setState(() {
@@ -584,8 +582,8 @@ class TripsState extends State<Trips> {
                           .collection('trips')
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
-                          //  .where("company", whereIn: filterquery)
                           .where("triptype", isEqualTo: filter1)
+                          //.where("company", whereIn: filterquery)
                           .snapshots(),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -624,9 +622,23 @@ class TripsState extends State<Trips> {
                                   child: Column(
                                     children: [
                                       ListTile(
-                                        leading: Text(getday(
-                                            doc['date'].toDate().day,
-                                            widget._tripdata.date.day)),
+                                        leading: Text(doc['date']
+                                                    .toDate()
+                                                    .toString()
+                                                    .split(" ")[0] ==
+                                                DateTime.now()
+                                                    .toString()
+                                                    .split(" ")[0]
+                                            ? "Today"
+                                            : doc['date']
+                                                    .toDate()
+                                                    .month
+                                                    .toString() +
+                                                "/" +
+                                                doc['date']
+                                                    .toDate()
+                                                    .day
+                                                    .toString()),
                                         subtitle: Row(
                                           children: [
                                             Expanded(
@@ -697,7 +709,9 @@ class TripsState extends State<Trips> {
               )),
               ButtonBar(
                 children: [
-                  TextButton(onPressed: () {}, child: Text(" Today "))
+                  TextButton(onPressed: () {}, child: Text(" Morning ")),
+                  TextButton(onPressed: () {}, child: Text("Afternoon ")),
+                  TextButton(onPressed: () {}, child: Text(" Evening "))
                 ],
               )
             ]),
@@ -885,18 +899,21 @@ class UserInfoClassState extends State<UserInfoClass> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         actions: [
-              IconButton(
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut().then((value) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => App()),
-                      );
-                    });
-                  },
-                  icon: Icon(Icons.logout,color:Colors.red ,))
-            ],
+        actions: [
+          IconButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut().then((value) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => App()),
+                  );
+                });
+              },
+              icon: Icon(
+                Icons.logout,
+                color: Colors.red,
+              ))
+        ],
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
@@ -912,37 +929,42 @@ class UserInfoClassState extends State<UserInfoClass> {
                 .doc(FirebaseAuth.instance.currentUser!.uid)
                 .get(),
             builder: (context, AsyncSnapshot<dynamic> snapshot) {
-
               if (!snapshot.hasData &&
-                            (snapshot.connectionState ==
-                                ConnectionState.waiting)) {
-                          return Center(
-                              child: Card(
-                                  elevation: 8,
-                                  child: Column(
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(
-                                        height: 5,
-                                      ),
-                                      Text("fetching info")
-                                    ],
-                                  )));
-                        } else if (snapshot.hasError) {
+                  (snapshot.connectionState == ConnectionState.waiting)) {
+                return Center(
+                    child: Card(
+                        elevation: 8,
+                        child: Column(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Text("fetching info")
+                          ],
+                        )));
+              } else if (snapshot.hasError) {
                 print(snapshot.error);
               }
 
               return Column(
                 children: [
-                  Card(
-                    elevation: 10,
-                    child: Center(
+                  ElevatedButton(onPressed: (){}, child: Text("My bookings"),
+                  style: ButtonStyle(
+textStyle:MaterialStateProperty.all(TextStyle(color:Colors.black )),
+                    backgroundColor: MaterialStateProperty.all(Colors.white),
+                   side:MaterialStateProperty.all(BorderSide(
+                     color:Colors.green,style: BorderStyle.solid
+                   ))
+                  ),
+                  ),
+                   Center(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(150),
                         child: Container(
                             color: Colors.amber,
-                            height: 160,
-                            width: 160,
+                            height: 100,
+                            width: 100,
                             child: Stack(children: [
                               Image.network("imgUrl!",
                                   cacheHeight: 120, cacheWidth: 120),
@@ -962,10 +984,9 @@ class UserInfoClassState extends State<UserInfoClass> {
                                                 source: ImageSource.gallery);
 
                                             var file = File(image!.path);
-                                           
+
                                             // ignore: unnecessary_null_comparison
                                             if (file != null) {
-                                             
                                               var snapshot =
                                                   await FirebaseStorage.instance
                                                       .ref(FirebaseAuth.instance
@@ -993,20 +1014,9 @@ class UserInfoClassState extends State<UserInfoClass> {
                             ])),
                       ),
                     ),
-                  ),
+                  
                   Center(
-                      child: FloatingActionButton.extended(
-                    onPressed: () {},
-                    label: Text("Health info"),
-                    icon: Icon(Icons.local_hospital),
-                  )),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                        child: fetch
-                            ? CircularProgressIndicator()
-                            : Text("Your info")),
-                  ),
+                      child: ExpansionTile(title: Text("Health Information"))),
                   Padding(
                       padding: EdgeInsets.all(12),
                       child: ListView(shrinkWrap: true, children: [
@@ -1105,104 +1115,89 @@ class UserInfoClassState extends State<UserInfoClass> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 35),
                                       ),
-                                       Container(
-                height: 100,
-                child: FutureBuilder(
-                    future: FirebaseFirestore.instance
-                        .collection("appstrings")
-                        .doc("companynamestrings")
-                        .get(),
-                    builder: (context, AsyncSnapshot<dynamic> snapshot) {
-                      if (snapshot.hasError) {
-                        print(snapshot.error.toString());
-                        return Text(snapshot.error.toString());
-                      }
-                      return GridView.builder(
-                        gridDelegate:SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 50,
-                          childAspectRatio: 1.2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10),
-                          scrollDirection: Axis.horizontal,
-                          itemCount:
-                              snapshot.data!["companynamestrings"].length,
-                          itemBuilder: (lcontext, index) {
-                           return Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: niceChips(
-                                        Icons.filter,
-                                        snapshot.data!["companynamestrings"]
-                                            [index]["name"], () {
-                                      setState(() {
-                                      
-                                      });
-                                    }),
-                                  )
-                               ;
-                          });
-                    }),
-              ),
-                                     
-                                      Expanded(
-                                          child: ListTile(
-                                              title: ListView.builder(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  itemCount: stars,
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                          index) {
-                                                    return StatefulBuilder(
-                                                      builder:
-                                                          (BuildContext context,
-                                                              setState) {
-                                                        return Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: IconButton(
-                                                              onPressed: () {
-                                                                if (!starred
-                                                                    .contains(
-                                                                        index)) {
-                                                                  setState(() {
-                                                                    starred.add(
-                                                                        index);
+                                      FutureBuilder(
+                                          future: FirebaseFirestore.instance
+                                              .collection("appstrings")
+                                              .doc("companynamestrings")
+                                              .get(),
+                                          builder: (context,
+                                              AsyncSnapshot<dynamic> snapshot) {
+                                            if (!snapshot.hasData &&
+                                                (snapshot.connectionState ==
+                                                    ConnectionState.waiting)) {
+                                              return Center(
+                                                  child: Card(
+                                                      elevation: 8,
+                                                      child: Column(
+                                                        children: [
+                                                          CircularProgressIndicator(),
+                                                          SizedBox(
+                                                            height: 5,
+                                                          )
+                                                        ],
+                                                      )));
+                                            } else if (snapshot.hasError) {
+                                              print(snapshot.error.toString());
+                                              return Text(
+                                                  snapshot.error.toString());
+                                            }
+                                            return ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount: snapshot
+                                                    .data["companynames"]
+                                                    .length,
+                                                itemBuilder:
+                                                    (BuildContext, ndx) {
+                                                  return ListTile(
+                                                      title: snapshot.data[
+                                                              "companynames"]
+                                                          [ndx]["name"],
+                                                      subtitle: Expanded(
+                                                          child: ListTile(
+                                                              title: ListView
+                                                                  .builder(
+                                                                      scrollDirection:
+                                                                          Axis
+                                                                              .horizontal,
+                                                                      itemCount:
+                                                                          stars,
+                                                                      itemBuilder:
+                                                                          (context,
+                                                                              index) {
+                                                                        return StatefulBuilder(
+                                                                          builder:
+                                                                              (context, setState) {
+                                                                            return Padding(
+                                                                              padding: const EdgeInsets.all(8.0),
+                                                                              child: IconButton(
+                                                                                  onPressed: () {
+                                                                                    if (!starred.contains(index)) {
+                                                                                      setState(() {
+                                                                                        starred.add(index);
 
-                                                                    // stars;
-                                                                  });
+                                                                                        // stars;
+                                                                                      });
 
-                                                                  print(starred
-                                                                      .length);
-                                                                  print(
-                                                                      starredcolor);
-                                                                  print(index);
-                                                                } else {
-                                                                  setState(() {
-                                                                    starred.remove(
-                                                                        index);
-                                                                    print(starred
-                                                                        .length);
-                                                                    // stars;
-                                                                    print(
-                                                                        starredcolor);
-                                                                    print(
-                                                                        index);
-                                                                  });
-                                                                }
-                                                              },
-                                                              icon: Icon(
-                                                                  Icons.star,
-                                                                  size: 30,
-                                                                  color: starred
-                                                                          .contains(
-                                                                              index)
-                                                                      ? starredcolor
-                                                                      : unstarredcolor)),
-                                                        );
-                                                      },
-                                                    );
-                                                  })))
+                                                                                      print(starred.length);
+                                                                                      print(starredcolor);
+                                                                                      print(index);
+                                                                                    } else {
+                                                                                      setState(() {
+                                                                                        starred.remove(index);
+                                                                                        print(starred.length);
+                                                                                        // stars;
+                                                                                        print(starredcolor);
+                                                                                        print(index);
+                                                                                      });
+                                                                                    }
+                                                                                  },
+                                                                                  icon: Icon(Icons.star, size: 30, color: starred.contains(index) ? starredcolor : unstarredcolor)),
+                                                                            );
+                                                                          },
+                                                                        );
+                                                                      }))));
+                                                });
+                                          }),
                                     ],
                                   ),
                                 ),
@@ -1229,7 +1224,47 @@ class UserInfoClassState extends State<UserInfoClass> {
                             isScrollControlled: true,
                             builder: (BuildContext context) {
                               return FractionallySizedBox(
-                                child: Text("Write review"),
+                                child: Column(
+                                  children: [
+                                    Text("Write review"),
+                                    FutureBuilder(
+                                        future: FirebaseFirestore.instance
+                                            .collection("appstrings")
+                                            .doc("companynamestrings")
+                                            .get(),
+                                        builder: (context,
+                                            AsyncSnapshot<dynamic> snapshot) {
+                                          if (!snapshot.hasData &&
+                                              (snapshot.connectionState ==
+                                                  ConnectionState.waiting)) {
+                                            return Center(
+                                                child: Card(
+                                                    elevation: 8,
+                                                    child: Column(
+                                                      children: [
+                                                        CircularProgressIndicator(),
+                                                        SizedBox(
+                                                          height: 5,
+                                                        )
+                                                      ],
+                                                    )));
+                                          } else if (snapshot.hasError) {
+                                            print(snapshot.error.toString());
+                                            return Text(
+                                                snapshot.error.toString());
+                                          }
+                                          return ListView.builder(
+                                              itemBuilder: (buildcontext, ndx) {
+                                            return ListTile(
+                                               title: snapshot.data[
+                                                              "companynames"]
+                                                          [ndx]["name"],
+                                                          subtitle:Text("Write review here")
+                                            );
+                                          });
+                                        })
+                                  ],
+                                ),
                               );
                             });
                       },
@@ -1238,7 +1273,8 @@ class UserInfoClassState extends State<UserInfoClass> {
                               color: Colors.white,
                               fontWeight: FontWeight.bold)),
                     ))
-                  ])
+                  ]),
+
                 ],
               );
             }),
@@ -1303,8 +1339,8 @@ class _PrimaryState extends State<Primary> {
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Card(
-                 shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
                   elevation: 3,
                   child: FloatingActionButton.extended(
                       heroTag: "policy",
@@ -1333,22 +1369,41 @@ class _PrimaryState extends State<Primary> {
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Card(
-                 shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
                   elevation: 3,
                   child: FloatingActionButton.extended(
                       heroTag: "offers",
                       backgroundColor: Colors.grey[100],
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15)),
-                      onPressed: () {},
+                      onPressed: () {
+                        showModalBottomSheet(
+                            backgroundColor: Colors.amber[100],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return FractionallySizedBox(
+                                  heightFactor: 0.9, child: Offers());
+                            });
+                      },
                       label: Text(" offers",
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.black)))),
             ),
-           
-           
+            Padding(
+                padding: EdgeInsets.all(10),
+                child: FloatingActionButton.extended(
+                    heroTag: "seemap",
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/map");
+                    },
+                    label: Text("Map View"))),
           ],
         ));
   }

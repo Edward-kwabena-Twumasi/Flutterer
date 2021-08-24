@@ -1008,7 +1008,7 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
           shrinkWrap: true,
           children: [
             ListTile(
-              title: Text("Sheduled Trips"),
+              title: Text("Sheduled Trips",style:TextStyle(fontWeight:FontWeight.bold,fontSize :30)),
             ),
             StreamBuilder(
               stream:
@@ -1023,40 +1023,62 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
                   return Text("Loading");
                 }
 
-                return new ListView(
-                  shrinkWrap: true,
-                  children: snapshot.data!.docs.map((data) {
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      child: Container(
-                        height: 150,
-                        child: new ListTile(
-                          title: new Text(data.id),
-                          subtitle: ListView(
-                            shrinkWrap: true,
-                            children: [
-                              new Text(data['from'] + " > " + data['to']),
-                              new Text(
-                                  "Vehicle id : " + data['vehid'].toString()),
-                              new Text(
-                                  "Total seats : " + data['seats'].toString()),
-                              new Text("Booked : " +
-                                  data['chosen'].length.toString()),
-                              new Text(
-                                  "Remaining : " + data['seats'].toString()),
-                              new Text("Take off : " +
-                                  data['date']
-                                      .toDate()
-                                      .toString()
-                                      .split(" ")[1]),
-                            ],
-                          ),
-                        ),
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      new ListView(
+                        shrinkWrap: true,
+                        children: snapshot.data!.docs.map((data) {
+                          return Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Container(
+                              height: 150,
+                              child: new ListTile(
+                                title: new Text(data.id),
+                                subtitle: ListView(
+                                  shrinkWrap: true,
+                                  children: [
+                                    new Text(data['from'] + " > " + data['to']),
+                                    new Text(
+                                        "Vehicle id : " + data['vehid'].toString()),
+                                    new Text(
+                                        "Total seats : " + data['seats'].toString()),
+                                    new Text("Booked : " +
+                                        data['chosen'].length.toString()),
+                                    new Text(
+                                        "Remaining : " + data['seats'].toString()),
+                                    new Text("Take off : " +
+                                        data['date']
+                                            .toDate()
+                                            .toString()
+                                            .split(" ")[1]),
+                                            ButtonBar(
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: ElevatedButton(onPressed: (){}, child: Text("Reschedule")),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: ElevatedButton(onPressed: (){}, child: Text("Cancel")),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: ElevatedButton(onPressed: (){}, child: Text("Hold")),
+                                                ),
+                                              ],
+                                            )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }).toList(),
+                    ],
+                  ),
                 );
               },
             ),

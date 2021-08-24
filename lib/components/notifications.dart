@@ -11,7 +11,10 @@ import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 
 const AndroidNotificationChannel Channel = AndroidNotificationChannel(
-    "notifier", "sendnotes", "channel for sending notifications",
+    "interval", "sendinterval", "channel for sending at interval",
+    importance: Importance.high, playSound: true);
+const AndroidNotificationChannel Channel1 = AndroidNotificationChannel(
+    "future", "sendfuture", "channel for sending infuture",
     importance: Importance.high, playSound: true);
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -32,17 +35,17 @@ Future<void> main() async {
   if (kIsWeb) {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-NotificationSettings settings = await messaging.requestPermission(
-  alert: true,
-  announcement: false,
-  badge: true,
-  carPlay: false,
-  criticalAlert: false,
-  provisional: false,
-  sound: true,
-);
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
 
-print('User granted permission: ${settings.authorizationStatus}');
+    print('User granted permission: ${settings.authorizationStatus}');
   }
 
   await flutterLocalNotificationsPlugin
@@ -81,7 +84,7 @@ class Notifies extends StatefulWidget {
 
 class _NotifiesState extends State<Notifies> {
   String? token;
-
+  int diff = 0;
   TextEditingController body = TextEditingController();
   @override
   void initState() {
@@ -128,12 +131,14 @@ class _NotifiesState extends State<Notifies> {
             });
       }
     });
-    getToken(FirebaseAuth.instance.currentUser!.uid).then((value) {
-      setState(() {
-        token = value;
+    if (FirebaseAuth.instance.currentUser != null) {
+      getToken(FirebaseAuth.instance.currentUser!.uid).then((value) {
+        setState(() {
+          token = value;
+        });
+        print(token);
       });
-      print(token);
-    });
+    }
   }
 
   Future<void> sendPushMessage() async {
@@ -168,37 +173,80 @@ class _NotifiesState extends State<Notifies> {
                     topRight: Radius.circular(50))),
             child: Column(
               children: [
-                InputFields("Message body", body, Icons.message,
+                InputFields("Remind every eg. 9am ", body, Icons.message,
                     TextInputType.multiline),
                 SizedBox(),
+
                 ButtonBar(children: [
                   TextButton(
-                      onPressed: sendPushMessage,
-                      child: Text("SEND PUSH MESSAGE")),
+                      onPressed: sendPushMessage, child: Text("Push message")),
                   TextButton(
                       onPressed: () async {
-if (kIsWeb) {
- FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-//use the returned token to send messages to users from your custom server
-String? token = await messaging.getToken(
-  vapidKey: "BGpdLRs......",
-);
-  
-}                          else 
-                        flutterLocalNotificationsPlugin.show(
-                            0,
+                        flutterLocalNotificationsPlugin.periodicallyShow(
+                            1,
                             "New notification",
-                            body.text,
+                            "received at" +
+                                DateTime.now().toString().split(" ")[1],
+                            RepeatInterval.everyMinute,
                             NotificationDetails(
                                 android: AndroidNotificationDetails(Channel.id,
                                     Channel.name, Channel.description,
                                     color: Colors.lightBlue,
                                     playSound: true,
-                                    icon: '@mipmap/ic_launcher')));
+                                    icon: '@mipmap/ic_launcher')),
+                            payload: "received");
                       },
-                      child: Text("NOTIFICATIONS")),
+                      child: Text("Notify me")),
                 ]),
+
+                InputFields("Alert once at .eg 7am", body, Icons.message,
+                    TextInputType.multiline),
+                ButtonBar(children: [
+                  TextButton(
+                      onPressed: sendPushMessage, child: Text("Push message")),
+                  TextButton(
+                      onPressed: () async {
+                        if (body.text.isNotEmpty) {
+                          // flutterLocalNotificationsPlugin.periodicallyShow(
+                          //     2,
+                          //     "New notification",
+                          //     "received at" +
+                          //         DateTime.now().toString().split(" ")[1],
+                          //     RepeatInterval.everyMinute,
+                          //     NotificationDetails(
+                          //         android: AndroidNotificationDetails(Channel1.id,
+                          //             Channel1.name, Channel1.description,
+                          //             color: Colors.lightBlue,
+                          //             playSound: true,
+                          //             icon: '@mipmap/ic_launcher')),
+                          //     payload: "once");
+
+                          DateTime now = DateTime.now();
+                          DateTime future = DateTime(
+                              DateTime.now().year,
+                              DateTime.now().month,
+                              DateTime.now().day,
+                              int.parse(body.text.split(":")[0]),
+                              int.parse(body.text.split(":")[1]));
+                          print("Notification set at " + now.toString());
+                          print("Notification to show at" + future.toString());
+                          while (future.difference(now).inHours > 0) {
+                            setState(() {
+                              diff = future.difference(now).inHours;
+                            });
+
+                            print("Time left" + diff.toString());
+                          }
+                        } else {
+                          print('Provide correct time');
+                        }
+                      },
+                      child: Text("Notify me")),
+                ]),
+                SizedBox(),
+                // InputFields(
+                //     "Alert me", body, Icons.message, TextInputType.multiline),
+                // SizedBox(),
               ],
             ),
           ),

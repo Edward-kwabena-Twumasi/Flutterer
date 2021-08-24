@@ -69,17 +69,22 @@ class InputFields extends StatelessWidget {
 }
 
 Widget niceChips(IconData icondata, String text, void Function() pressed) {
+  bool selected = false;
   return InputChip(
+    backgroundColor:Colors.red[50] ,
     side: BorderSide.none,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(topLeft:Radius.circular(15),bottomRight:Radius.circular(15)  )
-    ),
-    selected: false,
+        borderRadius: BorderRadius.circular(25)),
+    selected: selected,
     selectedColor: Colors.red[50],
-    label: Text(text,style: TextStyle(fontSize:20,color: Colors.red ), ),
+    label: Text(
+      text,
+      style: TextStyle(fontSize: 20, color: Colors.red),
+    ),
     avatar: Icon(icondata),
     labelPadding: EdgeInsets.all(8),
-    onPressed: pressed,
+    onPressed: () {      
+    },
   );
 }
 
@@ -91,6 +96,7 @@ class MenuButton extends StatefulWidget {
 
   @override
   State<MenuButton> createState() => _MenuButtonState(regioncontroller);
+
 }
 
 /// This is the private State class that goes with MyStatefulWidget.
@@ -203,16 +209,15 @@ class SearchLocsState extends State<SearchLocs> {
       // widget.searchcontrol.text.substring(1);
       suggestions = [];
       for (var i in places) {
-        if ((i.startsWith(widget.searchcontrol.text) ||
-                i.contains(widget.searchcontrol.text)) &&
-            !suggestions.contains(i)) {
+        if ((i.toLowerCase().startsWith(widget.searchcontrol.text.toLowerCase()) ||
+            i.toLowerCase().contains( widget.searchcontrol.text.toLowerCase()))) {
           suggestions.add(i);
         }
       }
     });
 
     focusNode.addListener(() {
-      if (focusNode.hasFocus || suggestions.isNotEmpty) {
+      if (focusNode.hasFocus) {
         this.myoverlay = createOverlay();
         Overlay.of(context)!.insert(this.myoverlay!);
       } else {
@@ -241,7 +246,6 @@ class SearchLocsState extends State<SearchLocs> {
                         shape: RoundedRectangleBorder(),
                         key: Key(index.toString()),
                         onTap: () {
-                          
                           this.myoverlay!.remove();
                           print(index);
                           mytripobj[widget.direction] = suggestions[index];
@@ -549,6 +553,26 @@ class _FindateTripsState extends State<FindateTrips> {
     var height = MediaQuery.of(context).size.height;
     return Container(
       height: height,
+    );
+  }
+}
+
+class Offers extends StatefulWidget {
+  const Offers({ Key? key }) : super(key: key);
+
+  @override
+  _OffersState createState() => _OffersState();
+}
+
+class _OffersState extends State<Offers> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: [
+          Text("Offers appear here")
+        ],
+      ),
     );
   }
 }

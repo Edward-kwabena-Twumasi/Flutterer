@@ -76,20 +76,21 @@ class _AdminPageState extends State<AdminPage> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("Login with pattern"),
+                      child: Text("Login with your pin"),
                     ),
                   ),
                   GridView.count(
                     shrinkWrap: true,
                     crossAxisCount: 4,
-                    crossAxisSpacing: 3,
-                    mainAxisSpacing: 2,
-                    childAspectRatio: 0.5,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1.2,
                     children: [
                       SizedBox(
-                        height:60,
+                        height:40,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+                           label:Text("1"),
                             heroTag: "b1",
                             onPressed: () {
                               setState(() {
@@ -100,9 +101,11 @@ class _AdminPageState extends State<AdminPage> {
                             }),
                       ),
                       SizedBox(
-                        height:60,
+                        height:40,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+
+                           label:Text("2"),
                             heroTag: "b2",
                             onPressed: () {
                               setState(() {
@@ -113,9 +116,11 @@ class _AdminPageState extends State<AdminPage> {
                             }),
                       ),
                       SizedBox(
-                        height:60,
+                        height:40,
                         width:60,
-                        child: FloatingActionButton(heroTag: "b3", onPressed: () {
+                        child: FloatingActionButton.extended(
+                           label:Text("3"),
+                          heroTag: "b3", onPressed: () {
                            setState(() {
                             track += 1;
                           });
@@ -123,7 +128,9 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(heroTag: "b4", onPressed: () {
+                        child: FloatingActionButton.extended(
+                           label:Text("4"),
+                          heroTag: "b4", onPressed: () {
                            setState(() {
                             track += 1;
                           });
@@ -131,7 +138,8 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+                           label:Text("5"),
                             heroTag: "b5",
                             onPressed: () {
                               setState(() {
@@ -144,7 +152,9 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(heroTag: "b6", onPressed: () {
+                        child: FloatingActionButton.extended(
+                           label:Text("6"),
+                          heroTag: "b6", onPressed: () {
                           setState(() {
                             track += 1;
                           });
@@ -152,7 +162,8 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+                           label:Text("7"),
                             heroTag: "b7",
                             onPressed: () {
                               setState(() {
@@ -165,7 +176,8 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+                           label:Text("8"),
                             heroTag: "b8",
                             onPressed: () {
                               setState(() {
@@ -178,7 +190,8 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+                           label:Text("9"),
                             heroTag: "b9",
                             onPressed: () {
                               setState(() {
@@ -191,7 +204,8 @@ class _AdminPageState extends State<AdminPage> {
                       SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(
+                        child: FloatingActionButton.extended(
+                           label:Text("10"),
                             heroTag: "b10",
                             onPressed: () {
                               setState(() {
@@ -204,7 +218,9 @@ class _AdminPageState extends State<AdminPage> {
                        SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(heroTag: "b11", onPressed: () {
+                        child: FloatingActionButton.extended(
+                           label:Text("11"),
+                          heroTag: "b11", onPressed: () {
                            setState(() {
                             track += 1;
                           });
@@ -212,7 +228,9 @@ class _AdminPageState extends State<AdminPage> {
                          SizedBox(
                         height:60,
                         width:60,
-                        child: FloatingActionButton(heroTag: "b12", onPressed: () {
+                        child: FloatingActionButton.extended(
+                          label:Text("12"),
+                          heroTag: "b12", onPressed: () {
                            setState(() {
                             track += 1;
                           });
@@ -328,9 +346,17 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
                                 title:
                                     Text("Name : " + data['registered_name']),
                                 subtitle: Text("Status : Not Verified"),
-                                trailing: TextButton(
-                                    onPressed: () {},
-                                    child: Text("Authorize"))),
+                                trailing: ButtonBar(
+                                  children: [TextButton(
+                                      onPressed: () {},
+                                      child: Text("Verify")),
+                                      TextButton(
+                                      onPressed: () {},
+                                      child: Text("Authorize"))
+                                      ]
+
+
+                                )),
                           ),
                         ],
                       ),
