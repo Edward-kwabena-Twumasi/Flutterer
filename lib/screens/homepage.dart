@@ -637,7 +637,7 @@ class TripsState extends State<Trips> {
                                                 "/" +
                                                 doc['date']
                                                     .toDate()
-                                                    .day
+                                                    .weekday
                                                     .toString()),
                                         subtitle: Row(
                                           children: [
@@ -949,7 +949,7 @@ class UserInfoClassState extends State<UserInfoClass> {
 
               return Column(
                 children: [
-                  ElevatedButton(onPressed: (){}, child: Text("My bookings"),
+                  ElevatedButton(onPressed: (){}, child: Text("My bookings",style:TextStyle(color:Colors.red) ),
                   style: ButtonStyle(
 textStyle:MaterialStateProperty.all(TextStyle(color:Colors.black )),
                     backgroundColor: MaterialStateProperty.all(Colors.white),
@@ -1104,17 +1104,132 @@ textStyle:MaterialStateProperty.all(TextStyle(color:Colors.black )),
                               return FractionallySizedBox(
                                 heightFactor: 0.9,
                                 child: Center(
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Rate",
+                                          style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 35),
+                                        ),
+                                        FutureBuilder(
+                                            future: FirebaseFirestore.instance
+                                                .collection("appstrings")
+                                                .doc("companynamestrings")
+                                                .get(),
+                                            builder: (context,
+                                                AsyncSnapshot<dynamic> snapshot) {
+                                              if (!snapshot.hasData &&
+                                                  (snapshot.connectionState ==
+                                                      ConnectionState.waiting)) {
+                                                return Center(
+                                                    child: Card(
+                                                        elevation: 8,
+                                                        child: Column(
+                                                          children: [
+                                                            CircularProgressIndicator(),
+                                                            SizedBox(
+                                                              height: 5,
+                                                            )
+                                                          ],
+                                                        )));
+                                              } else if (snapshot.hasError) {
+                                                print(snapshot.error.toString());
+                                                return Text(
+                                                    snapshot.error.toString());
+                                              }
+                                              return ListView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount: snapshot
+                                                      .data["companynamestrings"]
+                                                      .length,
+                                                  itemBuilder:
+                                                      (BuildContext, ndx) {
+                                                    return ListTile(
+                                                        title: Text(snapshot.data["companynamestrings"]
+                                                            [ndx]["name"]),
+                                                        subtitle:  Container(
+                                                          height:50,
+                                                          child: ListView
+                                                                      .builder(
+                                                                          scrollDirection:
+                                                                              Axis
+                                                                                  .horizontal,
+                                                                          itemCount:
+                                                                              stars,
+                                                                          itemBuilder:
+                                                                              (context,
+                                                                                  index) {
+                                                                            return StatefulBuilder(
+                                                                              builder:
+                                                                                  (context, setState) {
+                                                                                return Padding(
+                                                                                  padding: const EdgeInsets.all(8.0),
+                                                                                  child: IconButton(
+                                                                                      onPressed: () {
+                                                                                        if (!starred.contains(index)) {
+                                                                                          setState(() {
+                                                                                            starred.add(index);
+                                  
+                                                                                            // stars;
+                                                                                          });
+                                  
+                                                                                          print(starred.length);
+                                                                                          print(starredcolor);
+                                                                                          print(index);
+                                                                                        } else {
+                                                                                          setState(() {
+                                                                                            starred.remove(index);
+                                                                                            print(starred.length);
+                                                                                            // stars;
+                                                                                            print(starredcolor);
+                                                                                            print(index);
+                                                                                          });
+                                                                                        }
+                                                                                      },
+                                                                                      icon: Icon(Icons.star, size: 30, color: starred.contains(index) ? starredcolor : unstarredcolor)),
+                                                                                );
+                                                                              },
+                                                                            );
+                                                                          }),
+                                                        ));
+                                                  });
+                                            }),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            });
+                      },
+                      label: Text("Rate",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    )),
+                    Expanded(
+                        child: FloatingActionButton.extended(
+                      heroTag: "review",
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        showModalBottomSheet(
+                            backgroundColor: Colors.amber[100],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(50),
+                                    topRight: Radius.circular(50))),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return FractionallySizedBox(
+                                child: SingleChildScrollView(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
                                     children: [
-                                      Text(
-                                        "Rate",
-                                        style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 35),
-                                      ),
+                                      Text("Write review"),
                                       FutureBuilder(
                                           future: FirebaseFirestore.instance
                                               .collection("appstrings")
@@ -1142,128 +1257,27 @@ textStyle:MaterialStateProperty.all(TextStyle(color:Colors.black )),
                                                   snapshot.error.toString());
                                             }
                                             return ListView.builder(
-                                                shrinkWrap: true,
-                                                itemCount: snapshot
-                                                    .data["companynames"]
-                                                    .length,
-                                                itemBuilder:
-                                                    (BuildContext, ndx) {
-                                                  return ListTile(
-                                                      title: snapshot.data[
-                                                              "companynames"]
-                                                          [ndx]["name"],
-                                                      subtitle: Expanded(
-                                                          child: ListTile(
-                                                              title: ListView
-                                                                  .builder(
-                                                                      scrollDirection:
-                                                                          Axis
-                                                                              .horizontal,
-                                                                      itemCount:
-                                                                          stars,
-                                                                      itemBuilder:
-                                                                          (context,
-                                                                              index) {
-                                                                        return StatefulBuilder(
-                                                                          builder:
-                                                                              (context, setState) {
-                                                                            return Padding(
-                                                                              padding: const EdgeInsets.all(8.0),
-                                                                              child: IconButton(
-                                                                                  onPressed: () {
-                                                                                    if (!starred.contains(index)) {
-                                                                                      setState(() {
-                                                                                        starred.add(index);
+                                              shrinkWrap: true,
+                                              itemCount:snapshot.data["companynamestrings"].length,
+                                                itemBuilder: (buildcontext, ndx) {
+                                              return ListTile(
+                                                 title: Text(snapshot.data["companynamestrings"]
+                                                            [ndx]["name"]),
+                                                            subtitle:TextField(
+                                                              keyboardType:TextInputType.multiline,
+decoration: InputDecoration( 
+  labelText: "Type review message",
+  hintText:"review services",
+  border:OutlineInputBorder(
 
-                                                                                        // stars;
-                                                                                      });
-
-                                                                                      print(starred.length);
-                                                                                      print(starredcolor);
-                                                                                      print(index);
-                                                                                    } else {
-                                                                                      setState(() {
-                                                                                        starred.remove(index);
-                                                                                        print(starred.length);
-                                                                                        // stars;
-                                                                                        print(starredcolor);
-                                                                                        print(index);
-                                                                                      });
-                                                                                    }
-                                                                                  },
-                                                                                  icon: Icon(Icons.star, size: 30, color: starred.contains(index) ? starredcolor : unstarredcolor)),
-                                                                            );
-                                                                          },
-                                                                        );
-                                                                      }))));
-                                                });
-                                          }),
+  )
+),
+                                                            )
+                                              );
+                                            });
+                                          })
                                     ],
                                   ),
-                                ),
-                              );
-                            });
-                      },
-                      label: Text("Rate",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    )),
-                    Expanded(
-                        child: FloatingActionButton.extended(
-                      heroTag: "review",
-                      icon: Icon(Icons.edit),
-                      onPressed: () {
-                        showModalBottomSheet(
-                            backgroundColor: Colors.amber[100],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                child: Column(
-                                  children: [
-                                    Text("Write review"),
-                                    FutureBuilder(
-                                        future: FirebaseFirestore.instance
-                                            .collection("appstrings")
-                                            .doc("companynamestrings")
-                                            .get(),
-                                        builder: (context,
-                                            AsyncSnapshot<dynamic> snapshot) {
-                                          if (!snapshot.hasData &&
-                                              (snapshot.connectionState ==
-                                                  ConnectionState.waiting)) {
-                                            return Center(
-                                                child: Card(
-                                                    elevation: 8,
-                                                    child: Column(
-                                                      children: [
-                                                        CircularProgressIndicator(),
-                                                        SizedBox(
-                                                          height: 5,
-                                                        )
-                                                      ],
-                                                    )));
-                                          } else if (snapshot.hasError) {
-                                            print(snapshot.error.toString());
-                                            return Text(
-                                                snapshot.error.toString());
-                                          }
-                                          return ListView.builder(
-                                              itemBuilder: (buildcontext, ndx) {
-                                            return ListTile(
-                                               title: snapshot.data[
-                                                              "companynames"]
-                                                          [ndx]["name"],
-                                                          subtitle:Text("Write review here")
-                                            );
-                                          });
-                                        })
-                                  ],
                                 ),
                               );
                             });

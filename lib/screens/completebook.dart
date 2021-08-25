@@ -40,8 +40,6 @@ class BookState extends State<Book> {
   bool showlist = false;
   bool ischosen = true;
   var accesscode;
-  //var publicKey = 'pk_test_918f2ec666a735ac0d794543140aa9b13ce604d8';
-  //final plugin = PaystackPlugin();
   var seatids = [];
   int unitprice = 10;
   int chosen = 0;
@@ -129,9 +127,12 @@ class BookState extends State<Book> {
                           height: 110,
                           width: 110,
                           child: FloatingActionButton.extended(
-                            label: Text((index + 1).toString()),
+                            label:snapshots.data!["chosen"]
+                                  .contains(index.toString() + "_" + transactor)?Text((index + 1).toString() +"You"): Text((index + 1).toString()),
                             icon: Icon(
                               Icons.chair,
+                              color:snapshots.data!["chosen"]
+                                  .contains(index.toString() + "_" + transactor)?Colors.red:Colors.grey ,
                             ),
                             heroTag: index.toString(),
                             key: Key("Seat numbers" + index.toString()),
@@ -287,7 +288,8 @@ class BookState extends State<Book> {
                                                                   .extended(
                                                                       onPressed:
                                                                           () {
-                                                                        _getAccessCodeFrmInitialization(double.parse(total.toString()), "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351", transactormail!).then(
+                                 _getAccessCodeFrmInitialization(double.parse(total.toString())*100 ,
+                                  "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351", transactormail!).then(
                                                                             (value) {
                                                                           setState(
                                                                               () {
@@ -434,7 +436,7 @@ Future<Initresponse> _getAccessCodeFrmInitialization(
 int match(List<dynamic> arr, String startwt) {
   int on = 0;
   arr.forEach((element) {
-    if (element.toString().contains(startwt)) {
+    if (element.toString().contains(startwt) && element.toString().startsWith(startwt)) {
       on += 1;
       print(on);
     }

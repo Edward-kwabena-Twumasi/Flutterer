@@ -48,6 +48,14 @@ class WebViewpgState extends State<WebViewpg> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        floatingActionButton: FloatingActionButton.extended(
+            label: Text("See Ticket"),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Ticket()),
+              );
+            }),
         appBar: AppBar(
           leading: IconButton(
               onPressed: () {
@@ -61,43 +69,33 @@ class WebViewpgState extends State<WebViewpg> {
           padding: const EdgeInsets.all(10.0),
           child: Card(
             elevation: 5,
-            child: Column(
-              children: [
-                WebView(
-                  debuggingEnabled: true,
-                  initialUrl: widget.pageurl,
-                  javascriptMode: JavascriptMode.unrestricted,
-                  navigationDelegate: (navigation) {
-                    print(navigation.url);
-                    flutterLocalNotificationsPlugin.show(
-                        2,
-                        "New notification",
-                       "Your payment was successful",
-                        NotificationDetails(
-                            android: AndroidNotificationDetails(
-                                Channel.id, Channel.name, Channel.description,
-                                color: Colors.lightBlue,
-                                playSound: true,
-                                icon: '@mipmap/ic_launcher')),
-                        payload: "received");
-                    if (navigation.url == 'https://successful.com') {
-                      verifytransaction(widget.ref,
-                              "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351")
-                          .then((value) {
-                        print(value.status.toString() + " " + value.message);
-                      });
-                      Navigator.of(context).pop();
-                    }
-                    return NavigationDecision.navigate;
-                  },
-                ),
-                FloatingActionButton.extended(onPressed: (){
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Ticket()),
-                  );
-                }, label: Text("See Ticket"))
-              ],
+            child: WebView(
+              debuggingEnabled: true,
+              initialUrl: widget.pageurl,
+              javascriptMode: JavascriptMode.unrestricted,
+              navigationDelegate: (navigation) {
+                print(navigation.url);
+                flutterLocalNotificationsPlugin.show(
+                    1,
+                    "New notification",
+                    "Your payment was successful",
+                    NotificationDetails(
+                        android: AndroidNotificationDetails(
+                            Channel.id, Channel.name, Channel.description,
+                            color: Colors.lightBlue,
+                            playSound: true,
+                            icon: '@mipmap/ic_launcher')),
+                    payload: "received");
+                if (navigation.url == 'https://successful.com') {
+                  verifytransaction(widget.ref,
+                          "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351")
+                      .then((value) {
+                    print(value.status.toString() + " " + value.message);
+                  });
+                  Navigator.of(context).pop();
+                }
+                return NavigationDecision.navigate;
+              },
             ),
           ),
         ),

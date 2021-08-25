@@ -166,6 +166,20 @@ class DashAppState extends State<DashApp> {
     busnumber.addListener(() {
       setState(() {});
     });
+    timecontroller.addListener(() {
+      if (timecontroller.text.isEmpty ||
+          timecontroller.text.split(":")[1].isEmpty ||
+          timecontroller.text.split(":")[1].length < 2) {
+        print("invalid time format");
+      }
+    });
+    datecontroller.addListener(() {
+      if (datecontroller.text.isEmpty ||
+          datecontroller.text.split("-")[2].isEmpty ||
+          datecontroller.text.split("-")[2].length < 2) {
+        print("invalid date format");
+      }
+    });
     List<String> getplaces = [
       "Kumasi",
       "Obuasi",
@@ -217,9 +231,10 @@ class DashAppState extends State<DashApp> {
               ),
               elevation: 0,
               actions: [
-               FloatingActionButton.extended(
-                 label:Text("More"),
-                 onPressed: _openDrawer, icon: Icon(Icons.menu))
+                FloatingActionButton.extended(
+                    label: Text("More"),
+                    onPressed: _openDrawer,
+                    icon: Icon(Icons.menu))
               ],
             ),
             drawer: Drawer(
@@ -748,53 +763,38 @@ class DashAppState extends State<DashApp> {
                   ShedulesInfo(),
                   Container(
                       child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Center(
-                                          child: Text("Statistics"),
-
-                                        ),
-
-                                        SizedBox(),
-
-                                        Card(
-                                          child:Column(
-                                            children:[
-                                              Center(
-                                                child:Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Text("Daily active users"),
-                                                )
-                                              ),
-                                             
-                                              Text("20"),
-                                               Divider(),
-                                                Center(
-                                                child:Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Text("Trips in session"),
-                                                )
-                                              ),
-                                             
-                                              Text("20"),
-                                            Divider(),
-                                             Center(
-                                                child:Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Text("Completed trips"),
-                                                )
-                                              ),
-                                             
-                                              Text("10"),
-
-                                            ]
-                                          )
-                                        )
-
-                                        
-                          ],
+                    child: Column(
+                      children: [
+                        Center(
+                          child: Text("Statistics"),
                         ),
-                      ))
+                        SizedBox(),
+                        Card(
+                            child: Column(children: [
+                          Center(
+                              child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text("Daily active users"),
+                          )),
+                          Text("20"),
+                          Divider(),
+                          Center(
+                              child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text("Trips in session"),
+                          )),
+                          Text("20"),
+                          Divider(),
+                          Center(
+                              child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text("Completed trips"),
+                          )),
+                          Text("10"),
+                        ]))
+                      ],
+                    ),
+                  ))
                 ])));
   }
 }
@@ -825,21 +825,25 @@ class DashboardState extends State<Dashboard> {
                                 padding: const EdgeInsets.all(6.0),
                                 child: ListTile(
                                   leading: Text("1"),
-                                  title: Text("Create paystack account if you dont have one.This will be used to receive payments"),
-                                 subtitle: ElevatedButton(onPressed: (){
-                                Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => RegPayment())
-                        );
-                                  }, child:Text("Register")),
+                                  title: Text(
+                                      "Create paystack account if you dont have one.This will be used to receive payments"),
+                                  subtitle: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    RegPayment()));
+                                      },
+                                      child: Text("Register")),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(6.0),
                                 child: ListTile(
                                   leading: Text("2"),
-                                  title: Text("Mail us your account details on travelmates@gmail.com"),
-                                
+                                  title: Text(
+                                      "Mail us your account details on travelmates@gmail.com"),
                                 ),
                               ),
                             ],
@@ -883,10 +887,10 @@ class DashboardState extends State<Dashboard> {
                           companyname =
                               snapshot.data!.docs[0].get('registered_name');
                         }
-    
+
                         print(companyname);
                       }
-    
+
                       return SingleChildScrollView(
                         child: ListView(
                             shrinkWrap: true,
@@ -898,18 +902,23 @@ class DashboardState extends State<Dashboard> {
                                             Text(doc['registered_name'],
                                                 style: TextStyle(
                                                     fontSize: 30,
-                                                    fontWeight: FontWeight.bold)),
+                                                    fontWeight:
+                                                        FontWeight.bold)),
                                             ListView.builder(
                                                 shrinkWrap: true,
-                                                itemCount: doc['regions'].length,
+                                                itemCount:
+                                                    doc['regions'].length,
                                                 itemBuilder: (context, index) {
                                                   return ExpansionTile(
-                                                      title: Text(
-                                                          doc['regions'][index]),
+                                                      title: Text(doc['regions']
+                                                          [index]),
                                                       children: doc['stations']
                                                                   .length <
                                                               1
-                                                          ? [Text("Add stations")]
+                                                          ? [
+                                                              Text(
+                                                                  "Add stations")
+                                                            ]
                                                           : List.unmodifiable(
                                                               () sync* {
                                                               for (var i = 0;
@@ -921,12 +930,11 @@ class DashboardState extends State<Dashboard> {
                                                                             [i][
                                                                         'region'] ==
                                                                     doc['regions']
-                                                                        [index]) {
+                                                                        [
+                                                                        index]) {
                                                                   yield ListTile(
                                                                     title: Text(
-                                                                        doc['stations']
-                                                                                [
-                                                                                i]
+                                                                        doc['stations'][i]
                                                                             [
                                                                             'name']),
                                                                   );
@@ -941,14 +949,15 @@ class DashboardState extends State<Dashboard> {
                                                         ? doc['drivers'].length
                                                         : 0,
                                                 itemBuilder:
-                                                    (BuildContext context, idx) {
+                                                    (BuildContext context,
+                                                        idx) {
                                                   if (!drivers.contains(
                                                       doc['drivers'][idx]
                                                           ["phone"])) {
                                                     drivers.add(doc['drivers']
                                                         [idx]["phone"]);
                                                   }
-    
+
                                                   return ListTile(
                                                       title: Text(doc['drivers']
                                                           [idx]["name"]),
@@ -964,17 +973,19 @@ class DashboardState extends State<Dashboard> {
                                                         ? doc['vehicles'].length
                                                         : 0,
                                                 itemBuilder:
-                                                    (BuildContext context, idx) {
+                                                    (BuildContext context,
+                                                        idx) {
                                                   if (!vehivles.contains(
                                                       doc['vehicles'][idx]
                                                           ["number"])) {
                                                     vehivles.add(doc['vehicles']
                                                         [idx]["number"]);
                                                   }
-    
+
                                                   return ListTile(
-                                                      title: Text(doc['vehicles']
-                                                          [idx]["name"]),
+                                                      title: Text(
+                                                          doc['vehicles'][idx]
+                                                              ["name"]),
                                                       subtitle: Text(
                                                         doc['vehicles'][idx]
                                                             ["number"],
@@ -1008,7 +1019,8 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
           shrinkWrap: true,
           children: [
             ListTile(
-              title: Text("Sheduled Trips",style:TextStyle(fontWeight:FontWeight.bold,fontSize :30)),
+              title: Text("Sheduled Trips",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
             ),
             StreamBuilder(
               stream:
@@ -1041,35 +1053,41 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
                                   shrinkWrap: true,
                                   children: [
                                     new Text(data['from'] + " > " + data['to']),
-                                    new Text(
-                                        "Vehicle id : " + data['vehid'].toString()),
-                                    new Text(
-                                        "Total seats : " + data['seats'].toString()),
+                                    new Text("Vehicle id : " +
+                                        data['vehid'].toString()),
+                                    new Text("Total seats : " +
+                                        data['seats'].toString()),
                                     new Text("Booked : " +
                                         data['chosen'].length.toString()),
-                                    new Text(
-                                        "Remaining : " + data['seats'].toString()),
+                                    new Text("Remaining : " +
+                                        data['seats'].toString()),
                                     new Text("Take off : " +
                                         data['date']
                                             .toDate()
                                             .toString()
                                             .split(" ")[1]),
-                                            ButtonBar(
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: ElevatedButton(onPressed: (){}, child: Text("Reschedule")),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: ElevatedButton(onPressed: (){}, child: Text("Cancel")),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: ElevatedButton(onPressed: (){}, child: Text("Hold")),
-                                                ),
-                                              ],
-                                            )
+                                    ButtonBar(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ElevatedButton(
+                                              onPressed: () {},
+                                              child: Text("Reschedule")),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ElevatedButton(
+                                              onPressed: () {},
+                                              child: Text("Cancel")),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ElevatedButton(
+                                              onPressed: () {},
+                                              child: Text("Hold")),
+                                        ),
+                                      ],
+                                    )
                                   ],
                                 ),
                               ),
@@ -1130,11 +1148,11 @@ class Route {
   Route(this.name, this.stop, this.pickup);
 }
 
-class RegPayment extends  StatefulWidget {
+class RegPayment extends StatefulWidget {
   // RegPayment({required this.pageurl});
   // final String pageurl;
   @override
- RegPaymentState createState() => RegPaymentState();
+  RegPaymentState createState() => RegPaymentState();
 }
 
 class RegPaymentState extends State<RegPayment> {
@@ -1164,13 +1182,12 @@ class RegPaymentState extends State<RegPayment> {
             elevation: 5,
             child: WebView(
               debuggingEnabled: true,
-              initialUrl:'https://dashboard.paystack.com/#/signup?_id=8a190335-9d74-4014-87db-198e37e1c9a5R',
+              initialUrl:
+                  'https://dashboard.paystack.com/#/signup?_id=8a190335-9d74-4014-87db-198e37e1c9a5R',
               javascriptMode: JavascriptMode.unrestricted,
               navigationDelegate: (navigation) {
-                if (navigation.url == '') {
-                 
-                }
-                 return NavigationDecision.navigate;
+                if (navigation.url == '') {}
+                return NavigationDecision.navigate;
               },
             ),
           ),
