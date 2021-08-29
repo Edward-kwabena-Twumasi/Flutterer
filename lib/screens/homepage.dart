@@ -1,17 +1,14 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:myapp/components/applicationwidgets.dart';
-import 'package:myapp/components/notifications.dart';
-import 'package:myapp/components/notify.dart';
+
+import 'package:myapp/components/userfeatures.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/screens/chatscreen.dart';
 
@@ -40,7 +37,8 @@ void main() {
 List triptype = ["Bus", "Flight", "Train"];
 List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 List<Interoutes> routes = [];
-Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid", routes);
+Seat seat = Seat("busnumber", 30, 20, "from", "to", "tripid", routes, "company",
+    DateTime.now());
 int results = 0;
 Timestamp now = Timestamp.now();
 DateTime time =
@@ -57,8 +55,8 @@ class ButtomNavState extends State<ButtomNav> {
     Column(
       children: [Expanded(child: TabBarDemo()), Primary()],
     ),
-    HelpClass(),
-    Notifies(),
+    Announcements(),
+  
     UserInfoClass(),
   ];
   int currentindx = 0;
@@ -106,9 +104,8 @@ class ButtomNavState extends State<ButtomNav> {
             onTap: swithnav,
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
-              BottomNavigationBarItem(icon: Icon(Icons.help), label: "help"),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications), label: "Notify"),
+              BottomNavigationBarItem(icon: Icon(Icons.help), label: "Announcements"),
+              
               BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
             ]),
         body: pages.elementAt(currentindx),
@@ -178,7 +175,8 @@ class TabBarDemoState extends State<TabBarDemo> {
               height: 900,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+                    image: AssetImage('images/busstation.jpg'),
+                    fit: BoxFit.cover),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -196,7 +194,7 @@ class TabBarDemoState extends State<TabBarDemo> {
               constraints: BoxConstraints.expand(),
               decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage('images/bus1.png'), fit: BoxFit.cover),
+                    image: AssetImage('images/train1.png'), fit: BoxFit.cover),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -215,7 +213,7 @@ class TabBarDemoState extends State<TabBarDemo> {
               constraints: BoxConstraints.expand(),
               decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage('images/train1.png'), fit: BoxFit.cover),
+                    image: AssetImage('images/flight.jpg'), fit: BoxFit.cover),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -225,6 +223,7 @@ class TabBarDemoState extends State<TabBarDemo> {
                       height: 50,
                       margin: EdgeInsets.only(left: 5, right: 5, bottom: 3),
                       child: Card(
+                        color: Colors.transparent,
                         elevation: 7,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20)),
@@ -277,20 +276,25 @@ class LocationsState extends State<Locations> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+      
+        color: Colors.white.withOpacity(0.5),
         child: Center(
             child: Card(
+              color: Colors.white.withOpacity(0.5),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               SearchLocs(
-                  direction: 'from', locations: places, searchcontrol: from),
+                  direction: 'from', locations: places, searchcontrol: from,
+                 
+                  ),
               SearchLocs(
                 direction: 'to',
                 locations: places,
                 searchcontrol: to,
+               
               ),
               InputFields("Travel date", datecontroller, Icons.date_range,
                   TextInputType.datetime),
@@ -419,7 +423,7 @@ class TripsState extends State<Trips> {
     if ((tripday - searchday) == 1) {
       particular = days[7];
     } else {
-      particular = days[tripday % 7];
+      particular = days[tripday];
     }
 
     return particular;
@@ -622,6 +626,9 @@ class TripsState extends State<Trips> {
                                   child: Column(
                                     children: [
                                       ListTile(
+                                        tileColor: doc['seats'] > 0
+                                            ? Colors.lightBlue[50]
+                                            : Colors.pink[100],
                                         leading: Text(doc['date']
                                                     .toDate()
                                                     .toString()
@@ -638,7 +645,13 @@ class TripsState extends State<Trips> {
                                                 doc['date']
                                                     .toDate()
                                                     .weekday
-                                                    .toString()),
+                                                    .toString() +
+                                                getday(
+                                                    doc['date']
+                                                        .toDate()
+                                                        .weekday,
+                                                    widget._tripdata.date
+                                                        .weekday)),
                                         subtitle: Row(
                                           children: [
                                             Expanded(
@@ -667,32 +680,40 @@ class TripsState extends State<Trips> {
                                                   doc['seats'].toString() +
                                                       "  seats remaining"),
                                             )),
-                                        trailing: FloatingActionButton(
-                                            heroTag: "book",
-                                            onPressed: () {
-                                              for (var i = 0;
-                                                  i < doc["interoutes"].length;
-                                                  i++) {
-                                                routes.add(Interoutes(
-                                                    doc["interoutes"][i]
-                                                        ['routename'],
-                                                    doc['interoutes'][i]
-                                                        ['pickup'],
-                                                    doc['interoutes'][i]
-                                                        ['stop']));
-                                              }
-                                              seat.vehid = doc["vehid"];
-                                              seat.from = doc["from"];
-                                              seat.to = doc["to"];
-                                              seat.seats = (doc["seats"] +
-                                                  doc["chosen"].length);
-                                              seat.unitprice = doc["fare"];
-                                              seat.tripid = doc.id.toString();
-                                              print('clicked');
-                                              Navigator.pushNamed(
-                                                  context, "/completebook");
-                                            },
-                                            child: Text("Book")),
+                                        trailing: doc['seats'] > 0
+                                            ? FloatingActionButton(
+                                                heroTag: "book",
+                                                onPressed: () {
+                                                  for (var i = 0;
+                                                      i <
+                                                          doc["interoutes"]
+                                                              .length;
+                                                      i++) {
+                                                    routes.add(Interoutes(
+                                                        doc["interoutes"][i]
+                                                            ['routename'],
+                                                        doc['interoutes'][i]
+                                                            ['pickup'],
+                                                        doc['interoutes'][i]
+                                                            ['stop']));
+                                                  }
+                                                  seat.vehid = doc["vehid"];
+                                                  seat.from = doc["from"];
+                                                  seat.to = doc["to"];
+                                                  seat.seats = (doc["seats"] +
+                                                      doc["chosen"].length);
+                                                  seat.unitprice = doc["fare"];
+                                                  seat.tripid =
+                                                      doc.id.toString();
+                                                  seat.company = doc["company"];
+                                                  print('clicked');
+                                                  Navigator.pushNamed(
+                                                      context, "/completebook");
+                                                },
+                                                child: Text("Book"))
+                                            : TextButton(
+                                                onPressed: () {},
+                                                child: Text("Notify later")),
                                       )
                                     ],
                                   ),
@@ -733,60 +754,22 @@ class TripClass {
       this.triptype);
 }
 
-class HelpClass extends StatelessWidget {
+class Announcements extends StatefulWidget {
+  const Announcements({ Key? key }) : super(key: key);
+
+  @override
+  _AnnouncementsState createState() => _AnnouncementsState();
+}
+
+class _AnnouncementsState extends State<Announcements> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back_ios)),
-        centerTitle: true,
-        title: Text(
-          "Help",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-      ),
-      body: Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              FloatingActionButton.extended(
-                heroTag: "cheap",
-                onPressed: () {
-                  Navigator.pushNamed(context, '/chat');
-                },
-                label: Text("Booking assistant"),
-                icon: Icon(Icons.money),
-              ),
-              SizedBox(height: 40),
-              FloatingActionButton.extended(
-                  heroTag: "where",
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/location');
-                  },
-                  label: Text("Where am i?"),
-                  icon: Icon(Icons.location_on)),
-              SizedBox(height: 40),
-              FloatingActionButton.extended(
-                heroTag: "report",
-                onPressed: () {
-                  Navigator.pushNamed(context, "/reports");
-                },
-                label: Text("Report a matter"),
-                icon: Icon(Icons.report_problem),
-              ),
-              SizedBox(height: 40),
-            ]),
-      ),
+    return Container(
+      color: Colors.amber[50],
+      child:Text("Announcements Appear hear") ,
     );
   }
 }
-
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({Key? key, this.restorationId}) : super(key: key);
 
@@ -877,7 +860,11 @@ class UserInfoClass extends StatefulWidget {
 class UserInfoClassState extends State<UserInfoClass> {
   Color starredcolor = Colors.red;
   Color unstarredcolor = Colors.grey;
+  int starindex = 0;
   int stars = 5;
+  int rateval = 5;
+  TextEditingController reviewmsg = TextEditingController();
+  TextEditingController newname = TextEditingController();
   bool fetch = true;
   var starred = [];
   var healthinfo = [];
@@ -922,376 +909,95 @@ class UserInfoClassState extends State<UserInfoClass> {
         ),
         elevation: 0,
       ),
+      
       body: SingleChildScrollView(
-        child: FutureBuilder(
-            future: FirebaseFirestore.instance
-                .collection("users")
-                .doc(FirebaseAuth.instance.currentUser!.uid)
-                .get(),
-            builder: (context, AsyncSnapshot<dynamic> snapshot) {
-              if (!snapshot.hasData &&
-                  (snapshot.connectionState == ConnectionState.waiting)) {
-                return Center(
-                    child: Card(
-                        elevation: 8,
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(
-                              height: 5,
+        child: Column(
+          children: [
+             Features(),
+            StreamBuilder(
+               stream: FirebaseFirestore.instance
+                    .collection("users")
+                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                  if (!snapshot.hasData &&
+                      (snapshot.connectionState == ConnectionState.waiting)) {
+                    return Center(
+                        child: Card(
+                            elevation: 8,
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text("fetching info")
+                              ],
+                            )));
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error);
+                  }
+
+                  return Column(
+                    children: [
+                      
+                      
+                      Padding(
+                          padding: EdgeInsets.all(12),
+                          child: ListView(shrinkWrap: true, children: [
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)),
+                              elevation: 10,
+                              child: ListTile(
+                                  title: Text("Username"),
+                                  subtitle: Text("Unknown"),
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        AlertDialog(
+                                          elevation: 10,
+                                          title: Text("Enter new name here"),
+                                          content: InputFields(
+                                              "new name",
+                                              newname,
+                                              Icons.new_label,
+                                              TextInputType.text),
+                                        );
+                                      },
+                                      icon: Icon(Icons.edit_attributes))),
                             ),
-                            Text("fetching info")
-                          ],
-                        )));
-              } else if (snapshot.hasError) {
-                print(snapshot.error);
-              }
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)),
+                              elevation: 10,
+                              child: ListTile(
+                                  title: Text("Email"),
+                                  subtitle: Text(snapshot.data["contact"]["email"]),
+                                  trailing: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.edit_attributes))),
+                            ),
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)),
+                              elevation: 10,
+                              child: ListTile(
+                                  title: Text("Phone"),
+                                  subtitle: Text(snapshot.data["contact"]["phone"]),
+                                  trailing: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.edit_attributes))),
+                            ),
+                          ])),
 
-              return Column(
-                children: [
-                  ElevatedButton(onPressed: (){}, child: Text("My bookings",style:TextStyle(color:Colors.red) ),
-                  style: ButtonStyle(
-textStyle:MaterialStateProperty.all(TextStyle(color:Colors.black )),
-                    backgroundColor: MaterialStateProperty.all(Colors.white),
-                   side:MaterialStateProperty.all(BorderSide(
-                     color:Colors.green,style: BorderStyle.solid
-                   ))
-                  ),
-                  ),
-                   Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(150),
-                        child: Container(
-                            color: Colors.amber,
-                            height: 100,
-                            width: 100,
-                            child: Stack(children: [
-                              Image.network("imgUrl!",
-                                  cacheHeight: 120, cacheWidth: 120),
-                              Positioned(
-                                  right: 5,
-                                  bottom: 2,
-                                  child: DecoratedBox(
-                                    decoration:
-                                        BoxDecoration(shape: BoxShape.circle),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: IconButton(
-                                          onPressed: () async {
-                                            final picker = ImagePicker();
-                                            XFile? image;
-                                            image = await picker.pickImage(
-                                                source: ImageSource.gallery);
-
-                                            var file = File(image!.path);
-
-                                            // ignore: unnecessary_null_comparison
-                                            if (file != null) {
-                                              var snapshot =
-                                                  await FirebaseStorage.instance
-                                                      .ref(FirebaseAuth.instance
-                                                              .currentUser!.uid
-                                                              .substring(0, 5) +
-                                                          "profile")
-                                                      .child("profpic")
-                                                      .putFile(file)
-                                                      .whenComplete(() {
-                                                setState(() {
-                                                  notdone = false;
-                                                });
-                                                print("done");
-                                              });
-                                              var geturl = await snapshot.ref
-                                                  .getDownloadURL();
-                                              setState(() {
-                                                imgUrl = geturl;
-                                              });
-                                            }
-                                          },
-                                          icon: Icon(Icons.photo_camera)),
-                                    ),
-                                  ))
-                            ])),
-                      ),
-                    ),
-                  
-                  Center(
-                      child: ExpansionTile(title: Text("Health Information"))),
-                  Padding(
-                      padding: EdgeInsets.all(12),
-                      child: ListView(shrinkWrap: true, children: [
-                        Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          elevation: 10,
-                          child: ListTile(
-                              title: Text("Name"),
-                              subtitle: Text(snapshot.data["full_name"]),
-                              trailing: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.edit_attributes))),
-                        ),
-                        Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          elevation: 10,
-                          child: ListTile(
-                              title: Text("Email"),
-                              subtitle: Text(snapshot.data["contact"]["email"]),
-                              trailing: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.edit_attributes))),
-                        ),
-                        Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          elevation: 10,
-                          child: ListTile(
-                              title: Text("Phone"),
-                              subtitle: Text(snapshot.data["contact"]["phone"]),
-                              trailing: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.edit_attributes))),
-                        ),
-                        Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
-                          elevation: 10,
-                          child: ListTile(
-                              title: Text("Address"),
-                              subtitle: ExpansionTile(
-                                  title: Text("Adress info"),
-                                  children: [
-                                    ListTile(
-                                        title: Text("Region"),
-                                        subtitle: Text(
-                                            snapshot.data["address"]["region"]),
-                                        trailing: IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.edit_attributes))),
-                                    ListTile(
-                                        title: Text("City"),
-                                        subtitle: Text(
-                                            snapshot.data["address"]["city"]),
-                                        trailing: IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.edit_attributes))),
-                                    ListTile(
-                                        title: Text("House Address"),
-                                        subtitle: Text(
-                                            snapshot.data["address"]["house"]),
-                                        trailing: IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.edit_attributes))),
-                                  ])),
-                        ),
-                      ])),
-                  Row(children: [
-                    Expanded(
-                        child: FloatingActionButton.extended(
-                      heroTag: "rate",
-                      icon: Icon(Icons.star),
-                      onPressed: () {
-                        showModalBottomSheet(
-                            backgroundColor: Colors.amber[100],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.9,
-                                child: Center(
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "Rate",
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 35),
-                                        ),
-                                        FutureBuilder(
-                                            future: FirebaseFirestore.instance
-                                                .collection("appstrings")
-                                                .doc("companynamestrings")
-                                                .get(),
-                                            builder: (context,
-                                                AsyncSnapshot<dynamic> snapshot) {
-                                              if (!snapshot.hasData &&
-                                                  (snapshot.connectionState ==
-                                                      ConnectionState.waiting)) {
-                                                return Center(
-                                                    child: Card(
-                                                        elevation: 8,
-                                                        child: Column(
-                                                          children: [
-                                                            CircularProgressIndicator(),
-                                                            SizedBox(
-                                                              height: 5,
-                                                            )
-                                                          ],
-                                                        )));
-                                              } else if (snapshot.hasError) {
-                                                print(snapshot.error.toString());
-                                                return Text(
-                                                    snapshot.error.toString());
-                                              }
-                                              return ListView.builder(
-                                                  shrinkWrap: true,
-                                                  itemCount: snapshot
-                                                      .data["companynamestrings"]
-                                                      .length,
-                                                  itemBuilder:
-                                                      (BuildContext, ndx) {
-                                                    return ListTile(
-                                                        title: Text(snapshot.data["companynamestrings"]
-                                                            [ndx]["name"]),
-                                                        subtitle:  Container(
-                                                          height:50,
-                                                          child: ListView
-                                                                      .builder(
-                                                                          scrollDirection:
-                                                                              Axis
-                                                                                  .horizontal,
-                                                                          itemCount:
-                                                                              stars,
-                                                                          itemBuilder:
-                                                                              (context,
-                                                                                  index) {
-                                                                            return StatefulBuilder(
-                                                                              builder:
-                                                                                  (context, setState) {
-                                                                                return Padding(
-                                                                                  padding: const EdgeInsets.all(8.0),
-                                                                                  child: IconButton(
-                                                                                      onPressed: () {
-                                                                                        if (!starred.contains(index)) {
-                                                                                          setState(() {
-                                                                                            starred.add(index);
-                                  
-                                                                                            // stars;
-                                                                                          });
-                                  
-                                                                                          print(starred.length);
-                                                                                          print(starredcolor);
-                                                                                          print(index);
-                                                                                        } else {
-                                                                                          setState(() {
-                                                                                            starred.remove(index);
-                                                                                            print(starred.length);
-                                                                                            // stars;
-                                                                                            print(starredcolor);
-                                                                                            print(index);
-                                                                                          });
-                                                                                        }
-                                                                                      },
-                                                                                      icon: Icon(Icons.star, size: 30, color: starred.contains(index) ? starredcolor : unstarredcolor)),
-                                                                                );
-                                                                              },
-                                                                            );
-                                                                          }),
-                                                        ));
-                                                  });
-                                            }),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            });
-                      },
-                      label: Text("Rate",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    )),
-                    Expanded(
-                        child: FloatingActionButton.extended(
-                      heroTag: "review",
-                      icon: Icon(Icons.edit),
-                      onPressed: () {
-                        showModalBottomSheet(
-                            backgroundColor: Colors.amber[100],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      Text("Write review"),
-                                      FutureBuilder(
-                                          future: FirebaseFirestore.instance
-                                              .collection("appstrings")
-                                              .doc("companynamestrings")
-                                              .get(),
-                                          builder: (context,
-                                              AsyncSnapshot<dynamic> snapshot) {
-                                            if (!snapshot.hasData &&
-                                                (snapshot.connectionState ==
-                                                    ConnectionState.waiting)) {
-                                              return Center(
-                                                  child: Card(
-                                                      elevation: 8,
-                                                      child: Column(
-                                                        children: [
-                                                          CircularProgressIndicator(),
-                                                          SizedBox(
-                                                            height: 5,
-                                                          )
-                                                        ],
-                                                      )));
-                                            } else if (snapshot.hasError) {
-                                              print(snapshot.error.toString());
-                                              return Text(
-                                                  snapshot.error.toString());
-                                            }
-                                            return ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount:snapshot.data["companynamestrings"].length,
-                                                itemBuilder: (buildcontext, ndx) {
-                                              return ListTile(
-                                                 title: Text(snapshot.data["companynamestrings"]
-                                                            [ndx]["name"]),
-                                                            subtitle:TextField(
-                                                              keyboardType:TextInputType.multiline,
-decoration: InputDecoration( 
-  labelText: "Type review message",
-  hintText:"review services",
-  border:OutlineInputBorder(
-
-  )
-),
-                                                            )
-                                              );
-                                            });
-                                          })
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
-                      },
-                      label: Text("Rreview",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                    ))
-                  ]),
-
-                ],
-              );
-            }),
+                         
+                      
+                    ],
+                  );
+                }),
+                
+          ],
+        ),
       ),
     );
   }
@@ -1305,8 +1011,10 @@ class Seat {
   String to;
   String tripid;
   List<Interoutes> routes;
+  String company;
+  DateTime time;
   Seat(this.vehid, this.seats, this.unitprice, this.from, this.to, this.tripid,
-      this.routes);
+      this.routes, this.company, this.time);
 }
 
 class Interoutes {
@@ -1337,6 +1045,7 @@ class _PrimaryState extends State<Primary> {
   @override
   Widget build(BuildContext context) {
     return Container(
+
         decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.white, Colors.green.withOpacity(0.7)],
@@ -1410,15 +1119,8 @@ class _PrimaryState extends State<Primary> {
                               fontWeight: FontWeight.bold,
                               color: Colors.black)))),
             ),
-            Padding(
-                padding: EdgeInsets.all(10),
-                child: FloatingActionButton.extended(
-                    heroTag: "seemap",
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/map");
-                    },
-                    label: Text("Map View"))),
           ],
         ));
   }
 }
+

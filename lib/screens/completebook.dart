@@ -10,11 +10,12 @@ import 'package:myapp/screens/homepage.dart';
 import 'package:http/http.dart' as http;
 import 'package:myapp/screens/payweb.dart';
 
+Ticketinfo ticket = Ticketinfo("from", "to", "busid", "tripid", time, [], 100,
+    "booker", "pickup", "company");
+
 void main() {
   runApp(Booking());
 }
-
-List<Ticket> booking = [];
 
 class Booking extends StatelessWidget {
   Widget build(BuildContext context) {
@@ -33,7 +34,7 @@ class Book extends StatefulWidget {
 }
 
 class BookState extends State<Book> {
-  String message = "";
+  String pickup = "";
   bool bookingsuccess = false;
   String transactor = FirebaseAuth.instance.currentUser!.uid;
   String? transactormail = FirebaseAuth.instance.currentUser!.email;
@@ -74,9 +75,11 @@ class BookState extends State<Book> {
                 backgroundColor: Colors.white,
                 centerTitle: true,
                 title: ListTile(
-                  subtitle: Text(message,
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold)),
+                  subtitle: Center(
+                    child: Text("Seats chosen must be booked immediately",
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold)),
+                  ),
                   title: Text(
                     "Complete booking",
                     style: TextStyle(
@@ -127,12 +130,16 @@ class BookState extends State<Book> {
                           height: 110,
                           width: 110,
                           child: FloatingActionButton.extended(
-                            label:snapshots.data!["chosen"]
-                                  .contains(index.toString() + "_" + transactor)?Text((index + 1).toString() +"You"): Text((index + 1).toString()),
+                            label: snapshots.data!["chosen"].contains(
+                                    index.toString() + "_" + transactor)
+                                ? Text((index + 1).toString() + "You")
+                                : Text((index + 1).toString()),
                             icon: Icon(
                               Icons.chair,
-                              color:snapshots.data!["chosen"]
-                                  .contains(index.toString() + "_" + transactor)?Colors.red:Colors.grey ,
+                              color: snapshots.data!["chosen"].contains(
+                                      index.toString() + "_" + transactor)
+                                  ? Colors.red
+                                  : Colors.white,
                             ),
                             heroTag: index.toString(),
                             key: Key("Seat numbers" + index.toString()),
@@ -288,8 +295,7 @@ class BookState extends State<Book> {
                                                                   .extended(
                                                                       onPressed:
                                                                           () {
-                                 _getAccessCodeFrmInitialization(double.parse(total.toString())*100 ,
-                                  "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351", transactormail!).then(
+                                                                        _getAccessCodeFrmInitialization(double.parse(total.toString()) * 100, "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351", transactormail!).then(
                                                                             (value) {
                                                                           setState(
                                                                               () {
@@ -297,9 +303,41 @@ class BookState extends State<Book> {
                                                                                 "/" +
                                                                                 value.data["access_code"].toString();
                                                                           });
+
+                                                                          ticket.from = widget
+                                                                              .seat
+                                                                              .from;
+                                                                          ticket.to = widget
+                                                                              .seat
+                                                                              .to;
+                                                                          ticket.booker =
+                                                                              transactor;
+                                                                          ticket.time = widget
+                                                                              .seat
+                                                                              .time;
+                                                                          ticket.tripid = widget
+                                                                              .seat
+                                                                              .tripid;
+                                                                          ticket.vehid = widget
+                                                                              .seat
+                                                                              .vehid;
+                                                                          ticket.company = widget
+                                                                              .seat
+                                                                              .company;
+                                                                          ticket.total =
+                                                                              total * 100;
+                                                                          ticket.chosen =
+                                                                              seatids;
+                                                                          ticket.pickup =
+                                                                              pickup;
                                                                           Navigator.push(
                                                                               context,
-                                                                              MaterialPageRoute(builder: (context) => WebViewpg(pageurl: accesscode, ref: value.data["reference"])));
+                                                                              MaterialPageRoute(
+                                                                                  builder: (context) => WebViewpg(
+                                                                                        pageurl: accesscode,
+                                                                                        ref: value.data["reference"],
+                                                                                        ticketinfo: ticket,
+                                                                                      )));
                                                                           print(accesscode +
                                                                               " " +
                                                                               value.data["authorization_url"].toString());
@@ -344,7 +382,12 @@ class BookState extends State<Book> {
                               padding: const EdgeInsets.all(8.0),
                               child: GestureDetector(
                                   onTap: () {
-                                    print(widget.seat.routes[index].name + "  is your pickup point");
+                                    setState(() {
+                                      pickup = widget.seat.routes[index].name;
+                                    });
+                                    
+                                    print(widget.seat.routes[index].name +
+                                        "  is your pickup point");
                                   },
                                   child: Text(widget.seat.routes[index].name)),
                             );
@@ -385,17 +428,19 @@ class BookState extends State<Book> {
   }
 }
 
-class Ticket {
+class Ticketinfo {
   String booker;
   String tripid;
-  String busid;
+  String vehid;
   String from;
   String to;
   List<dynamic> chosen;
   DateTime? time;
   int total;
-  Ticket(this.from, this.to, this.busid, this.tripid, this.time, this.chosen,
-      this.total, this.booker);
+  String pickup;
+  String company;
+  Ticketinfo(this.from, this.to, this.vehid, this.tripid, this.time,
+      this.chosen, this.total, this.booker, this.pickup, this.company);
 }
 
 class Initresponse {
@@ -436,7 +481,8 @@ Future<Initresponse> _getAccessCodeFrmInitialization(
 int match(List<dynamic> arr, String startwt) {
   int on = 0;
   arr.forEach((element) {
-    if (element.toString().contains(startwt) && element.toString().startsWith(startwt)) {
+    if (element.toString().contains(startwt) &&
+        element.toString().startsWith(startwt)) {
       on += 1;
       print(on);
     }

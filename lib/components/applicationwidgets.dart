@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -71,10 +72,9 @@ class InputFields extends StatelessWidget {
 Widget niceChips(IconData icondata, String text, void Function() pressed) {
   bool selected = false;
   return InputChip(
-    backgroundColor:Colors.red[50] ,
+    backgroundColor: Colors.red[50],
     side: BorderSide.none,
-    shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(25)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
     selected: selected,
     selectedColor: Colors.red[50],
     label: Text(
@@ -83,8 +83,7 @@ Widget niceChips(IconData icondata, String text, void Function() pressed) {
     ),
     avatar: Icon(icondata),
     labelPadding: EdgeInsets.all(8),
-    onPressed: () {      
-    },
+    onPressed: () {},
   );
 }
 
@@ -96,7 +95,6 @@ class MenuButton extends StatefulWidget {
 
   @override
   State<MenuButton> createState() => _MenuButtonState(regioncontroller);
-
 }
 
 /// This is the private State class that goes with MyStatefulWidget.
@@ -179,17 +177,18 @@ class _MenuButtonState extends State<MenuButton> {
 
 TripClass onetrip =
     TripClass("Obuasi", "Obuasi", DateTime.now(), DateTime.now(), "normal", "");
-List<String> places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
+List places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 
 class SearchLocs extends StatefulWidget {
   SearchLocs(
       {required this.direction,
       required this.locations,
-      required this.searchcontrol});
+      required this.searchcontrol,
+     });
   final TextEditingController searchcontrol;
-
+  
   final String direction;
-  final List<String> locations;
+  final List locations;
   @override
   SearchLocsState createState() => SearchLocsState();
 }
@@ -205,22 +204,29 @@ class SearchLocsState extends State<SearchLocs> {
     super.initState();
 
     widget.searchcontrol.addListener(() {
+      
+
       // widget.searchcontrol.text = widget.searchcontrol.text.substring(0,).toUpperCase()+
       // widget.searchcontrol.text.substring(1);
       suggestions = [];
-      for (var i in places) {
-        if ((i.toLowerCase().startsWith(widget.searchcontrol.text.toLowerCase()) ||
-            i.toLowerCase().contains( widget.searchcontrol.text.toLowerCase()))) {
+      for (var i in widget.locations) {
+        if ((i
+                .toLowerCase()
+                .startsWith(widget.searchcontrol.text.toLowerCase()) ||
+            i
+                .toLowerCase()
+                .contains(widget.searchcontrol.text.toLowerCase()))) {
           suggestions.add(i);
-        }
+        } else
+          suggestions.remove(i);
       }
     });
 
     focusNode.addListener(() {
-      if (focusNode.hasFocus) {
+      if (focusNode.hasFocus ) {
         this.myoverlay = createOverlay();
         Overlay.of(context)!.insert(this.myoverlay!);
-      } else {
+      } else  {
         myoverlay!.remove();
       }
     });
@@ -238,32 +244,43 @@ class SearchLocsState extends State<SearchLocs> {
               width: size.width,
               child: Material(
                 elevation: 4.0,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: suggestions.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                        shape: RoundedRectangleBorder(),
-                        key: Key(index.toString()),
-                        onTap: () {
-                          this.myoverlay!.remove();
-                          print(index);
-                          mytripobj[widget.direction] = suggestions[index];
-                          widget.searchcontrol.text = suggestions[index];
-
-                          widget.direction == "From"
-                              ? onetrip.fromLoc = widget.searchcontrol.text
-                              : onetrip.toLoc = widget.searchcontrol.text;
-                          suggestions = [];
-                          print(suggestions);
-                          print(mytripobj);
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: suggestions.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: ListTile(
+                                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(12) ),
+                                key: Key(index.toString()),
+                                onTap: () {
+                                  this.myoverlay!.remove();
+                
+                                  
+                                  print(index);
+                                  mytripobj[widget.direction] = suggestions[index];
+                                  widget.searchcontrol.text = suggestions[index];
+                
+                                  widget.direction == "From"
+                                      ? onetrip.fromLoc = widget.searchcontrol.text
+                                      : onetrip.toLoc = widget.searchcontrol.text;
+                                  suggestions = [];
+                                  print(suggestions);
+                                  print(mytripobj);
+                                },
+                                title: Text(
+                                  suggestions[index],
+                                  style: TextStyle(
+                                      color: Colors.black, fontWeight: FontWeight.w400),
+                                )),
+                          );
                         },
-                        title: Text(
-                          suggestions[index],
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w300),
-                        ));
-                  },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ));
@@ -272,7 +289,7 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   void dispose() {
     super.dispose();
-    myoverlay?.remove();
+   
   }
 
   List<String> suggestions = [];
@@ -289,6 +306,7 @@ class SearchLocsState extends State<SearchLocs> {
                 borderSide: BorderSide.none)),
         controller: widget.searchcontrol,
         focusNode: this.focusNode,
+        
       ),
     );
   }
@@ -317,29 +335,34 @@ class _OptionButtonState extends State<OptionButton> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      title: Center(
-        child: SizedBox(
-          height: 40,
-          child: Consumer<UserState>(
-            builder: (context, value, child) => DropdownButton<String>(
-              value: widget.dropdownValue,
-              icon: const Icon(Icons.pin_drop_outlined),
-              iconSize: 34,
-              elevation: 16,
-              style: const TextStyle(color: Colors.black),
-              underline: Container(
-                height: 1,
+    return Container(
+      height: 50,
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: ListTile(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          title: Center(
+            child: SizedBox(
+              height: 40,
+              child: DropdownButton<String>(
+                value: widget.dropdownValue,
+                icon: const Icon(Icons.pin_drop_outlined),
+                iconSize: 34,
+                elevation: 16,
+                style: const TextStyle(color: Colors.black),
+                underline: Container(
+                  height: 1,
+                ),
+                onChanged: widget.onchange,
+                items: widget.options
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
               ),
-              onChanged: widget.onchange,
-              items:
-                  widget.options.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
             ),
           ),
         ),
@@ -475,6 +498,45 @@ class _PolicyState extends State<Policy> {
   }
 }
 
+class Paymenu extends StatefulWidget {
+  const Paymenu({Key? key}) : super(key: key);
+
+  @override
+  _PaymenuState createState() => _PaymenuState();
+}
+
+class _PaymenuState extends State<Paymenu> {
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
+    return Container(
+        height: height * 0.6,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Column(children: [
+              Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: FloatingActionButton.extended(
+                      onPressed: () {},
+                      label: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text("Payment History"),
+                      ))),
+              Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: FloatingActionButton.extended(
+                      onPressed: () {},
+                      label: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text("Pay for Luggage"),
+                      ))),
+            ]),
+          ),
+        ));
+  }
+}
+
 class Compareprice extends StatefulWidget {
   const Compareprice({Key? key}) : super(key: key);
 
@@ -558,7 +620,7 @@ class _FindateTripsState extends State<FindateTrips> {
 }
 
 class Offers extends StatefulWidget {
-  const Offers({ Key? key }) : super(key: key);
+  const Offers({Key? key}) : super(key: key);
 
   @override
   _OffersState createState() => _OffersState();
@@ -569,9 +631,89 @@ class _OffersState extends State<Offers> {
   Widget build(BuildContext context) {
     return Container(
       child: Column(
-        children: [
-          Text("Offers appear here")
-        ],
+        children: [Text("Offers appear here")],
+      ),
+    );
+  }
+}
+
+class Mybooks extends StatefulWidget {
+  const Mybooks({Key? key}) : super(key: key);
+
+  @override
+  _MybooksState createState() => _MybooksState();
+}
+
+class _MybooksState extends State<Mybooks> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: DecoratedBox(
+        decoration:BoxDecoration(
+          color:Colors.pink[50]
+        ),
+        child: Center(
+            child: SingleChildScrollView(
+                child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color:Colors.white
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("My bookings",
+                          style: TextStyle(color: Colors.lightBlue)),
+                    ),
+                  )),
+            ),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("bookings")
+                    .where("transactor",
+                        isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData &&
+                      (snapshot.connectionState == ConnectionState.waiting)) {
+                    return Center(
+                        child: Card(
+                            elevation: 8,
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(
+                                  height: 5,
+                                )
+                              ],
+                            )));
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error.toString());
+                    return Text(snapshot.error.toString());
+                  }
+                  return snapshot.data!.size < 1
+                      ? Text("No booking history")
+                      : ListView(
+                          shrinkWrap: true,
+                          children: snapshot.data!.docs.map((doc) {
+                            return ExpansionTile(
+                                children: [],
+                                title: Text(
+                                   doc["date"].toDate().difference(DateTime.now()).inDays >0?"Starting on"+ doc["date"].toDate().toString():
+                                   "Happened  on"+ doc["date"].toDate().toString(),
+                                ),
+                                subtitle: ButtonBar(children: [
+                                  TextButton(
+                                      onPressed: () {}, child: Text("Cancel")),
+                                  TextButton(onPressed: () {}, child: Text("Sell")),
+                                ]));
+                          }).toList());
+                })
+          ],
+        ))),
       ),
     );
   }

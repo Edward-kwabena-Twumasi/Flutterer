@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+
+import 'homepage.dart';
 //import 'package:geocoding/geocoding.dart';
 
 void main() => runApp(Mymap());
@@ -25,9 +27,12 @@ class _MymapState extends State<Mymap> {
             elevation: 0,
             leading: IconButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => UserInfoClass()),
+                  );
                 },
-                icon: Icon(Icons.arrow_back_ios)),
+                icon: Icon(Icons.arrow_back_ios, color: Colors.black)),
             backgroundColor: Colors.transparent,
           ),
           body: Showmap()),
@@ -53,70 +58,72 @@ class _ShowmapState extends State<Showmap> {
   Future<List<Placemark>> getplacmark(double lat, double long) async {
     return await GeocodingPlatform.instance.placemarkFromCoordinates(lat, long);
   }
-  
+
+  Future<List<dynamic>> stationcity() async {
+    return [];
+  }
+
   String city = "";
   double lat = 0.0, long = 0.0;
   bool loading = true;
   LatLng _center = LatLng(50, 50);
   @override
   void initState() {
+    super.initState();
+
     getposition().then((value) {
       setState(() {
         _center = LatLng(value.latitude, value.longitude);
         lat = value.latitude;
         long = value.longitude;
-
-        
       });
       getplacmark(value.latitude, value.longitude).then((val) {
         setState(() {
-          city = val.first.name! +" , "+val.first.locality!;
+          city = val.first.name! + " , " + val.first.locality!;
           loading = false;
         });
       });
     });
     // print(_center);
-    super.initState();
   }
 
-  late GoogleMapController mapController;
+  //late GoogleMapController mapController;
 
   void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    mapController.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: LatLng(lat, long),
-        zoom: 18
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(target: _center, zoom: 22),
+    ));
+    setState(() {
+      Marker destinationMarker = Marker(
+        markerId: MarkerId("Current loc"),
+        position: LatLng(lat, long),
+        infoWindow: InfoWindow(
+          title: city,
+          snippet: "you are currently here",
         ),
-        
-      )
-    
-    );
-    setState((){
-   
-    Marker destinationMarker = Marker(
-      markerId: MarkerId("Current loc"),
-      position: LatLng(lat, long),
-      infoWindow: InfoWindow(
-        title: city,
-        snippet: "you are currently here",
-      ),
-      icon: BitmapDescriptor.defaultMarker,
-    );
-    markers.add(destinationMarker);
-     });
+        icon: BitmapDescriptor.defaultMarker,
+      );
+      markers.add(destinationMarker);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return loading
-        ? CircularProgressIndicator()
+        ? Center(
+            child: Column(
+              children: [
+                CircularProgressIndicator(),
+                Text("Loading map view...")
+              ],
+            ),
+          )
         : GoogleMap(
             mapType: MapType.normal,
             onMapCreated: _onMapCreated,
             initialCameraPosition: CameraPosition(
               target: _center,
-              zoom: 14.0,
+              zoom: 19.0,
             ),
             markers: Set<Marker>.from(markers),
           );

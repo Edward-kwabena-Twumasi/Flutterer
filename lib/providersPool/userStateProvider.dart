@@ -89,17 +89,16 @@ class UserState extends ChangeNotifier {
   }
 
   userAdded isadded = userAdded.successful;
-  Future<void> addUser(String fullname, String email, String phone, String city,
-      String house, String region) {
+  Future<void> addUser( String email, String phone) {
     //FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference users = FirebaseFirestore.instance.collection('users');
     // Call the user's CollectionReference to add a new user
 
     return users.doc(FirebaseAuth.instance.currentUser!.uid).set({
-      'full_name': fullname,
-      'contact': {'email': email, 'phone': phone},
-      'address': {'region': region, 'city': city, 'house': house},
-      'healthinfo': [],
+
+      'email': email,
+      'phone': phone,
+     
 
       // 42
     }).then((value) {

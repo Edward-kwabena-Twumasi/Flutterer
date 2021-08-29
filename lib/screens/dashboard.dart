@@ -26,6 +26,7 @@ TripClass onetrip = TripClass(
 String companyname = "";
 List<String> drivers = ["Driver id"];
 List<String> vehivles = ["Vehicle id"];
+List destinations = [];
 
 class DashApp extends StatefulWidget {
   final String companytype;
@@ -247,16 +248,6 @@ class DashAppState extends State<DashApp> {
                     IconButton(
                         onPressed: _closeDrawer,
                         icon: Icon(Icons.arrow_back_ios)),
-                    FloatingActionButton.extended(
-                      onPressed: () {
-                        Navigator.pushNamed(context, "/schedules");
-                      },
-                      label: Text(
-                        "See shedules",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 30),
-                      ),
-                    ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextButton(
@@ -412,348 +403,364 @@ class DashAppState extends State<DashApp> {
                         },
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            floatingActionButton: Stack(
-              children: [
-                Positioned(
-                  right: 25,
-                  bottom: 5,
-                  child: FloatingActionButton.extended(
-                      heroTag: "addregion",
-                      onPressed: () {
-                        showModalBottomSheet(
-                            barrierColor: Colors.indigo[300],
-                            backgroundColor: Colors.indigo[200],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.95,
-                                child: SingleChildScrollView(
-                                    child: Column(
-                                  children: [
-                                    MenuButton(
-                                        regioncontroller: regioncontroller),
-                                    Text(showregions),
-                                    FloatingActionButton.extended(
-                                        onPressed: () {
-                                          selectregions
-                                              .add(regioncontroller.text);
-                                          showregions = '';
-                                          for (var i in selectregions) {
-                                            showregions += i.toString() + " ,";
-                                          }
-                                          setState(() {
-                                            //showregions;
-                                          });
-
-                                          print(showregions);
-                                        },
-                                        label: Icon(Icons.add)),
-                                    TextButton(
-                                        onPressed: () {
-                                          FirebaseFirestore.instance
-                                              .collection('companies')
-                                              .doc(widget.companytype)
-                                              .collection(
-                                                  'Registered Companies')
-                                              .doc(FirebaseAuth
-                                                  .instance.currentUser!.uid)
-                                              .update({
-                                            "regions": FieldValue.arrayUnion(
-                                                selectregions)
-                                          }).then((value) => print("Hello"));
-                                        },
-                                        child: Text("Submit"))
-                                  ],
-                                )),
-                              );
-                            });
-                      },
-                      label: Text("Add region")),
-                ),
-                Positioned(
-                  right: 15,
-                  bottom: 55,
-                  child: FloatingActionButton.extended(
-                      heroTag: "addstation",
-                      onPressed: () {
-                        showModalBottomSheet(
-                            barrierColor: Colors.indigo[300],
-                            backgroundColor: Colors.indigo[200],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.95,
-                                child: Form(
-                                  key: form1,
+                    FloatingActionButton.extended(
+                        heroTag: "addregion",
+                        onPressed: () {
+                          showModalBottomSheet(
+                              barrierColor: Colors.indigo[300],
+                              backgroundColor: Colors.indigo[200],
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(10),
+                                      topRight: Radius.circular(10))),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return FractionallySizedBox(
+                                  heightFactor: 0.5,
                                   child: SingleChildScrollView(
-                                    child: Column(children: [
-                                      Padding(
-                                          padding: EdgeInsets.all(10),
-                                          child: Text("Station Details",
-                                              style: TextStyle(
-                                                  fontSize: 30,
-                                                  fontWeight:
-                                                      FontWeight.bold))),
-                                      InputFields("name", namecontroller,
-                                          Icons.input, TextInputType.text),
-                                      Text("Station Location"),
-                                      Text("Region"),
-                                      InputFields(
-                                          "Region/capitalise",
-                                          regioncontroller,
-                                          Icons.input,
-                                          TextInputType.text),
-                                      InputFields("id", idcontroller,
-                                          Icons.input, TextInputType.text),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: InputFields(
-                                                "City",
-                                                citycontroller,
-                                                Icons.input,
-                                                TextInputType.text),
-                                          ),
-                                          Expanded(
-                                            child: TextButton(
-                                                onPressed: () async {
-                                                  await GeocodingPlatform
-                                                      .instance
-                                                      .locationFromAddress(
-                                                          namecontroller.text +
-                                                              "," +
-                                                              citycontroller
-                                                                  .text)
-                                                      .then((value) {
-                                                    setState(() {
-                                                      latitude.text = value
-                                                          .first.latitude
-                                                          .toString();
-                                                      longitude.text = value
-                                                          .first.longitude
-                                                          .toString();
-                                                    });
-
-                                                    print(value);
-                                                  }).catchError((e) {
-                                                    print(e);
-                                                  });
-                                                },
-                                                child: Text("GET COORDINATES",
-                                                    style: TextStyle(
-                                                        color: Colors.green))),
-                                          )
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: InputFields(
-                                                "Latitude",
-                                                latitude,
-                                                Icons.input,
-                                                TextInputType.text),
-                                          ),
-                                          Expanded(
-                                            child: InputFields(
-                                                "Longitude",
-                                                longitude,
-                                                Icons.input,
-                                                TextInputType.text),
-                                          ),
-                                        ],
-                                      ),
-                                      InputFields(
-                                          "List all destinations",
-                                          destcontroller,
-                                          Icons.input,
-                                          TextInputType.text),
+                                      child: Column(
+                                    children: [
+                                      MenuButton(
+                                          regioncontroller: regioncontroller),
+                                      Text(showregions),
                                       FloatingActionButton.extended(
                                           onPressed: () {
-                                            if (form1.currentState!
-                                                .validate()) {
-                                              FirebaseFirestore.instance
-                                                  .collection('companies')
-                                                  .doc(widget.companytype)
-                                                  .collection(
-                                                      'Registered Companies')
-                                                  .doc(FirebaseAuth.instance
-                                                      .currentUser!.uid)
-                                                  .update({
-                                                "stations":
-                                                    FieldValue.arrayUnion([
-                                                  {
-                                                    "name": namecontroller.text,
-                                                    "region": regioncontroller
-                                                        .text
-                                                        .toUpperCase(),
-                                                    "city": citycontroller.text,
-                                                    "cordinates": GeoPoint(
+                                            selectregions
+                                                .add(regioncontroller.text);
+                                            showregions = '';
+                                            for (var i in selectregions) {
+                                              showregions +=
+                                                  i.toString() + " ,";
+                                            }
+                                            setState(() {
+                                              //showregions;
+                                            });
+
+                                            print(showregions);
+                                          },
+                                          label: Icon(Icons.add)),
+                                      TextButton(
+                                          onPressed: () {
+                                            FirebaseFirestore.instance
+                                                .collection('companies')
+                                                .doc(widget.companytype)
+                                                .collection(
+                                                    'Registered Companies')
+                                                .doc(FirebaseAuth
+                                                    .instance.currentUser!.uid)
+                                                .update({
+                                              "regions": FieldValue.arrayUnion(
+                                                  selectregions)
+                                            }).then((value) => print("Hello"));
+                                          },
+                                          child: Text("Submit"))
+                                    ],
+                                  )),
+                                );
+                              });
+                        },
+                        label: Text("Add region")),
+                    FloatingActionButton.extended(
+                        heroTag: "addstation",
+                        onPressed: () {
+                          showModalBottomSheet(
+                              barrierColor: Colors.indigo[300],
+                              backgroundColor: Colors.indigo[200],
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      topRight: Radius.circular(50))),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return FractionallySizedBox(
+                                  heightFactor: 0.95,
+                                  child: Form(
+                                    key: form1,
+                                    child: SingleChildScrollView(
+                                      child: Column(children: [
+                                        Padding(
+                                            padding: EdgeInsets.all(10),
+                                            child: Text("Station Details",
+                                                style: TextStyle(
+                                                    fontSize: 30,
+                                                    fontWeight:
+                                                        FontWeight.bold))),
+                                        InputFields("name", namecontroller,
+                                            Icons.input, TextInputType.text),
+                                        Text("Station Location"),
+                                        Text("Region"),
+                                        InputFields(
+                                            "Region",
+                                            regioncontroller,
+                                            Icons.input,
+                                            TextInputType.text),
+                                        InputFields("id", idcontroller,
+                                            Icons.input, TextInputType.text),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: InputFields(
+                                                  "City",
+                                                  citycontroller,
+                                                  Icons.input,
+                                                  TextInputType.text),
+                                            ),
+                                            Expanded(
+                                              child: TextButton(
+                                                  onPressed: () async {
+                                                    await GeocodingPlatform
+                                                        .instance
+                                                        .locationFromAddress(
+                                                            namecontroller
+                                                                    .text +
+                                                                "," +
+                                                                citycontroller
+                                                                    .text)
+                                                        .then((value) {
+                                                      setState(() {
+                                                        latitude.text = value
+                                                            .first.latitude
+                                                            .toString();
+                                                        longitude.text = value
+                                                            .first.longitude
+                                                            .toString();
+                                                      });
+
+                                                      print(value);
+                                                    }).catchError((e) {
+                                                      print(e);
+                                                    });
+                                                  },
+                                                  child: Text("GET COORDINATES",
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.green))),
+                                            )
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: InputFields(
+                                                  "Latitude",
+                                                  latitude,
+                                                  Icons.input,
+                                                  TextInputType.text),
+                                            ),
+                                            Expanded(
+                                              child: InputFields(
+                                                  "Longitude",
+                                                  longitude,
+                                                  Icons.input,
+                                                  TextInputType.text),
+                                            ),
+                                          ],
+                                        ),
+                                        FloatingActionButton.extended(
+                                            onPressed: () {
+                                              if (form1.currentState!
+                                                  .validate()) {
+                                                FirebaseFirestore.instance
+                                                    .collection('companies')
+                                                    .doc(widget.companytype)
+                                                    .collection(
+                                                        'Registered Companies')
+                                                    .doc(FirebaseAuth.instance
+                                                        .currentUser!.uid)
+                                                    .update({
+                                                  "stations":
+                                                      FieldValue.arrayUnion([
+                                                    {
+                                                      "name":
+                                                          namecontroller.text,
+                                                      "region": regioncontroller
+                                                          .text
+                                                          .toUpperCase(),
+                                                      "city":
+                                                          citycontroller.text,
+                                                      "cordinates": [
                                                         double.parse(
                                                             latitude.text),
                                                         double.parse(
-                                                            longitude.text)),
-                                                    "id": idcontroller.text,
-                                                    "destinations":
-                                                        destcontroller.text
-                                                            .toLowerCase()
-                                                            .split(",")
-                                                  }
-                                                ])
-                                              }).then((value) =>
-                                                      print("Station added"));
-                                              print({
-                                                namecontroller.text,
-                                                regioncontroller.text,
-                                                idcontroller.text
-                                              });
-                                            }
-                                          },
-                                          label: Text("Submit"))
-                                    ]),
+                                                            longitude.text)
+                                                      ],
+                                                      "id": idcontroller.text,
+                                                      "destinations":
+                                                          destcontroller.text
+                                                              .toLowerCase()
+                                                              .split(","),
+                                                    }
+                                                  ]),
+                                                  "destinations":
+                                                      FieldValue.arrayUnion(
+                                                          [citycontroller.text])
+                                                }).then((value) =>
+                                                        print("Station added"));
+                                                        //add this in appstrings
+                                                FirebaseFirestore.instance
+                                                    .collection("appstrings")
+                                                    .doc("cordinates")
+                                                    .collection("stations")
+                                                    .add({
+                                                  "city": citycontroller.text,
+                                                  "cordinates": [
+                                                    double.parse(latitude.text),
+                                                    double.parse(longitude.text)
+                                                  ]
+                                                });
+
+                                                print({
+                                                  namecontroller.text,
+                                                  regioncontroller.text,
+                                                  idcontroller.text
+                                                });
+                                              }
+                                            },
+                                            label: Text("Add station"))
+                                      ]),
+                                    ),
                                   ),
-                                ),
-                              );
-                            });
-                      },
-                      label: Text("Add Station")),
-                ),
-                Positioned(
-                  right: 5,
-                  bottom: 105,
-                  child: FloatingActionButton.extended(
-                      heroTag: "schedule",
-                      onPressed: () {
-                        showModalBottomSheet(
-                            barrierColor: Colors.indigo[300],
-                            backgroundColor: Colors.indigo[200],
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(50),
-                                    topRight: Radius.circular(50))),
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.95,
-                                child: Form(
-                                  key: form2,
-                                  child: SingleChildScrollView(
-                                    child: Column(children: [
-                                      Padding(
-                                          padding: EdgeInsets.all(10),
-                                          child: Text("Trip Details",
-                                              style: TextStyle(
-                                                  fontSize: 30,
-                                                  fontWeight:
-                                                      FontWeight.bold))),
-                                      SearchLocs(
-                                          direction: 'from',
+                                );
+                              });
+                        },
+                        label: Text("Add Station")),
+                        SizedBox(),
+                    FloatingActionButton.extended(
+                        heroTag: "schedule",
+                        onPressed: () {
+                          showModalBottomSheet(
+                              barrierColor: Colors.indigo[300],
+                              backgroundColor: Colors.indigo[200],
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      topRight: Radius.circular(50))),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return FractionallySizedBox(
+                                  heightFactor: 0.95,
+                                  child: Form(
+                                    key: form2,
+                                    child: SingleChildScrollView(
+                                      child: Column(children: [
+                                        Padding(
+                                            padding: EdgeInsets.all(10),
+                                            child: Text("Trip Details",
+                                                style: TextStyle(
+                                                    fontSize: 30,
+                                                    fontWeight:
+                                                        FontWeight.bold))),
+                                        SearchLocs(
+                                            direction: 'from',
+                                            locations: places,
+                                            searchcontrol: searchfrom,
+                                          
+                                            ),
+                                        SearchLocs(
+                                          direction: 'to',
                                           locations: places,
-                                          searchcontrol: searchfrom),
-                                      SearchLocs(
-                                        direction: 'to',
-                                        locations: places,
-                                        searchcontrol: searchto,
-                                      ),
-                                      SizedBox(),
-                                      interroutes(),
-                                      StatefulBuilder(builder:
-                                          (BuildContext context, setstate) {
-                                        return OptionButton(
-                                            options: vehivles,
-                                            onchange: changed,
-                                            dropdownValue: initialval);
-                                      }),
-                                      InputFields("Seats", seatcontroller,
-                                          Icons.input, TextInputType.number),
-                                      InputFields("fare", fare, Icons.input,
-                                          TextInputType.number),
-                                      InputFields("distance/km", distcontroller,
-                                          Icons.input, TextInputType.number),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: InputFields(
-                                                "Date : YYYY/MM/DD",
-                                                datecontroller,
-                                                Icons.input,
-                                                TextInputType.datetime),
-                                          ),
-                                          Expanded(
-                                            child: InputFields(
-                                                "Time : 00:00",
-                                                timecontroller,
-                                                Icons.input,
-                                                TextInputType.datetime),
-                                          )
-                                        ],
-                                      ),
-                                      StatefulBuilder(builder:
-                                          (BuildContext context, setstate) {
-                                        return OptionButton(
-                                            options: drivers,
-                                            onchange: changed1,
-                                            dropdownValue: initialval1);
-                                      }),
-                                      FloatingActionButton.extended(
-                                          onPressed: () {
-                                            FirebaseFirestore.instance
-                                                .collection("trips")
-                                                .add({
-                                              "from": searchfrom.text,
-                                              "to": searchto.text,
-                                              "interoutes": route,
-                                              "distance": int.parse(
-                                                  distcontroller.text),
-                                              "date": DateTime.parse(
-                                                  datecontroller.text
-                                                          .replaceAll("/", "") +
-                                                      " " +
-                                                      timecontroller.text),
-                                              "seats": int.parse(
-                                                  seatcontroller.text),
-                                              "company": companyname,
-                                              "vehid": initialval,
-                                              "full": false,
-                                              "chosen": [],
-                                              "fare": int.parse(fare.text),
-                                              "driverid": initialval1,
-                                              "triptype": companytype
-                                            }).then((value) {
-                                              setState(() {
-                                                feedback =
-                                                    "Trip added successfullly";
+                                          searchcontrol: searchto,
+                                          
+                                        ),
+                                        SizedBox(),
+                                        interroutes(),
+                                        StatefulBuilder(builder:
+                                            (BuildContext context, setstate) {
+                                          return OptionButton(
+                                              options: vehivles,
+                                              onchange: changed,
+                                              dropdownValue: initialval);
+                                        }),
+                                        InputFields("Seats", seatcontroller,
+                                            Icons.input, TextInputType.number),
+                                        InputFields("fare", fare, Icons.input,
+                                            TextInputType.number),
+                                        InputFields(
+                                            "distance/km",
+                                            distcontroller,
+                                            Icons.input,
+                                            TextInputType.number),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: InputFields(
+                                                  "Date : YYYY/MM/DD",
+                                                  datecontroller,
+                                                  Icons.input,
+                                                  TextInputType.datetime),
+                                            ),
+                                            Expanded(
+                                              child: InputFields(
+                                                  "Time : 00:00",
+                                                  timecontroller,
+                                                  Icons.input,
+                                                  TextInputType.datetime),
+                                            )
+                                          ],
+                                        ),
+                                        StatefulBuilder(builder:
+                                            (BuildContext context, setstate) {
+                                          return OptionButton(
+                                              options: drivers,
+                                              onchange: changed1,
+                                              dropdownValue: initialval1);
+                                        }),
+                                        InputFields(
+                                            "Please describe Trip to traveller",
+                                            about,
+                                            Icons.input,
+                                            TextInputType.text),
+                                        FloatingActionButton.extended(
+                                            onPressed: () {
+                                              FirebaseFirestore.instance
+                                                  .collection("trips")
+                                                  .add({
+                                                "from": searchfrom.text,
+                                                "to": searchto.text,
+                                                "interoutes": route,
+                                                "distance": int.parse(
+                                                    distcontroller.text),
+                                                "date": DateTime.parse(
+                                                    datecontroller.text +
+                                                        " " +
+                                                        timecontroller.text),
+                                                "seats": int.parse(
+                                                    seatcontroller.text),
+                                                "company": companyname,
+                                                "vehid": initialval,
+                                                "full": false,
+                                                "chosen": [],
+                                                "fare": int.parse(fare.text),
+                                                "driverid": initialval1,
+                                                "triptype": companytype,
+                                                "abouttrip": about.text,
+
+                                              }).then((value) {
+                                                setState(() {
+                                                  feedback =
+                                                      "Trip added successfullly";
+                                                });
+                                                print(
+                                                    "Trip added successfullly");
                                               });
-                                              print("Trip added successfullly");
-                                            });
-                                          },
-                                          label: Text("Add Trip")),
-                                      Text(feedback,
-                                          style: TextStyle(color: Colors.green))
-                                    ]),
+                                            },
+                                            label: Text("Add Trip")),
+                                        Text(feedback,
+                                            style:
+                                                TextStyle(color: Colors.green))
+                                      ]),
+                                    ),
                                   ),
-                                ),
-                              );
-                            });
-                      },
-                      label: Text("Schedule Trip")),
-                )
-              ],
+                                );
+                              });
+                        },
+                        label: Text("Schedule Trip")),
+                  ],
+                ),
+              ),
             ),
             body: PageView(
                 controller: pgcontrol,
@@ -761,41 +768,52 @@ class DashAppState extends State<DashApp> {
                 children: [
                   Dashboard(companytype: widget.companytype),
                   ShedulesInfo(),
-                  Container(
-                      child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Center(
-                          child: Text("Statistics"),
-                        ),
-                        SizedBox(),
-                        Card(
-                            child: Column(children: [
-                          Center(
-                              child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text("Daily active users"),
-                          )),
-                          Text("20"),
-                          Divider(),
-                          Center(
-                              child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text("Trips in session"),
-                          )),
-                          Text("20"),
-                          Divider(),
-                          Center(
-                              child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text("Completed trips"),
-                          )),
-                          Text("10"),
-                        ]))
-                      ],
-                    ),
-                  ))
+                  Statistics()
                 ])));
+  }
+}
+
+class Statistics extends StatelessWidget {
+  const Statistics({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: SingleChildScrollView(
+      child: Column(
+        children: [
+          Center(
+            child: Text("Statistics"),
+          ),
+          SizedBox(),
+          Card(
+              child: Column(children: [
+            Center(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Daily active users"),
+            )),
+            Text("20"),
+            Divider(),
+            Center(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Trips in session"),
+            )),
+            Text("20"),
+            Divider(),
+            Center(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Completed trips"),
+            )),
+            Text("10"),
+          ]))
+        ],
+      ),
+    ));
   }
 }
 
@@ -811,194 +829,163 @@ class DashboardState extends State<Dashboard> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListTile(
-              title: Center(child: Text("Complete account setup")),
-              subtitle: TextButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (buildContext) {
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: ListTile(
-                                  leading: Text("1"),
-                                  title: Text(
-                                      "Create paystack account if you dont have one.This will be used to receive payments"),
-                                  subtitle: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    RegPayment()));
-                                      },
-                                      child: Text("Register")),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(6.0),
-                                child: ListTile(
-                                  leading: Text("2"),
-                                  title: Text(
-                                      "Mail us your account details on travelmates@gmail.com"),
-                                ),
-                              ),
-                            ],
-                          );
-                        });
-                  },
-                  child: Text("Complete setup")),
-            ),
-          ),
-          Center(
+              padding: EdgeInsets.all(5),
               child: Card(
-            child: SingleChildScrollView(
-                child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('companies')
-                        .doc(widget.companytype)
-                        .collection('Registered Companies')
-                        .where('id',
-                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                        .snapshots(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (!snapshot.hasData &&
-                          !(snapshot.connectionState == ConnectionState.done)) {
-                        return Center(
-                            child: Card(
-                                elevation: 8,
-                                child: Column(
-                                  children: [
-                                    CircularProgressIndicator(),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text("Loading data...")
-                                  ],
-                                )));
-                      } else if (snapshot.hasError) {
-                        print(snapshot.error);
-                      } else if (snapshot.hasData) {
-                        if (snapshot.data!.size > 0) {
-                          companyname =
-                              snapshot.data!.docs[0].get('registered_name');
-                        }
+                color: Colors.lightBlue[50]!.withOpacity(0.5),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                child: SingleChildScrollView(
+                    child: StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('companies')
+                            .doc(widget.companytype)
+                            .collection('Registered Companies')
+                            .where('id',
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser!.uid)
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (!snapshot.hasData &&
+                              !(snapshot.connectionState ==
+                                  ConnectionState.done)) {
+                            return Center(
+                                child: Card(
+                                    elevation: 8,
+                                    child: Column(
+                                      children: [
+                                        CircularProgressIndicator(),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text("Loading data...")
+                                      ],
+                                    )));
+                          } else if (snapshot.hasError) {
+                            print(snapshot.error);
+                          } else if (snapshot.hasData) {
+                            if (snapshot.data!.size > 0) {
+                              companyname =
+                                  snapshot.data!.docs[0].get('registered_name');
+                            }
 
-                        print(companyname);
-                      }
+                            print(companyname);
+                          }
 
-                      return SingleChildScrollView(
-                        child: ListView(
-                            shrinkWrap: true,
-                            children: snapshot.data!.docs
-                                .map((doc) => Center(
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          children: [
-                                            Text(doc['registered_name'],
-                                                style: TextStyle(
-                                                    fontSize: 30,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            ListView.builder(
-                                                shrinkWrap: true,
-                                                itemCount:
-                                                    doc['regions'].length,
-                                                itemBuilder: (context, index) {
-                                                  return ExpansionTile(
-                                                      title: Text(doc['regions']
-                                                          [index]),
-                                                      children: doc['stations']
-                                                                  .length <
-                                                              1
-                                                          ? [
-                                                              Text(
-                                                                  "Add stations")
-                                                            ]
-                                                          : List.unmodifiable(
-                                                              () sync* {
-                                                              for (var i = 0;
-                                                                  i <
-                                                                      doc['stations']
-                                                                          .length;
-                                                                  i++) {
-                                                                if (doc['stations']
-                                                                            [i][
-                                                                        'region'] ==
-                                                                    doc['regions']
-                                                                        [
-                                                                        index]) {
-                                                                  yield ListTile(
-                                                                    title: Text(
-                                                                        doc['stations'][i]
-                                                                            [
-                                                                            'name']),
-                                                                  );
-                                                                }
-                                                              }
-                                                            }()));
-                                                }),
-                                            ListView.builder(
-                                                shrinkWrap: true,
-                                                itemCount:
-                                                    doc['drivers'].length > 0
-                                                        ? doc['drivers'].length
-                                                        : 0,
-                                                itemBuilder:
-                                                    (BuildContext context,
-                                                        idx) {
-                                                  if (!drivers.contains(
+                          return SingleChildScrollView(
+                            child: Column(
+                                children: snapshot.data!.docs.map((doc) {
+                              // destinations = doc["destinations"];
+                              // print(destinations);
+                              return Center(
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Text(doc['registered_name'],
+                                          style: TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold)),
+                                      ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: doc['regions'].length,
+                                          itemBuilder: (context, index) {
+                                            return ExpansionTile(
+                                                title:
+                                                    Text(doc['regions'][index]),
+                                                children: doc['stations']
+                                                            .length <
+                                                        1
+                                                    ? [Text("Add stations")]
+                                                    : List.unmodifiable(
+                                                        () sync* {
+                                                        for (var i = 0;
+                                                            i <
+                                                                doc['stations']
+                                                                    .length;
+                                                            i++) {
+                                                          if (doc['stations'][i]
+                                                                  ['region'] ==
+                                                              doc['regions']
+                                                                  [index]) {
+                                                            yield ListTile(
+                                                              title: Text(
+                                                                  doc['stations']
+                                                                          [i]
+                                                                      ['name']),
+                                                            );
+                                                          }
+                                                        }
+                                                      }()));
+                                          }),
+                                      Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Card(
+                                          color:
+                                              Colors.pink[50]!.withOpacity(0.5),
+                                          child: ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount:
+                                                  doc['drivers'].length > 0
+                                                      ? doc['drivers'].length
+                                                      : 0,
+                                              itemBuilder:
+                                                  (BuildContext context, idx) {
+                                                if (!drivers.contains(
+                                                    doc['drivers'][idx]
+                                                        ["phone"])) {
+                                                  drivers.add(doc['drivers']
+                                                      [idx]["phone"]);
+                                                }
+
+                                                return ListTile(
+                                                    title: Text(doc['drivers']
+                                                        [idx]["name"]),
+                                                    subtitle: Text(
                                                       doc['drivers'][idx]
-                                                          ["phone"])) {
-                                                    drivers.add(doc['drivers']
-                                                        [idx]["phone"]);
-                                                  }
-
-                                                  return ListTile(
-                                                      title: Text(doc['drivers']
-                                                          [idx]["name"]),
-                                                      subtitle: Text(
-                                                        doc['drivers'][idx]
-                                                            ["phone"],
-                                                      ));
-                                                }),
-                                            ListView.builder(
-                                                shrinkWrap: true,
-                                                itemCount:
-                                                    doc['vehicles'].length > 0
-                                                        ? doc['vehicles'].length
-                                                        : 0,
-                                                itemBuilder:
-                                                    (BuildContext context,
-                                                        idx) {
-                                                  if (!vehivles.contains(
-                                                      doc['vehicles'][idx]
-                                                          ["number"])) {
-                                                    vehivles.add(doc['vehicles']
-                                                        [idx]["number"]);
-                                                  }
-
-                                                  return ListTile(
-                                                      title: Text(
-                                                          doc['vehicles'][idx]
-                                                              ["name"]),
-                                                      subtitle: Text(
-                                                        doc['vehicles'][idx]
-                                                            ["number"],
-                                                      ));
-                                                }),
-                                          ],
+                                                          ["phone"],
+                                                    ));
+                                              }),
                                         ),
                                       ),
-                                    ))
-                                .toList()),
-                      );
-                    })),
-          )),
+                                      Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Card(
+                                          color: Colors.grey.withOpacity(0.4),
+                                          elevation: 5,
+                                          child: ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount:
+                                                  doc['vehicles'].length > 0
+                                                      ? doc['vehicles'].length
+                                                      : 0,
+                                              itemBuilder:
+                                                  (BuildContext context, idx) {
+                                                if (!vehivles.contains(
+                                                    doc['vehicles'][idx]
+                                                        ["number"])) {
+                                                  vehivles.add(doc['vehicles']
+                                                      [idx]["number"]);
+                                                }
+
+                                                return ListTile(
+                                                    title: Text(doc['vehicles']
+                                                        [idx]["name"]),
+                                                    subtitle: Text(
+                                                      doc['vehicles'][idx]
+                                                          ["number"],
+                                                    ));
+                                              }),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList()),
+                          );
+                        })),
+              )),
         ],
       ),
     );

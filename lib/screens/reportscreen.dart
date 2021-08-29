@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/components/applicationwidgets.dart';
+import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 //import 'package:rate_my_app/rate_my_app.dart';
 
@@ -72,11 +73,14 @@ class ReporterState extends State<Reporter> {
         backgroundColor: Colors.white,
         leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+               Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>UserInfoClass() ),
+                  );
             },
-            icon: Icon(Icons.arrow_back_ios)),
+            icon: Icon(Icons.arrow_back_ios ,color:Colors.black )),
        centerTitle:true,
-          title: Text("Reposts",style: TextStyle(fontWeight:FontWeight.bold ), ),
+          title: Text("Reports",style: TextStyle(fontWeight:FontWeight.bold ), ),
           elevation: 0,
         
       ),
