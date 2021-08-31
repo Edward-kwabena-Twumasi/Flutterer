@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -60,7 +61,13 @@ class _ShowmapState extends State<Showmap> {
   }
 
   Future<List<dynamic>> stationcity() async {
-    return [];
+    var docs = await FirebaseFirestore.instance
+        .collection("appstrings")
+        .doc("cordinates")
+        .collection("stations")
+        .where("city", isEqualTo: "kumasi")
+        .get();
+    return docs.docs;
   }
 
   String city = "";
@@ -83,6 +90,12 @@ class _ShowmapState extends State<Showmap> {
           loading = false;
         });
       });
+    });
+
+    stationcity().then((value) {
+      for (var item in value) {
+        print(item["name"]);
+      }
     });
     // print(_center);
   }

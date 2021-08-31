@@ -63,6 +63,55 @@ class BookState extends State<Book> {
     return DefaultTabController(
         length: 3,
         child: Scaffold(
+            floatingActionButton: seatids.length < 1
+                ? Text("Select seats to book")
+                : Center(
+                    child: ButtonBar(children: [
+                      FloatingActionButton.extended(
+                          onPressed: () {
+                            _getAccessCodeFrmInitialization(
+                                    double.parse(total.toString()) * 100,
+                                    "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351",
+                                    transactormail!)
+                                .then((value) {
+                              setState(() {
+                                accesscode =
+                                    value.data["authorization_url"].toString() +
+                                        "/" +
+                                        value.data["access_code"].toString();
+                              });
+
+                              ticket.from = widget.seat.from;
+                              ticket.to = widget.seat.to;
+                              ticket.booker = transactor;
+                              ticket.time = widget.seat.time;
+                              ticket.tripid = widget.seat.tripid;
+                              ticket.vehid = widget.seat.vehid;
+                              ticket.company = widget.seat.company;
+                              ticket.total = total * 100;
+                              ticket.chosen = seatids;
+                              ticket.pickup = pickup;
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => WebViewpg(
+                                            pageurl: accesscode,
+                                            ref: value.data["reference"],
+                                            ticketinfo: ticket,
+                                          )));
+                              print(accesscode +
+                                  " " +
+                                  value.data["authorization_url"].toString());
+                            }).catchError((e) {
+                              print(e.toString());
+                            });
+                          },
+                          label: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text("Pay now"),
+                          )),
+                    ]),
+                  ),
             appBar: AppBar(
                 leading: IconButton(
                     onPressed: () {
@@ -71,22 +120,49 @@ class BookState extends State<Book> {
                         MaterialPageRoute(builder: (context) => ButtomNav()),
                       );
                     },
-                    icon: Icon(Icons.arrow_back_ios)),
+                    icon: Icon(Icons.arrow_back_ios, color: Colors.black)),
                 backgroundColor: Colors.white,
                 centerTitle: true,
                 title: ListTile(
-                  subtitle: Center(
-                    child: Text("Seats chosen must be booked immediately",
-                        style: TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.bold)),
-                  ),
-                  title: Text(
-                    "Complete booking",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
+                  title: Center(
+                    child: Text(
+                      "Complete booking",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  subtitle: Center(
+                      child: Container(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: Text(
+                            "Chosen",
+                            style: TextStyle(backgroundColor: Colors.green),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: Text(
+                            "Booked",
+                            style: TextStyle(backgroundColor: Colors.red),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: Text(
+                            "Empty",
+                            style: TextStyle(backgroundColor: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
                 ),
                 bottom: TabBar(tabs: [
                   Tab(
@@ -125,6 +201,18 @@ class BookState extends State<Book> {
                       itemCount: widget.seat.seats,
                       itemBuilder: (BuildContext ctx, index) {
                         String selected = index.toString() + "_";
+                        Color? color;
+                        switch (match(snapshots.data!["chosen"],
+                            snapshots.data!["booked"], selected)) {
+                          case 0:
+                            color = Colors.grey;
+                            break;
+                          case 1:
+                            color = Colors.lightGreen;
+                            break;
+                          case 2:
+                            color = Colors.red;
+                        }
 
                         return SizedBox(
                           height: 110,
@@ -136,25 +224,20 @@ class BookState extends State<Book> {
                                 : Text((index + 1).toString()),
                             icon: Icon(
                               Icons.chair,
-                              color: snapshots.data!["chosen"].contains(
-                                      index.toString() + "_" + transactor)
-                                  ? Colors.red
-                                  : Colors.white,
+                              color: Colors.white,
                             ),
                             heroTag: index.toString(),
                             key: Key("Seat numbers" + index.toString()),
-                            backgroundColor:
-                                // match(snapshots.data!["chosen"],
-                                //           (index.toString() + "_"))
-                                match(snapshots.data!["chosen"], selected) > 0
-                                    ? Colors.green[300]
-                                    : seatcolor,
+                            backgroundColor: color,
                             onPressed: () {
                               String find = index.toString() + "_" + transactor;
                               String noselct = index.toString() + "_";
                               if (!snapshots.data!["chosen"].contains(find)) {
                                 if (snapshots.data!["seats"] > 0 &&
-                                    match(snapshots.data!["chosen"], noselct) <
+                                    match(
+                                            snapshots.data!["chosen"],
+                                            snapshots.data!["booked"],
+                                            noselct) <
                                         1) {
                                   setState(() {
                                     chosen += 1;
@@ -177,24 +260,36 @@ class BookState extends State<Book> {
                                 }
                               } else if (snapshots.data!["chosen"]
                                   .contains(find)) {
-                                setState(() {
-                                  chosen -= 1;
-                                  total = (chosen * unitprice);
-                                });
-                                FirebaseFirestore.instance
-                                    .runTransaction((transaction) async {
-                                  DocumentSnapshot freshap = await transaction
-                                      .get(snapshots.data!.reference);
-                                  transaction.update(freshap.reference, {
-                                    "seats": (freshap["seats"] + 1),
-                                    "chosen": FieldValue.arrayRemove([find])
-                                  });
-                                }).then((value) {
+                                if (match(snapshots.data!["chosen"],
+                                        snapshots.data!["booked"], noselct) <
+                                    2) {
                                   setState(() {
-                                    showlist = true;
-                                    seatids.remove(find);
+                                    chosen -= 1;
+                                    total = (chosen * unitprice);
                                   });
-                                });
+                                  FirebaseFirestore.instance
+                                      .runTransaction((transaction) async {
+                                    DocumentSnapshot freshap = await transaction
+                                        .get(snapshots.data!.reference);
+                                    transaction.update(freshap.reference, {
+                                      "seats": (freshap["seats"] + 1),
+                                      "chosen": FieldValue.arrayRemove([find])
+                                    });
+                                  }).then((value) {
+                                    setState(() {
+                                      showlist = true;
+                                      seatids.remove(find);
+                                    });
+                                  });
+                                } else {
+                                  showDialog(
+                                      context: context,
+                                      builder: (builder) {
+                                        return AlertDialog(
+                                            content:
+                                                Text("Seat has been booked"));
+                                      });
+                                }
                               }
                               showModalBottomSheet(
                                   backgroundColor: Colors.indigo[100],
@@ -224,7 +319,10 @@ class BookState extends State<Book> {
                                               padding:
                                                   const EdgeInsets.all(8.0),
                                               child: Card(
-                                                shape: RoundedRectangleBorder(),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25)),
                                                 elevation: 10,
                                                 child: SingleChildScrollView(
                                                   child: Column(
@@ -288,75 +386,11 @@ class BookState extends State<Book> {
                                                           ),
                                                         ),
                                                       ),
-                                                      Center(
-                                                        child: ButtonBar(
-                                                            children: [
-                                                              FloatingActionButton
-                                                                  .extended(
-                                                                      onPressed:
-                                                                          () {
-                                                                        _getAccessCodeFrmInitialization(double.parse(total.toString()) * 100, "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351", transactormail!).then(
-                                                                            (value) {
-                                                                          setState(
-                                                                              () {
-                                                                            accesscode = value.data["authorization_url"].toString() +
-                                                                                "/" +
-                                                                                value.data["access_code"].toString();
-                                                                          });
-
-                                                                          ticket.from = widget
-                                                                              .seat
-                                                                              .from;
-                                                                          ticket.to = widget
-                                                                              .seat
-                                                                              .to;
-                                                                          ticket.booker =
-                                                                              transactor;
-                                                                          ticket.time = widget
-                                                                              .seat
-                                                                              .time;
-                                                                          ticket.tripid = widget
-                                                                              .seat
-                                                                              .tripid;
-                                                                          ticket.vehid = widget
-                                                                              .seat
-                                                                              .vehid;
-                                                                          ticket.company = widget
-                                                                              .seat
-                                                                              .company;
-                                                                          ticket.total =
-                                                                              total * 100;
-                                                                          ticket.chosen =
-                                                                              seatids;
-                                                                          ticket.pickup =
-                                                                              pickup;
-                                                                          Navigator.push(
-                                                                              context,
-                                                                              MaterialPageRoute(
-                                                                                  builder: (context) => WebViewpg(
-                                                                                        pageurl: accesscode,
-                                                                                        ref: value.data["reference"],
-                                                                                        ticketinfo: ticket,
-                                                                                      )));
-                                                                          print(accesscode +
-                                                                              " " +
-                                                                              value.data["authorization_url"].toString());
-                                                                        }).catchError(
-                                                                            (e) {
-                                                                          print(
-                                                                              e.toString());
-                                                                        });
-                                                                      },
-                                                                      label: Text(
-                                                                          "Pay now")),
-                                                            ]),
-                                                      )
                                                     ],
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                            SizedBox(),
                                           ],
                                         ),
                                       ),
@@ -385,7 +419,7 @@ class BookState extends State<Book> {
                                     setState(() {
                                       pickup = widget.seat.routes[index].name;
                                     });
-                                    
+
                                     print(widget.seat.routes[index].name +
                                         "  is your pickup point");
                                   },
@@ -396,21 +430,44 @@ class BookState extends State<Book> {
                   ),
                 ),
               ),
-              Column(
-                children: [
-                  Text("Routes and stops"),
-                  ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: widget.seat.routes.length,
-                      itemBuilder: (BuildContext context, index) {
-                        return Padding(
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SingleChildScrollView(
+                    child: Column(children: [
+                      Text("This is an overview of the trip"),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Divider(),
+                      Center(
+                        child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: GestureDetector(
-                              onTap: () {},
-                              child: Text(widget.seat.routes[index].name)),
-                        );
-                      })
-                ],
+                          child: Text("Rest stops"),
+                        ),
+                      ),
+                      Card(
+                          child: DecoratedBox(
+                        decoration: BoxDecoration(color: Colors.lightGreen[50]),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(25)),
+                                  child: Image.network(
+                                      "http://www.wearedesignteam.com/hd-wallpaper/images/world-travel.jpg")),
+                            ),
+                            ListTile(
+                                title: Text("Linda Dor"),
+                                subtitle: Text("5 km ahead")),
+                          ],
+                        ),
+                      ))
+                    ]),
+                  ),
+                ),
               )
             ])));
   }
@@ -478,9 +535,17 @@ Future<Initresponse> _getAccessCodeFrmInitialization(
   }
 }
 
-int match(List<dynamic> arr, String startwt) {
+int match(List<dynamic> arr, List<dynamic> booked, String startwt) {
   int on = 0;
+
   arr.forEach((element) {
+    if (element.toString().contains(startwt) &&
+        element.toString().startsWith(startwt)) {
+      on += 1;
+      print(on);
+    }
+  });
+  booked.forEach((element) {
     if (element.toString().contains(startwt) &&
         element.toString().startsWith(startwt)) {
       on += 1;

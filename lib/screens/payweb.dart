@@ -55,7 +55,10 @@ class WebViewpgState extends State<WebViewpg> {
         floatingActionButton: hide
             ? Text("")
             : FloatingActionButton.extended(
-                label: Text("See Ticket"),
+                label: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text("See Ticket"),
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -87,7 +90,7 @@ class WebViewpgState extends State<WebViewpg> {
                 flutterLocalNotificationsPlugin.show(
                     1,
                     "New notification",
-                    "Your payment was successful",
+                    "Your payment was successful.See bookings menu for details",
                     NotificationDetails(
                         android: AndroidNotificationDetails(
                             Channel.id, Channel.name, Channel.description,
@@ -95,35 +98,36 @@ class WebViewpgState extends State<WebViewpg> {
                             playSound: true,
                             icon: '@mipmap/ic_launcher')),
                     payload: "received");
-                     FirebaseFirestore.instance.collection("bookings").add({
-                    "tripid": widget.ticketinfo.tripid,
-                    "transactor": widget.ticketinfo.booker,
-                    "seats": widget.ticketinfo.chosen,
-                    "total": widget.ticketinfo.total,
-                    "date": widget.ticketinfo.time,
-                    "pickup": widget.ticketinfo.pickup
-                  }).then((value) {
-                    print("Data added in document : " + value.id);
-                  });
-                if (navigation.url.contains('https://successful.com')) {
-                  print("yes");
+                FirebaseFirestore.instance.collection("bookings").add({
+                  "tripid": widget.ticketinfo.tripid,
+                  "transactor": widget.ticketinfo.booker,
+                  "seats": widget.ticketinfo.chosen,
+                  "total": widget.ticketinfo.total,
+                  "date": widget.ticketinfo.time,
+                  "pickup": widget.ticketinfo.pickup,
+                  "from": widget.ticketinfo.from,
+                  "to": widget.ticketinfo.to,
+                  "company": widget.ticketinfo.company,
+                }).then((value) {
+                  print("Data added in document : " + value.id);
                   setState(() {
                     hide = false;
                   });
+                });
+
+                FirebaseFirestore.instance
+                    .collection("trips")
+                    .doc(widget.ticketinfo.tripid)
+                    .update({
+                      "booked":FieldValue.arrayUnion(widget.ticketinfo.chosen)
+                    });
+                if (navigation.url.contains('https://successful.com')) {
+                  print("yes");
+
                   verifytransaction(widget.ref,
                           "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351")
                       .then((value) {
                     print(value.status.toString() + " " + value.message);
-                  });
-                  FirebaseFirestore.instance.collection("bookings").add({
-                    "tripid": widget.ticketinfo.tripid,
-                    "transactor": widget.ticketinfo.booker,
-                    "seats": widget.ticketinfo.chosen,
-                    "total": widget.ticketinfo.total,
-                    "date": widget.ticketinfo.time,
-                    "pickup": widget.ticketinfo.pickup
-                  }).then((value) {
-                    print("Data added in document : " + value.id);
                   });
                   //Navigator.of(context).pop();
                 } else

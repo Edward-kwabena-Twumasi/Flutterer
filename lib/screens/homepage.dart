@@ -56,7 +56,6 @@ class ButtomNavState extends State<ButtomNav> {
       children: [Expanded(child: TabBarDemo()), Primary()],
     ),
     Announcements(),
-  
     UserInfoClass(),
   ];
   int currentindx = 0;
@@ -104,8 +103,8 @@ class ButtomNavState extends State<ButtomNav> {
             onTap: swithnav,
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "home"),
-              BottomNavigationBarItem(icon: Icon(Icons.help), label: "Announcements"),
-              
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.help), label: "Announcements"),
               BottomNavigationBarItem(icon: Icon(Icons.person), label: "Me"),
             ]),
         body: pages.elementAt(currentindx),
@@ -276,25 +275,24 @@ class LocationsState extends State<Locations> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      
         color: Colors.white.withOpacity(0.5),
         child: Center(
             child: Card(
-              color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withOpacity(0.5),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               SearchLocs(
-                  direction: 'from', locations: places, searchcontrol: from,
-                 
-                  ),
+                direction: 'from',
+                locations: places,
+                searchcontrol: from,
+              ),
               SearchLocs(
                 direction: 'to',
                 locations: places,
                 searchcontrol: to,
-               
               ),
               InputFields("Travel date", datecontroller, Icons.date_range,
                   TextInputType.datetime),
@@ -408,6 +406,13 @@ class TripsState extends State<Trips> {
   bool isfound = true;
   String filter1 = '';
   String filter2 = '';
+  int year = DateTime.now().year;
+  int month = DateTime.now().month;
+  int day = DateTime.now().day;
+  DateTime? tod;
+  TimeOfDay morning = TimeOfDay(hour: 11, minute: 59);
+  TimeOfDay afternoon = TimeOfDay(hour: 14, minute: 59);
+  TimeOfDay evening = TimeOfDay(hour: 16, minute: 59);
   String getday(int tripday, int searchday) {
     String particular = "Today  ";
     List days = [
@@ -435,6 +440,7 @@ class TripsState extends State<Trips> {
     super.initState();
     setState(() {
       filter1 = widget._tripdata.triptype;
+      tod = DateTime(year, month, day, 23, 59);
     });
   }
 
@@ -587,6 +593,7 @@ class TripsState extends State<Trips> {
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
                           .where("triptype", isEqualTo: filter1)
+                         // .orderBy("stars")
                           //.where("company", whereIn: filterquery)
                           .snapshots(),
                       builder: (BuildContext context,
@@ -616,109 +623,123 @@ class TripsState extends State<Trips> {
                           return Text(
                               "Couldnt find matching results .Please try another search or contact us on 0501658160");
                         } else if (snapshot.hasData) {
-                          return ListView(
-                              shrinkWrap: true,
-                              children: snapshot.data!.docs.map((doc) {
-                                return Card(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  elevation: 5,
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        tileColor: doc['seats'] > 0
-                                            ? Colors.lightBlue[50]
-                                            : Colors.pink[100],
-                                        leading: Text(doc['date']
-                                                    .toDate()
-                                                    .toString()
-                                                    .split(" ")[0] ==
-                                                DateTime.now()
-                                                    .toString()
-                                                    .split(" ")[0]
-                                            ? "Today"
-                                            : doc['date']
-                                                    .toDate()
-                                                    .month
-                                                    .toString() +
-                                                "/" +
-                                                doc['date']
-                                                    .toDate()
-                                                    .weekday
-                                                    .toString() +
-                                                getday(
-                                                    doc['date']
-                                                        .toDate()
-                                                        .weekday,
-                                                    widget._tripdata.date
-                                                        .weekday)),
-                                        subtitle: Row(
-                                          children: [
-                                            Expanded(
-                                                child: Text(
-                                                    doc['company'].toString())),
-                                            Expanded(
-                                              child: Text(
-                                                  "                 Leaving - " +
+                          return SizedBox(
+                            child: ListView(
+                                shrinkWrap: true,
+                                children: snapshot.data!.docs.map((doc) {
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    elevation: 5,
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          tileColor: doc['seats'] > 0
+                                              ? Colors.lightBlue[50]
+                                              : Colors.pink[100],
+                                          leading: Text(doc['date']
+                                                      .toDate()
+                                                      .toString()
+                                                      .split(" ")[0] ==
+                                                  DateTime.now()
+                                                      .toString()
+                                                      .split(" ")[0]
+                                              ? "Today"
+                                              : doc['date']
+                                                      .toDate()
+                                                      .month
+                                                      .toString() +
+                                                  "/" +
+                                                  doc['date']
+                                                      .toDate()
+                                                      .weekday
+                                                      .toString() +
+                                                  getday(
                                                       doc['date']
                                                           .toDate()
-                                                          .toString()
-                                                          .split(" ")[1]),
-                                            ),
-                                          ],
+                                                          .weekday,
+                                                      widget._tripdata.date
+                                                          .weekday)),
+                                          subtitle: Row(
+                                            children: [
+                                              Expanded(
+                                                  child: Text(doc['company']
+                                                      .toString())),
+                                              Expanded(
+                                                  child: Text(
+                                                      doc["stars"].toString() +
+                                                          " stars")),
+                                              Expanded(
+                                                child: Text(
+                                                    "                 Leaving - " +
+                                                        doc['date']
+                                                            .toDate()
+                                                            .toString()
+                                                            .split(" ")[1]),
+                                              ),
+                                            ],
+                                          ),
+                                          title: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                  border: Border.all(
+                                                      color: Colors.green)),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Text(
+                                                    doc['seats'].toString() +
+                                                        "  seats remaining"),
+                                              )),
+                                          trailing: doc['seats'] > 0
+                                              ? FloatingActionButton(
+                                                  heroTag: "book",
+                                                  onPressed: () {
+                                                    for (var i = 0;
+                                                        i <
+                                                            doc["interoutes"]
+                                                                .length;
+                                                        i++) {
+                                                      routes.add(Interoutes(
+                                                          doc["interoutes"][i]
+                                                              ['routename'],
+                                                          doc['interoutes'][i]
+                                                              ['pickup'],
+                                                          doc['interoutes'][i]
+                                                              ['stop']));
+                                                    }
+                                                    seat.vehid = doc["vehid"];
+                                                    seat.from = doc["from"];
+                                                    seat.to = doc["to"];
+                                                    seat.seats = (doc["seats"] +
+                                                        doc["chosen"].length);
+                                                    seat.unitprice =
+                                                        doc["fare"];
+                                                    seat.tripid =
+                                                        doc.id.toString();
+                                                    seat.company =
+                                                        doc["company"];
+                                                    print('clicked');
+                                                    Navigator.pushNamed(context,
+                                                        "/completebook");
+                                                  },
+                                                  child: Text("Book"))
+                                              : TextButton(
+                                                  onPressed: () {},
+                                                  child: Text("Notify later")),
                                         ),
-                                        title: DecoratedBox(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(25),
-                                                border: Border.all(
-                                                    color: Colors.green)),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Text(
-                                                  doc['seats'].toString() +
-                                                      "  seats remaining"),
-                                            )),
-                                        trailing: doc['seats'] > 0
-                                            ? FloatingActionButton(
-                                                heroTag: "book",
-                                                onPressed: () {
-                                                  for (var i = 0;
-                                                      i <
-                                                          doc["interoutes"]
-                                                              .length;
-                                                      i++) {
-                                                    routes.add(Interoutes(
-                                                        doc["interoutes"][i]
-                                                            ['routename'],
-                                                        doc['interoutes'][i]
-                                                            ['pickup'],
-                                                        doc['interoutes'][i]
-                                                            ['stop']));
-                                                  }
-                                                  seat.vehid = doc["vehid"];
-                                                  seat.from = doc["from"];
-                                                  seat.to = doc["to"];
-                                                  seat.seats = (doc["seats"] +
-                                                      doc["chosen"].length);
-                                                  seat.unitprice = doc["fare"];
-                                                  seat.tripid =
-                                                      doc.id.toString();
-                                                  seat.company = doc["company"];
-                                                  print('clicked');
-                                                  Navigator.pushNamed(
-                                                      context, "/completebook");
-                                                },
-                                                child: Text("Book"))
-                                            : TextButton(
-                                                onPressed: () {},
-                                                child: Text("Notify later")),
-                                      )
-                                    ],
-                                  ),
-                                );
-                              }).toList());
+                                        Text(TimeOfDay.fromDateTime(
+                                                        doc["date"].toDate())
+                                                    .hour >
+                                                12
+                                            ? "Afternoon"
+                                            : "morning")
+                                      ],
+                                    ),
+                                  );
+                                }).toList()),
+                          );
                         }
 
                         return Text(
@@ -755,21 +776,19 @@ class TripClass {
 }
 
 class Announcements extends StatefulWidget {
-  const Announcements({ Key? key }) : super(key: key);
+  const Announcements({Key? key}) : super(key: key);
 
   @override
-  _AnnouncementsState createState() => _AnnouncementsState();
+  AnnouncementsState createState() => AnnouncementsState();
 }
 
-class _AnnouncementsState extends State<Announcements> {
+class AnnouncementsState extends State<Announcements> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.amber[50],
-      child:Text("Announcements Appear hear") ,
-    );
+    return Anounce();
   }
 }
+
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({Key? key, this.restorationId}) : super(key: key);
 
@@ -863,6 +882,7 @@ class UserInfoClassState extends State<UserInfoClass> {
   int starindex = 0;
   int stars = 5;
   int rateval = 5;
+  
   TextEditingController reviewmsg = TextEditingController();
   TextEditingController newname = TextEditingController();
   bool fetch = true;
@@ -886,6 +906,12 @@ class UserInfoClassState extends State<UserInfoClass> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(onPressed: (){
+           Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ButtomNav()),
+                  );
+        }, icon: Icon(Icons.arrow_back_ios,color:Colors.black ,)),
         actions: [
           IconButton(
               onPressed: () async {
@@ -909,13 +935,12 @@ class UserInfoClassState extends State<UserInfoClass> {
         ),
         elevation: 0,
       ),
-      
       body: SingleChildScrollView(
         child: Column(
           children: [
-             Features(),
+            Features(),
             StreamBuilder(
-               stream: FirebaseFirestore.instance
+                stream: FirebaseFirestore.instance
                     .collection("users")
                     .doc(FirebaseAuth.instance.currentUser!.uid)
                     .snapshots(),
@@ -940,8 +965,6 @@ class UserInfoClassState extends State<UserInfoClass> {
 
                   return Column(
                     children: [
-                      
-                      
                       Padding(
                           padding: EdgeInsets.all(12),
                           child: ListView(shrinkWrap: true, children: [
@@ -972,7 +995,8 @@ class UserInfoClassState extends State<UserInfoClass> {
                               elevation: 10,
                               child: ListTile(
                                   title: Text("Email"),
-                                  subtitle: Text(snapshot.data["contact"]["email"]),
+                                  subtitle:
+                                      Text(snapshot.data["contact"]["email"]),
                                   trailing: IconButton(
                                       onPressed: () {},
                                       icon: Icon(Icons.edit_attributes))),
@@ -983,19 +1007,16 @@ class UserInfoClassState extends State<UserInfoClass> {
                               elevation: 10,
                               child: ListTile(
                                   title: Text("Phone"),
-                                  subtitle: Text(snapshot.data["contact"]["phone"]),
+                                  subtitle:
+                                      Text(snapshot.data["contact"]["phone"]),
                                   trailing: IconButton(
                                       onPressed: () {},
                                       icon: Icon(Icons.edit_attributes))),
                             ),
                           ])),
-
-                         
-                      
                     ],
                   );
                 }),
-                
           ],
         ),
       ),
@@ -1045,7 +1066,6 @@ class _PrimaryState extends State<Primary> {
   @override
   Widget build(BuildContext context) {
     return Container(
-
         decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.white, Colors.green.withOpacity(0.7)],
@@ -1123,4 +1143,3 @@ class _PrimaryState extends State<Primary> {
         ));
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/completebook.dart';
 import 'package:myapp/screens/homepage.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class Ticket extends StatefulWidget {
   const Ticket({Key? key,required this.ticketinfo}) : super(key: key);
@@ -22,6 +23,11 @@ class _TicketState extends State<Ticket> {
           child: Column(children: [
             Center(
               child: Text("Ticket details",style:TextStyle(color:Colors.lightBlue ) , ),
+            ),
+            DecoratedBox(decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child:Text("Issuer : Travel mates")
             ),
             Divider(
               color:Colors.lightBlue
@@ -72,6 +78,16 @@ class _TicketState extends State<Ticket> {
               ),
             ),
             
+            Center(
+              child:ListTile(
+                title:Text("QR code"),
+                subtitle:QrImage(
+  data:widget.ticketinfo.booker+" "+widget.ticketinfo.chosen.toString(),
+  version: QrVersions.auto,
+  size: 100.0,
+)
+              )
+            ),
            Center(
              child: TextButton(onPressed: (){
 Navigator.push(

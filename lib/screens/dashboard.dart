@@ -491,11 +491,8 @@ class DashAppState extends State<DashApp> {
                                             Icons.input, TextInputType.text),
                                         Text("Station Location"),
                                         Text("Region"),
-                                        InputFields(
-                                            "Region",
-                                            regioncontroller,
-                                            Icons.input,
-                                            TextInputType.text),
+                                        InputFields("Region", regioncontroller,
+                                            Icons.input, TextInputType.text),
                                         InputFields("id", idcontroller,
                                             Icons.input, TextInputType.text),
                                         Row(
@@ -598,7 +595,7 @@ class DashAppState extends State<DashApp> {
                                                           [citycontroller.text])
                                                 }).then((value) =>
                                                         print("Station added"));
-                                                        //add this in appstrings
+                                                //add this in appstrings
                                                 FirebaseFirestore.instance
                                                     .collection("appstrings")
                                                     .doc("cordinates")
@@ -626,7 +623,7 @@ class DashAppState extends State<DashApp> {
                               });
                         },
                         label: Text("Add Station")),
-                        SizedBox(),
+                    SizedBox(),
                     FloatingActionButton.extended(
                         heroTag: "schedule",
                         onPressed: () {
@@ -654,16 +651,14 @@ class DashAppState extends State<DashApp> {
                                                     fontWeight:
                                                         FontWeight.bold))),
                                         SearchLocs(
-                                            direction: 'from',
-                                            locations: places,
-                                            searchcontrol: searchfrom,
-                                          
-                                            ),
+                                          direction: 'from',
+                                          locations: places,
+                                          searchcontrol: searchfrom,
+                                        ),
                                         SearchLocs(
                                           direction: 'to',
                                           locations: places,
                                           searchcontrol: searchto,
-                                          
                                         ),
                                         SizedBox(),
                                         interroutes(),
@@ -733,12 +728,21 @@ class DashAppState extends State<DashApp> {
                                                 "vehid": initialval,
                                                 "full": false,
                                                 "chosen": [],
+                                                "stars":0,
                                                 "fare": int.parse(fare.text),
                                                 "driverid": initialval1,
                                                 "triptype": companytype,
                                                 "abouttrip": about.text,
-
+                                                "status": "pending"
                                               }).then((value) {
+                                                showDialog(
+                                                    context: context,
+                                                    builder: (builder) {
+                                                      return AlertDialog(
+                                                        content: Text(
+                                                            "Trip added successfully"),
+                                                      );
+                                                    });
                                                 setState(() {
                                                   feedback =
                                                       "Trip added successfullly";
@@ -758,6 +762,72 @@ class DashAppState extends State<DashApp> {
                               });
                         },
                         label: Text("Schedule Trip")),
+                    SizedBox(height: 15),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextButton(
+                        child: Text("Add rest stops"),
+                        onPressed: () {
+                          setState(() {
+                            foldername = "Reststop";
+                          });
+                          showModalBottomSheet(
+                              barrierColor: Colors.indigo[300],
+                              backgroundColor: Colors.indigo[200],
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(50),
+                                      topRight: Radius.circular(50))),
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return FractionallySizedBox(
+                                  heightFactor: 0.95,
+                                  child: SingleChildScrollView(
+                                      child: Form(
+                                    child: Column(children: [
+                                      Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Text("Name")),
+                                      InputFields("name", busname,
+                                          Icons.person_add, TextInputType.name),
+                                      InputFields(
+                                          "Distance ahead",
+                                          distcontroller,
+                                          Icons.phone,
+                                          TextInputType.number),
+                                      InputFields("Describe rest stop", about,
+                                          Icons.phone, TextInputType.multiline),
+                                      UploadPic(
+                                        foldername: foldername!,
+                                        imagename: busnumber.text,
+                                      ),
+                                      FloatingActionButton.extended(
+                                          label: Text("Add " + companytype),
+                                          onPressed: () {
+                                            imageurl = imgUrl;
+
+                                            FirebaseFirestore.instance
+                                                .collection('appstrings')
+                                                .doc("reststops")
+                                                .collection('reststops')
+                                                .add({
+                                              "name": busname.text,
+                                              "distance": int.parse(
+                                                  distcontroller.text),
+                                              "image": imageurl,
+                                              "about": about.text
+                                            }).then((value) => print(
+                                                    "Vehicle registered"));
+                                          },
+                                          icon: Icon(Icons.add)),
+                                    ]),
+                                  )),
+                                );
+                              });
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -773,11 +843,18 @@ class DashAppState extends State<DashApp> {
   }
 }
 
-class Statistics extends StatelessWidget {
+class Statistics extends StatefulWidget {
   const Statistics({
     Key? key,
   }) : super(key: key);
 
+  @override
+  _StatisticsState createState() => _StatisticsState();
+}
+
+class _StatisticsState extends State<Statistics> {
+  int users = 0;
+  int insession = 0;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -785,7 +862,7 @@ class Statistics extends StatelessWidget {
       child: Column(
         children: [
           Center(
-            child: Text("Statistics"),
+            child: Text(" Business Statistics"),
           ),
           SizedBox(),
           Card(
@@ -795,22 +872,125 @@ class Statistics extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Text("Daily active users"),
             )),
-            Text("20"),
-            Divider(),
+            SizedBox(),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("bookings")
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshots) {
+                  if (!snapshots.hasData) {
+                    return CircularProgressIndicator();
+                  } else if (snapshots.hasError) {
+                    return Text("fix errors");
+                  }
+                  return ListView(
+                      shrinkWrap: true,
+                      children: snapshots.data!.docs.map((doc) {
+                        users += 0;
+                        return ListTile(
+                          title: Text("User $users"),
+                        );
+                      }).toList());
+                })
+          ])),
+          SizedBox(),
+          SizedBox(),
+          Card(
+              child: Column(children: [
+            Center(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Trips pending"),
+            )),
+            SizedBox(),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("trips")
+                    .where("status", isEqualTo: "pending")
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshots) {
+                  if (!snapshots.hasData) {
+                    return CircularProgressIndicator();
+                  } else if (snapshots.hasError) {
+                    return Text("fix errors");
+                  }
+                  return ListView(
+                      shrinkWrap: true,
+                      children: snapshots.data!.docs.map((doc) {
+                        insession += 0;
+                        return ListTile(
+                          title: Text("Trip $insession"),
+                          subtitle: Text("ID :" + doc.id),
+                        );
+                      }).toList());
+                })
+          ])),
+          SizedBox(),
+          Card(
+              child: Column(children: [
             Center(
                 child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text("Trips in session"),
             )),
-            Text("20"),
-            Divider(),
+            SizedBox(),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("trips")
+                    .where("status", isEqualTo: "insession")
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshots) {
+                  if (!snapshots.hasData) {
+                    return CircularProgressIndicator();
+                  } else if (snapshots.hasError) {
+                    return Text("fix errors");
+                  }
+                  return ListView(
+                      shrinkWrap: true,
+                      children: snapshots.data!.docs.map((doc) {
+                        insession += 0;
+                        return ListTile(
+                          title: Text("Trip $insession"),
+                          subtitle: Text("ID :" + doc.id),
+                        );
+                      }).toList());
+                })
+          ])),
+          SizedBox(),
+          Card(
+              child: Column(children: [
             Center(
                 child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text("Completed trips"),
             )),
-            Text("10"),
-          ]))
+            SizedBox(),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("trips")
+                    .where("seats", isEqualTo: 0)
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshots) {
+                  if (!snapshots.hasData) {
+                    return CircularProgressIndicator();
+                  } else if (snapshots.hasError) {
+                    return Text("fix errors");
+                  }
+                  return ListView(
+                      shrinkWrap: true,
+                      children: snapshots.data!.docs.map((doc) {
+                        insession += 0;
+                        return ListTile(
+                          title: Text("Trip $insession"),
+                          subtitle: Text("ID :" + doc.id),
+                        );
+                      }).toList());
+                })
+          ])),
         ],
       ),
     ));
@@ -1024,65 +1204,77 @@ class _ShedulesInfoState extends State<ShedulesInfo> {
 
                 return SingleChildScrollView(
                   child: Column(
-                    children: [
-                      new ListView(
-                        shrinkWrap: true,
-                        children: snapshot.data!.docs.map((data) {
-                          return Card(
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Container(
-                              height: 150,
-                              child: new ListTile(
-                                title: new Text(data.id),
-                                subtitle: ListView(
-                                  shrinkWrap: true,
-                                  children: [
-                                    new Text(data['from'] + " > " + data['to']),
-                                    new Text("Vehicle id : " +
-                                        data['vehid'].toString()),
-                                    new Text("Total seats : " +
-                                        data['seats'].toString()),
-                                    new Text("Booked : " +
-                                        data['chosen'].length.toString()),
-                                    new Text("Remaining : " +
-                                        data['seats'].toString()),
-                                    new Text("Take off : " +
-                                        data['date']
-                                            .toDate()
-                                            .toString()
-                                            .split(" ")[1]),
-                                    ButtonBar(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: ElevatedButton(
-                                              onPressed: () {},
-                                              child: Text("Reschedule")),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: ElevatedButton(
-                                              onPressed: () {},
-                                              child: Text("Cancel")),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: ElevatedButton(
-                                              onPressed: () {},
-                                              child: Text("Hold")),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
+                    children: snapshot.data!.docs.map((data) {
+                      return Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Container(
+                          height: 150,
+                          child: new ListTile(
+                            title: new Text(data.id),
+                            subtitle: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                new Text(data['from'] + " > " + data['to']),
+                                new Text(
+                                    "Vehicle id : " + data['vehid'].toString()),
+                                new Text("Total seats : " +
+                                    data['seats'].toString()),
+                                new Text("Booked : " +
+                                    data['chosen'].length.toString()),
+                                new Text(
+                                    "Remaining : " + data['seats'].toString()),
+                                new Text("Take off : " +
+                                    data['date']
+                                        .toDate()
+                                        .toString()
+                                        .split(" ")[1]),
+                                Container(
+                                  height: 40,
+                                  child: ListView(
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.horizontal,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ElevatedButton(
+                                            onPressed: () {
+                                              FirebaseFirestore.instance
+                                                  .collection("trips")
+                                                  .doc(data.id)
+                                                  .update(
+                                                      {"status": "insession"});
+                                            },
+                                            child: Text("Reschedule")),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ElevatedButton(
+                                            onPressed: () {},
+                                            child: Text("Cancel")),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ElevatedButton(
+                                            onPressed: () {
+                                              FirebaseFirestore.instance
+                                                  .collection("trips")
+                                                  .doc(data.id)
+                                                  .update(
+                                                      {"status": "insession"});
+                                            },
+                                            child: Text("Start")),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 );
               },
@@ -1133,53 +1325,4 @@ class Route {
   bool stop;
   bool pickup;
   Route(this.name, this.stop, this.pickup);
-}
-
-class RegPayment extends StatefulWidget {
-  // RegPayment({required this.pageurl});
-  // final String pageurl;
-  @override
-  RegPaymentState createState() => RegPaymentState();
-}
-
-class RegPaymentState extends State<RegPayment> {
-  @override
-  void initState() {
-    super.initState();
-    // Enable hybrid composition.
-    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.arrow_back_ios)),
-          centerTitle: true,
-          title: Text("Make payment"),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Card(
-            elevation: 5,
-            child: WebView(
-              debuggingEnabled: true,
-              initialUrl:
-                  'https://dashboard.paystack.com/#/signup?_id=8a190335-9d74-4014-87db-198e37e1c9a5R',
-              javascriptMode: JavascriptMode.unrestricted,
-              navigationDelegate: (navigation) {
-                if (navigation.url == '') {}
-                return NavigationDecision.navigate;
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

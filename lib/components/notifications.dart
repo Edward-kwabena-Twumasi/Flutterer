@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
-//import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +13,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/screens/homepage.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 const AndroidNotificationChannel Channel = AndroidNotificationChannel(
     "interval", "sendinterval", "channel for sending at interval",
@@ -84,14 +88,20 @@ class Notifies extends StatefulWidget {
 }
 
 class _NotifiesState extends State<Notifies> {
+  String address = "";
+
+  int hour = TimeOfDay.now().hour;
+  int min = TimeOfDay.now().minute;
   String? token;
   double diff = 0;
   String statemsg = "";
+  String statemsg1 = "";
   bool cancelperiod = false;
   DateTime now = DateTime.now();
   DateTime future = DateTime.now();
   TextEditingController body = TextEditingController();
   TextEditingController body1 = TextEditingController();
+ late tz.Location ghana ;
   @override
   void initState() {
     super.initState();
@@ -99,6 +109,7 @@ class _NotifiesState extends State<Notifies> {
       if (value != null) {
         print(value.data);
       }
+      
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -171,54 +182,81 @@ class _NotifiesState extends State<Notifies> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading:IconButton(
+        leading: IconButton(
             onPressed: () {
-               Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>UserInfoClass() ),
-                  );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => UserInfoClass()),
+              );
             },
-            icon: Icon(Icons.arrow_back_ios ,color:Colors.black )),
+            icon: Icon(Icons.arrow_back_ios, color: Colors.black)),
       ),
       body: Container(
+        height: 700,
         child: Center(
           child: Card(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50))),
-            child: Column(
-              children: [
-                InputFields("Remind every eg. 30 mins ", body, Icons.message,
-                    TextInputType.multiline),
-                SizedBox(),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  //periodic reminders here
+                  Center(child: Text("Set periodic reminders")),
 
-                ButtonBar(children: [
+                  InputFields("Add reminder title ", body, Icons.message,
+                      TextInputType.multiline),
+                  SizedBox(),
+
+                  ButtonBar(children: [
+                    TextButton(
+                        onPressed: () {
+                          flutterLocalNotificationsPlugin.cancel(1);
+                          setState(() {
+                            cancelperiod = true;
+                          });
+                        },
+                        child: Text("Cancel")),
+                    TextButton(
+                        onPressed: () {
+                          setState(() {
+                            cancelperiod = false;
+                          });
+                          setState(() {
+                            statemsg = "You will be notified at" +
+                                (TimeOfDay.now().hour + 1).toString() +
+                                ":" +
+                                TimeOfDay.now().minute.toString();
+                          });
+                          flutterLocalNotificationsPlugin.periodicallyShow(
+                              1,
+                              body.text,
+                              "Hello ,I am reminding you ",
+                              RepeatInterval.hourly,
+                              NotificationDetails(
+                                  android: AndroidNotificationDetails(
+                                      Channel.id,
+                                      Channel.name,
+                                      Channel.description,
+                                      color: Colors.lightBlue,
+                                      playSound: true,
+                                      icon: '@mipmap/ic_launcher')),
+                              payload: "received");
+                        },
+                        child: Text("Notify hourly")),
+                  ]),
                   TextButton(
-                      onPressed: () {
-                        flutterLocalNotificationsPlugin.cancel(1);
+                      onPressed: () async {
                         setState(() {
-                          cancelperiod = true;
+                          statemsg = "You will be notified at" +
+                              DateTime.now().add(Duration(days: 1)).toString();
                         });
-                      },
-                      child: Text("Cancel")),
-                  TextButton(
-                      onPressed: () {
-                         setState(() {
-                          cancelperiod = false;
-                        });
-                        now = DateTime.now();
-                        int inc = 1;
-                        while (cancelperiod == false) {
-                          future = DateTime.now().add(Duration(minutes: inc));
-                          inc += 1;
-                        }
-
                         flutterLocalNotificationsPlugin.periodicallyShow(
                             1,
-                            "Periodic reminder",
-                            "The time is "+future.toString(),
-                            RepeatInterval.everyMinute,
+                            body.text,
+                            "Hello ,I am reminding you ",
+                            RepeatInterval.daily,
                             NotificationDetails(
                                 android: AndroidNotificationDetails(Channel.id,
                                     Channel.name, Channel.description,
@@ -227,39 +265,46 @@ class _NotifiesState extends State<Notifies> {
                                     icon: '@mipmap/ic_launcher')),
                             payload: "received");
                       },
-                      child: Text("Notify me")),
-                ]),
-
-                InputFields("Alert once at .eg 7am", body1, Icons.message,
-                    TextInputType.multiline),
-                ButtonBar(children: [
-                  TextButton(
-                      onPressed: () {
-                        flutterLocalNotificationsPlugin.cancel(2);
-                      },
-                      child: Text("cancel")),
-                  TextButton(
+                      child: Text("Notify daily")),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Divider(),
+                  //single reminders code here
+                  Center(child: Text("Single reminders")),
+                  InputFields("Title reminder", body1, Icons.message,
+                      TextInputType.multiline),
+                  FloatingActionButton.extended(
+                      label: Text("Choose time"),
                       onPressed: () async {
-                        if (body1.text.isNotEmpty) {
-                          now = DateTime.now();
-                          future = DateTime.now().add(Duration(
-                              hours: int.parse(
-                                body1.text.split(":")[0],
-                              ),
-                              minutes: int.parse(body1.text.split(":")[1])));
-
+                        showTimePicker(
+                                context: context, initialTime: TimeOfDay.now())
+                            .then((value) {
                           setState(() {
-                            diff = future.difference(now).inMinutes / 1.0;
-                            now = DateTime.now();
-                            statemsg =
-                                "notification to show at " + future.toString();
+                            hour = value!.hour;
+                            min = value.minute;
                           });
-                          print(diff.toString());
-                          flutterLocalNotificationsPlugin.show(
+                        });
+                      }),
+
+                  ButtonBar(children: [
+                    TextButton(
+                        onPressed: () {
+                          flutterLocalNotificationsPlugin.cancel(2);
+                        },
+                        child: Text("cancel")),
+                    TextButton(
+                        onPressed: () async {
+                          setState(() {
+                             ghana=tz.local;
+                          });
+                         
+                          await flutterLocalNotificationsPlugin.zonedSchedule(
                               2,
-                              "New notification",
-                              "received at" +
-                                  DateTime.now().toString().split(" ")[1],
+                              "It is ",
+                              "Hi the time for your reminder is due",
+                              tz.TZDateTime.parse(
+                                 ghana, "2021-8-30 $hour:$min:00"),
                               NotificationDetails(
                                   android: AndroidNotificationDetails(
                                       Channel1.id,
@@ -268,24 +313,37 @@ class _NotifiesState extends State<Notifies> {
                                       color: Colors.lightBlue,
                                       playSound: true,
                                       icon: '@mipmap/ic_launcher')),
-                              payload: "once");
-                        } else {
-                          print('Provide correct time');
-                        }
-                      },
-                      child: Text("Notify me")),
-                ]),
-                SizedBox(),
-                // InputFields(
-                //     "Alert me", body, Icons.message, TextInputType.multiline),
-                // SizedBox(),
-                ListTile(
-                    title: Text("Notifications pending"),
-                    subtitle: Text(
-                      statemsg,
-                      style: TextStyle(color: Colors.lightBlue),
-                    ))
-              ],
+                              uiLocalNotificationDateInterpretation:
+                                  UILocalNotificationDateInterpretation
+                                      .absoluteTime,
+                              androidAllowWhileIdle: true);
+
+                          setState(() {
+                            statemsg1 = "Reminder schedule for $hour:$min";
+                          });
+                        },
+                        child: Text("Remind later")),
+                  ]),
+
+                  SizedBox(),
+                  // InputFields(
+                  //     "Alert me", body, Icons.message, TextInputType.multiline),
+                  // SizedBox(),
+                  ListTile(
+                      title: Text("Periodic notifications"),
+                      subtitle: Text(
+                        statemsg,
+                        style: TextStyle(color: Colors.lightBlue),
+                      )),
+                  Divider(),
+                  ListTile(
+                      title: Text("One time notifications"),
+                      subtitle: Text(
+                        statemsg1,
+                        style: TextStyle(color: Colors.lightBlue),
+                      ))
+                ],
+              ),
             ),
           ),
         ),

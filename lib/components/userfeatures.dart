@@ -1,3 +1,7 @@
+//import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/components/notifications.dart';
@@ -19,7 +23,7 @@ List reviewtokens = [
   "very",
   "soo"
 ];
-List tokenweights = [2, 2, 3, -3, 4, 2, -2, -3, -4, 5, 2, 3];
+List<int> tokenweights = [2, 2, 3, -3, 4, 2, -2, -3, -4, 5, 2, 3];
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(Features());
@@ -34,10 +38,49 @@ class Features extends StatefulWidget {
 
 class _FeaturesState extends State<Features> {
   var starred = [];
+  List<String> options = [""];
   int starindex = 0;
   int stars = 5;
+  String dropval = "";
+  var weigts = [];
+  var tokens = [];
+  var docids = [];
+  int result = 0;
+  Future<List<dynamic>> cities() async {
+    var docs = await FirebaseFirestore.instance
+        .collection("appstrings")
+        .doc("companynamestrings")
+        .get();
+    return docs["companynamestrings"];
+  }
+
+  Future<List<dynamic>> tripstar(String company) async {
+    var docs = await FirebaseFirestore.instance
+        .collection("trips")
+        .where("company", isEqualTo: company)
+        .get();
+    return docs.docs;
+  }
+
+  void initState() {
+    super.initState();
+    cities().then((value) {
+      options = [];
+      for (var item in value) {
+        setState(() {
+          options.add(item["name"].toString() + "-" + item["type"].toString());
+        });
+        print(item["name"]);
+      }
+      print(options.length);
+      setState(() {
+        dropval = options[0];
+      });
+    });
+  }
+
   TextEditingController reviewtext = TextEditingController();
-  String dropval = "Travel mates";
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -60,13 +103,13 @@ class _FeaturesState extends State<Features> {
                         backgroundColor: Colors.amber[100],
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(50),
-                                topRight: Radius.circular(50))),
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10))),
                         context: context,
                         isScrollControlled: true,
                         builder: (BuildContext context) {
                           return FractionallySizedBox(
-                              heightFactor: 0.9, child: Paymenu());
+                              heightFactor: 0.5, child: Paymenu());
                         });
                   },
                   child: Padding(
@@ -120,73 +163,96 @@ class _FeaturesState extends State<Features> {
                     showModalBottomSheet(
                         context: context,
                         builder: (buildContext) {
-                          return
-                             SingleChildScrollView(
-                               child: Column(
-                                children: [
-                                  OptionButton(
-                                      options: ["Travel mates"],
-                                      onchange: (val) {
-                                        print(val);
-                                        setState(() {
-                                          dropval = val!;
-                                        });
-                                      },
-                                      dropdownValue: dropval),
-                                  ListTile(
-                                      leading: Text("3 stars"),
-                                      trailing: IconButton(
-                                          onPressed: () {
-                                            print(
-                                                "You rated $dropval $starindex stars");
-                                          },
-                                          icon: Icon(Icons.one_k)),
-                                      subtitle: Container(
-                                          height: 80,
-                                          child: ListView.builder(
-                                              shrinkWrap: true,
-                                              scrollDirection: Axis.horizontal,
-                                              itemCount: stars,
-                                              itemBuilder: (context, index) {
-                                                print(index);
-                                                return StatefulBuilder(
-                                                  builder: (context, setstate) {
-                                                    return Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              4.0),
-                                                      child: IconButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              starindex = index;
-                                                            });
-                                                            print(
-                                                                "You choose $starindex stars");
-                                                            print(starindex);
-                                                            starred = [];
-                                                            for (var i = 0;
-                                                                i < (index+1);
-                                                                i++) {
-                                                              setState(() {
-                                                                starred.add(i);
-                                                              });
-                                                            }
-                                                          },
-                                                          icon: Icon(Icons.star,
-                                                              size: 30,
-                                                              color: starred
-                                                                      .contains(
-                                                                          index)
-                                                                  ? Colors.red
-                                                                  : Colors.grey)),
-                                                    );
-                                                  },
+                          return SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                OptionButton(
+                                    options: options,
+                                    onchange: (val) {
+                                      print(val);
+                                      setState(() {
+                                        dropval = val!;
+                                      });
+                                    },
+                                    dropdownValue: dropval),
+                                ListTile(
+                                    leading: Text("$starindex stars"),
+                                    trailing: IconButton(
+                                        onPressed: () async {
+                                          showDialog(
+                                              context: context,
+                                              builder: (builder) {
+                                                return AlertDialog(
+                                                  content: Text(
+                                                      "You rated $dropval " +
+                                                          (starindex + 1)
+                                                              .toString() +
+                                                          "stars"),
                                                 );
-                                              }))),
-                                ],
-                                                         
-                                                       ),
-                             );
+                                              });
+
+                                          tripstar(dropval.split("-")[0]).then((value) {
+                                            for (var i in value) {
+                                              FirebaseFirestore.instance
+                                                  .collection("trips")
+                                                  .doc(i.id)
+                                                  .update({
+                                                "stars": FieldValue.increment(
+                                                    (starindex + 1))
+                                              });
+                                              docids.add(i.id);
+                                              print(i.id);
+                                            }
+                                          });
+                                        },
+                                        icon: Icon(Icons.one_k)),
+                                    subtitle: Container(
+                                        height: 80,
+                                        child: ListView.builder(
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: stars,
+                                            itemBuilder: (context, index) {
+                                              print(index);
+                                              return StatefulBuilder(
+                                                builder: (context, setState) {
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            4.0),
+                                                    child: IconButton(
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            starindex = index;
+                                                          });
+                                                          print(
+                                                              "You choose $starindex+1 stars");
+                                                          print(starindex);
+                                                          starred = [];
+                                                          for (var i = 0;
+                                                              i < (index + 1);
+                                                              i++) {
+                                                            setState(() {
+                                                              starred.add(i);
+                                                            });
+                                                          }
+                                                        },
+                                                        icon: Icon(Icons.star,
+                                                            size: 30,
+                                                            color: index <=
+                                                                        starindex ||
+                                                                    starred
+                                                                        .contains(
+                                                                            index)
+                                                                ? Colors.red
+                                                                : Colors.grey)),
+                                                  );
+                                                },
+                                              );
+                                            }))),
+                              ],
+                            ),
+                          );
                         });
                   },
                   child: Padding(
@@ -213,21 +279,50 @@ class _FeaturesState extends State<Features> {
                         context: context,
                         builder: (buildcontext) {
                           return Column(children: [
-                            OptionButton(
-                                options: ["Travel mates"],
-                                onchange: (val) {
-                                  print(val);
-                                  setState(() {
-                                    dropval = val!;
-                                  });
-                                },
-                                dropdownValue: dropval),
+                            StatefulBuilder(builder: (context, setState) {
+                              return OptionButton(
+                                  options: options,
+                                  onchange: (val) {
+                                    print(val);
+                                    setState(() {
+                                      dropval = val!;
+                                    });
+                                  },
+                                  dropdownValue: dropval);
+                            }),
                             TextField(
+                              controller: reviewtext,
                               keyboardType: TextInputType.multiline,
                               decoration: InputDecoration(
                                   icon: Icon(Icons.reviews),
                                   hintText: "Write review here"),
-                            )
+                            ),
+                            TextButton(
+                                onPressed: () async {
+                                  weigts = [];
+                                  result = 1;
+                                  tokens = reviewtext.text.split(" ");
+                                  for (var t in tokens) {
+                                    if (reviewtokens
+                                        .contains(t.toString().toLowerCase())) {
+                                      weigts.add(reviewtokens.indexOf(t));
+                                      result *=
+                                          tokenweights[reviewtokens.indexOf(t)];
+                                    }
+                                  }
+
+                                  print("found " +
+                                      weigts.length.toString() +
+                                      "relevant words  $weigts");
+                                  showDialog(
+                                      context: context,
+                                      builder: (builder) {
+                                        return AlertDialog(
+                                          content: Text(result>0?"Feedback is positive.Thank you for the review.":"Feedback is negative.Thank you for the review." ),
+                                        );
+                                      });
+                                },
+                                child: Text("Submit review"))
                           ]);
                         });
                   },
@@ -321,3 +416,5 @@ class _FeaturesState extends State<Features> {
     );
   }
 }
+
+

@@ -6,10 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 //text widget
 class TextWidgets extends StatelessWidget {
@@ -180,13 +182,13 @@ TripClass onetrip =
 List places = ["Kumasi", "Obuasi", "Accra", "Kasoa", "Mankessim", "Wa"];
 
 class SearchLocs extends StatefulWidget {
-  SearchLocs(
-      {required this.direction,
-      required this.locations,
-      required this.searchcontrol,
-     });
+  SearchLocs({
+    required this.direction,
+    required this.locations,
+    required this.searchcontrol,
+  });
   final TextEditingController searchcontrol;
-  
+
   final String direction;
   final List locations;
   @override
@@ -204,8 +206,6 @@ class SearchLocsState extends State<SearchLocs> {
     super.initState();
 
     widget.searchcontrol.addListener(() {
-      
-
       // widget.searchcontrol.text = widget.searchcontrol.text.substring(0,).toUpperCase()+
       // widget.searchcontrol.text.substring(1);
       suggestions = [];
@@ -223,10 +223,10 @@ class SearchLocsState extends State<SearchLocs> {
     });
 
     focusNode.addListener(() {
-      if (focusNode.hasFocus ) {
+      if (focusNode.hasFocus) {
         this.myoverlay = createOverlay();
         Overlay.of(context)!.insert(this.myoverlay!);
-      } else  {
+      } else {
         myoverlay!.remove();
       }
     });
@@ -254,19 +254,23 @@ class SearchLocsState extends State<SearchLocs> {
                           return Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: ListTile(
-                                shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(12) ),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                                 key: Key(index.toString()),
                                 onTap: () {
                                   this.myoverlay!.remove();
-                
-                                  
+
                                   print(index);
-                                  mytripobj[widget.direction] = suggestions[index];
-                                  widget.searchcontrol.text = suggestions[index];
-                
+                                  mytripobj[widget.direction] =
+                                      suggestions[index];
+                                  widget.searchcontrol.text =
+                                      suggestions[index];
+
                                   widget.direction == "From"
-                                      ? onetrip.fromLoc = widget.searchcontrol.text
-                                      : onetrip.toLoc = widget.searchcontrol.text;
+                                      ? onetrip.fromLoc =
+                                          widget.searchcontrol.text
+                                      : onetrip.toLoc =
+                                          widget.searchcontrol.text;
                                   suggestions = [];
                                   print(suggestions);
                                   print(mytripobj);
@@ -274,7 +278,8 @@ class SearchLocsState extends State<SearchLocs> {
                                 title: Text(
                                   suggestions[index],
                                   style: TextStyle(
-                                      color: Colors.black, fontWeight: FontWeight.w400),
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w400),
                                 )),
                           );
                         },
@@ -289,7 +294,6 @@ class SearchLocsState extends State<SearchLocs> {
   @override
   void dispose() {
     super.dispose();
-   
   }
 
   List<String> suggestions = [];
@@ -306,7 +310,6 @@ class SearchLocsState extends State<SearchLocs> {
                 borderSide: BorderSide.none)),
         controller: widget.searchcontrol,
         focusNode: this.focusNode,
-        
       ),
     );
   }
@@ -502,38 +505,109 @@ class Paymenu extends StatefulWidget {
   const Paymenu({Key? key}) : super(key: key);
 
   @override
-  _PaymenuState createState() => _PaymenuState();
+  PaymenuState createState() => PaymenuState();
 }
 
-class _PaymenuState extends State<Paymenu> {
+class PaymenuState extends State<Paymenu> {
+  String? email = FirebaseAuth.instance.currentUser!.email;
+
+  int amount = 0;
+  TextEditingController amnt = TextEditingController();
+  TextEditingController tid = TextEditingController();
+  String url = "";
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
-    return Container(
-        height: height * 0.6,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Column(children: [
-              Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: FloatingActionButton.extended(
-                      onPressed: () {},
-                      label: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text("Payment History"),
-                      ))),
-              Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: FloatingActionButton.extended(
-                      onPressed: () {},
-                      label: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text("Pay for Luggage"),
-                      ))),
-            ]),
-          ),
-        ));
+    return Scaffold(
+      body: Container(
+          height: height * 0.4,
+          child: SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Column(children: [
+                  Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: FloatingActionButton.extended(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Mypays()),
+                            );
+                          },
+                          label: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("Payment History"),
+                            ),
+                          ))),
+                  Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: FloatingActionButton.extended(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (builder) {
+                                  return AlertDialog(
+                                    content: Column(
+                                      children: [
+                                        TextField(
+                                          controller: amnt,
+                                          decoration: InputDecoration(
+                                              hintText: "Enter amount"),
+                                        ),
+                                        TextField(
+                                          controller: tid,
+                                          decoration: InputDecoration(
+                                              hintText: "Trip id"),
+                                        ),
+                                        TextButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                amount = int.parse(amnt.text);
+                                              });
+                                            },
+                                            child: Text("Ok"))
+                                      ],
+                                    ),
+                                  );
+                                }).then((value) {
+                              if (amnt.text.isNotEmpty && tid.text.isNotEmpty) {
+                                _getAccessCodeFrmInitialization(
+                                        amount * 100,
+                                        "sk_test_a310b10d73f4449db22b02c96c28be222a6f4351",
+                                        email!)
+                                    .then((value) {
+                                  setState(() {
+                                    url = value.data["authorization_url"]
+                                            .toString() +
+                                        "/" +
+                                        value.data["access_code"].toString();
+                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (builder) {
+                                        return AlertDialog(
+                                            content: Text(
+                                                "Payment for Luggage successful"));
+                                      });
+                                });
+                              }
+                            });
+                          },
+                          label: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("Pay for Luggage"),
+                            ),
+                          ))),
+                ]),
+              ),
+            ),
+          )),
+    );
   }
 }
 
@@ -641,17 +715,47 @@ class Mybooks extends StatefulWidget {
   const Mybooks({Key? key}) : super(key: key);
 
   @override
-  _MybooksState createState() => _MybooksState();
+  MybooksState createState() => MybooksState();
 }
 
-class _MybooksState extends State<Mybooks> {
+String contact = "";
+
+class MybooksState extends State<Mybooks> {
+  Future userdata() async {
+  return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+  }
+
+  void initState() {
+    super.initState();
+    userdata().then((value) {
+      setState(() {
+        contact = value["contact"]["phone"];
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => UserInfoClass()),
+              );
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.black,
+            )),
+      ),
       body: DecoratedBox(
-        decoration:BoxDecoration(
-          color:Colors.pink[50]
-        ),
+        decoration: BoxDecoration(color: Colors.lightBlue[50]),
         child: Center(
             child: SingleChildScrollView(
                 child: Column(
@@ -660,15 +764,13 @@ class _MybooksState extends State<Mybooks> {
               padding: const EdgeInsets.all(8.0),
               child: Center(
                   child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color:Colors.white
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text("My bookings",
-                          style: TextStyle(color: Colors.lightBlue)),
-                    ),
-                  )),
+                decoration: BoxDecoration(color: Colors.white),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("My bookings",
+                      style: TextStyle(color: Colors.lightBlue)),
+                ),
+              )),
             ),
             StreamBuilder(
                 stream: FirebaseFirestore.instance
@@ -696,24 +798,433 @@ class _MybooksState extends State<Mybooks> {
                   }
                   return snapshot.data!.size < 1
                       ? Text("No booking history")
+                      : SizedBox(
+                          child: ListView(
+                              shrinkWrap: true,
+                              children: snapshot.data!.docs.map((doc) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: ExpansionTile(
+                                      backgroundColor: Colors.white,
+                                      children: [
+                                        Center(
+                                          child: Text(
+                                            "Ticket details",
+                                            style: TextStyle(
+                                                color: Colors.lightBlue),
+                                          ),
+                                        ),
+                                        Divider(color: Colors.lightBlue),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                  child: ListTile(
+                                                      title:
+                                                          Text(doc["company"]),
+                                                      subtitle:
+                                                          Text("Company"))),
+                                              Expanded(
+                                                  child: ListTile(
+                                                title: Text(doc["tripid"]),
+                                                subtitle: Text("Tripid"),
+                                              )),
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                  child: ListTile(
+                                                      title: Text(doc["seats"]
+                                                          .toString()),
+                                                      subtitle: Text("Seats"))),
+                                              Expanded(
+                                                  child: ListTile(
+                                                title: Text(doc["transactor"]),
+                                                subtitle: Text("Booker id"),
+                                              )),
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                  child: ListTile(
+                                                      title: Text(doc["from"]),
+                                                      subtitle: Text("From"))),
+                                              Expanded(
+                                                  child: ListTile(
+                                                title: Text(doc["to"]),
+                                                subtitle: Text("To"),
+                                              )),
+                                            ],
+                                          ),
+                                        ),
+                                        Center(
+                                            child: ListTile(
+                                                title: Text("QR code"),
+                                                subtitle: QrImage(
+                                                  data: doc["transactor"],
+                                                  version: QrVersions.auto,
+                                                  size: 100.0,
+                                                ))),
+                                      ],
+                                      title: Text(
+                                        doc["date"]
+                                                    .toDate()
+                                                    .difference(DateTime.now())
+                                                    .inDays >
+                                                0
+                                            ? "Starting on" +
+                                                doc["date"].toDate().toString()
+                                            : "Happened  on" +
+                                                doc["date"].toDate().toString(),
+                                      ),
+                                      subtitle: ButtonBar(children: [
+                                        TextButton(
+                                            onPressed: () {
+                                              String refund = "";
+                                              var bookt =
+                                                  TimeOfDay.fromDateTime(
+                                                      doc["date"].toDate());
+                                              var nowt = TimeOfDay.fromDateTime(
+                                                  DateTime.now());
+
+                                              int diff = (bookt.hour * 60 +
+                                                      bookt.minute) -
+                                                  (nowt.hour * 60 +
+                                                      nowt.minute);
+
+                                              if (diff >= 60) {
+                                                setState(() {
+                                                  refund = "Cancelled about an hour to time,you get full refund";
+                                                });
+                                              } else if (diff > 30) {
+                                                setState(() {
+                                                  refund = "Cancelled more than 30 mins to time,you 75% full refund";
+                                                });
+                                              }
+                                              else
+                                                setState(() {
+                                                  refund = "Cancelled in  30 mins to time,you get 50% refund";
+                                                });
+
+                                              FirebaseFirestore.instance
+                                                  .collection("bookings")
+                                                  .doc(doc.id)
+                                                  .delete()
+                                                  .then((value) {
+                                                showDialog(
+                                                    context: context,
+                                                    builder: (builder) {
+                                                      return AlertDialog(
+                                                        content: Column(
+                                                          children: [
+                                                            Text(
+                                                                "Ticket cancelled succesfully"),
+                                                            Text(
+                                                                refund),
+                                                            Text(
+                                                                "Refer to usage policy for more")
+                                                          ],
+                                                        ),
+                                                      );
+                                                    });
+                                              });
+                                            },
+                                            child: Text("Cancel")),
+                                        TextButton(
+                                            onPressed: () {
+                                              FirebaseFirestore.instance
+                                                  .collection("announcements").doc(doc.id)
+                                                  .set({
+                                                "message": "Ticket for sale",
+                                                "call": contact,
+                                                "interested":[],
+                                                "transactor":FirebaseAuth.instance.currentUser!.uid
+
+                                              });
+                                            },
+                                            child: Text("Sell")),
+
+                                      ])),
+                                );
+                              }).toList()),
+                        );
+                })
+          ],
+        ))),
+      ),
+    );
+  }
+}
+
+class Mypays extends StatefulWidget {
+  const Mypays({Key? key}) : super(key: key);
+
+  @override
+  MypaysState createState() => MypaysState();
+}
+
+class MypaysState extends State<Mypays> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => UserInfoClass()),
+              );
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.black,
+            )),
+      ),
+      body: DecoratedBox(
+        decoration: BoxDecoration(color: Colors.grey[50]),
+        child: Center(
+            child: SingleChildScrollView(
+                child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                  child: DecoratedBox(
+                decoration: BoxDecoration(color: Colors.white),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("My payments",
+                      style: TextStyle(color: Colors.lightBlue)),
+                ),
+              )),
+            ),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("bookings")
+                    .where("transactor",
+                        isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData &&
+                      (snapshot.connectionState == ConnectionState.waiting)) {
+                    return Center(
+                        child: Card(
+                            elevation: 8,
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(
+                                  height: 5,
+                                )
+                              ],
+                            )));
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error.toString());
+                    return Text(snapshot.error.toString());
+                  }
+                  return snapshot.data!.size < 1
+                      ? Text("No payment history")
                       : ListView(
                           shrinkWrap: true,
                           children: snapshot.data!.docs.map((doc) {
-                            return ExpansionTile(
-                                children: [],
+                            return Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: ExpansionTile(
+                                backgroundColor: Colors.white,
+                                children: [
+                                  Center(
+                                    child: Text(
+                                      "Payment History",
+                                      style: TextStyle(color: Colors.lightBlue),
+                                    ),
+                                  ),
+                                  Divider(color: Colors.lightBlue),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: ListTile(
+                                                title: Text(doc["from"]),
+                                                subtitle: Text("From"))),
+                                        Expanded(
+                                            child: ListTile(
+                                          title: Text(doc["to"]),
+                                          subtitle: Text("To"),
+                                        )),
+                                      ],
+                                    ),
+                                  ),
+                                  Center(
+                                    child: ListTile(
+                                      title: Text("Company"),
+                                      subtitle: Text(doc['company'].toString()),
+                                    ),
+                                  ),
+                                  Center(
+                                    child: ListTile(
+                                      title: Text("Amount paid"),
+                                      subtitle: Text(
+                                          (doc['total'] / 100).toString() +
+                                              " GHS"),
+                                    ),
+                                  ),
+                                ],
                                 title: Text(
-                                   doc["date"].toDate().difference(DateTime.now()).inDays >0?"Starting on"+ doc["date"].toDate().toString():
-                                   "Happened  on"+ doc["date"].toDate().toString(),
+                                  "Happened  on " +
+                                      doc["date"].toDate().toString(),
                                 ),
-                                subtitle: ButtonBar(children: [
-                                  TextButton(
-                                      onPressed: () {}, child: Text("Cancel")),
-                                  TextButton(onPressed: () {}, child: Text("Sell")),
-                                ]));
+                              ),
+                            );
                           }).toList());
                 })
           ],
         ))),
+      ),
+    );
+  }
+}
+
+class Initresponse {
+  String message;
+  Map<String, dynamic> data;
+  bool status;
+  Initresponse(
+      {required this.message, required this.data, required this.status});
+
+  factory Initresponse.fromJson(Map<String, dynamic> json) {
+    return Initresponse(
+        message: json["message"], data: json["data"], status: json["status"]);
+  }
+}
+
+Future<Initresponse> _getAccessCodeFrmInitialization(
+    double amount, String key, String email) async {
+  final response = await http.post(
+    Uri.parse("https://api.paystack.co/transaction/initialize"),
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      HttpHeaders.authorizationHeader: 'Bearer $key',
+    },
+    body: jsonEncode(<String, dynamic>{'amount': amount, "email": email}),
+  );
+
+  if (response.statusCode == 200) {
+// If the server did return a 200 ok response,
+// then parse the JSON.
+    return Initresponse.fromJson(jsonDecode(response.body));
+  } else {
+// If the server did not return a 201 CREATED response,
+// then throw an exception.match
+    throw Exception('Failed to initialise transaction.');
+  }
+}
+
+class Anounce extends StatefulWidget {
+  const Anounce({Key? key}) : super(key: key);
+
+  @override
+  _AnounceState createState() => _AnounceState();
+}
+
+class _AnounceState extends State<Anounce> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text("Announcements",
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    )),
+              ),
+            ),
+            SizedBox(
+              height: 35,
+            ),
+            StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("announcements")
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData &&
+                      (snapshot.connectionState == ConnectionState.waiting)) {
+                    return Center(
+                        child: Card(
+                            elevation: 8,
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(
+                                  height: 5,
+                                )
+                              ],
+                            )));
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error.toString());
+                    return Text(snapshot.error.toString());
+                  }
+                  return snapshot.data!.size < 1
+                      ? Text("No announcements")
+                      : ListView(
+                          shrinkWrap: true,
+                          children: snapshot.data!.docs.map((doc) {
+                            return Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: ExpansionTile(
+                                backgroundColor: Colors.white,
+                                children: [
+                                  Center(
+                                    child: ListTile(
+                                      title: Text("Message"),
+                                      subtitle: Text(doc['message'].toString()),
+                                    ),
+                                  ),
+                                  Center(
+                                    child: ListTile(
+                                      title: Text("By :"),
+                                      subtitle: Text(doc['transactor'] ==
+                                              FirebaseAuth
+                                                  .instance.currentUser!.uid
+                                          ? "You"
+                                          : "Unknown"),
+                                    ),
+                                  ),
+                                ],
+                                title: doc['transactor'] ==
+                                        FirebaseAuth.instance.currentUser!.uid
+                                    ? TextButton(
+                                        onPressed: () {}, child: Text("Remove"))
+                                    : TextButton(
+                                        onPressed: () {},
+                                        child: Text("Express interest")),
+                              ),
+                            );
+                          }).toList());
+                })
+          ],
+        ),
       ),
     );
   }
