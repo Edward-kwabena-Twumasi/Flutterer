@@ -243,7 +243,7 @@ class AgentFormState extends State<AgentForm> {
                                   // Validate will return true if the form is valid, or false if
                                   // the form is invalid.
 
-                                  if (_formKey.currentState!.validate()) {
+                                  if (_formKey.currentState!.validate() && companytype.isNotEmpty) {
                                     setState(() {
                                       request = true;
                                     });
@@ -269,6 +269,16 @@ class AgentFormState extends State<AgentForm> {
                                         });
                                       }
                                     });
+                                  }
+                                  else
+                                  {
+                                     showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Choose companytype to log in"));
+                                        });
                                   }
                                 },
 

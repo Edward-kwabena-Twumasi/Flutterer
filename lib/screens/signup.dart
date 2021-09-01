@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
@@ -11,7 +12,7 @@ class SignupForm extends StatefulWidget {
 
 class SignupFormState extends State<SignupForm> {
   final _formKey = GlobalKey<FormState>();
-  
+
   bool tonext = false;
   bool ok = false;
   String errors = "";
@@ -64,8 +65,8 @@ class SignupFormState extends State<SignupForm> {
                       SizedBox(
                         height: 4,
                       ),
-                       InputFields("Phone", phone, Icons.email,
-                          TextInputType.phone),
+                      InputFields(
+                          "Phone", phone, Icons.email, TextInputType.phone),
                       SizedBox(
                         height: 4,
                       ),
@@ -97,20 +98,28 @@ class SignupFormState extends State<SignupForm> {
                                 if (rvalue == userStates.successful) {
                                   value
                                       .addUser(email.text, phone.text)
-                                      .then((value)
-                                      {
-                                     setState(() {
-                                    errors = "Signup successful";
+                                      .then((value) {
+                                    setState(() {
+                                      errors = "Signup successful";
 
-                                    tonext = true;
-                                   
+                                      tonext = true;
+                                    });
+
+                                    FirebaseAuth.instance.currentUser!
+                                        .sendEmailVerification();
+                                    showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Signup successful .Please check and verify your email"));
+                                        });
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => ButtomNav()),
+                                    );
                                   });
-                                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>ButtomNav()),
-                  );
-                                      });
-                                 
                                 } else {
                                   print(value);
                                   setState(() {

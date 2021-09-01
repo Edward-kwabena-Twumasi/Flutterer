@@ -553,6 +553,7 @@ class TripsState extends State<Trips> {
                       setState(() {
                         filter1 = 'Fligth';
                       });
+                      print(filter1);
                     }),
                     niceChips(Icons.bus_alert, "Train", () {
                       setState(() {
@@ -593,7 +594,9 @@ class TripsState extends State<Trips> {
                           .where("from", isEqualTo: widget._tripdata.fromLoc)
                           .where("to", isEqualTo: widget._tripdata.toLoc)
                           .where("triptype", isEqualTo: filter1)
-                         // .orderBy("stars")
+                          .where("stars",isGreaterThanOrEqualTo: 0)
+                          .orderBy("stars")
+                           
                           //.where("company", whereIn: filterquery)
                           .snapshots(),
                       builder: (BuildContext context,
@@ -669,14 +672,13 @@ class TripsState extends State<Trips> {
                                                   child: Text(
                                                       doc["stars"].toString() +
                                                           " stars")),
-                                              Expanded(
-                                                child: Text(
-                                                    "                 Leaving - " +
+                                               Text(
+                                                   
                                                         doc['date']
                                                             .toDate()
                                                             .toString()
                                                             .split(" ")[1]),
-                                              ),
+                                              
                                             ],
                                           ),
                                           title: DecoratedBox(
@@ -882,7 +884,7 @@ class UserInfoClassState extends State<UserInfoClass> {
   int starindex = 0;
   int stars = 5;
   int rateval = 5;
-  
+
   TextEditingController reviewmsg = TextEditingController();
   TextEditingController newname = TextEditingController();
   bool fetch = true;
@@ -906,12 +908,17 @@ class UserInfoClassState extends State<UserInfoClass> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: (){
-           Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ButtomNav()),
-                  );
-        }, icon: Icon(Icons.arrow_back_ios,color:Colors.black ,)),
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ButtomNav()),
+              );
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.black,
+            )),
         actions: [
           IconButton(
               onPressed: () async {

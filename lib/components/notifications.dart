@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
+//import 'package:geocoding/geocoding.dart';
+//import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +14,7 @@ import 'package:myapp/components/applicationwidgets.dart';
 import 'package:myapp/providersPool/userStateProvider.dart';
 import 'package:myapp/screens/homepage.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 const AndroidNotificationChannel Channel = AndroidNotificationChannel(
     "interval", "sendinterval", "channel for sending at interval",
@@ -89,7 +90,9 @@ class Notifies extends StatefulWidget {
 
 class _NotifiesState extends State<Notifies> {
   String address = "";
-
+  int yr = DateTime.now().year;
+  int mnt = DateTime.now().month;
+  int day = DateTime.now().day;
   int hour = TimeOfDay.now().hour;
   int min = TimeOfDay.now().minute;
   String? token;
@@ -101,15 +104,22 @@ class _NotifiesState extends State<Notifies> {
   DateTime future = DateTime.now();
   TextEditingController body = TextEditingController();
   TextEditingController body1 = TextEditingController();
- late tz.Location ghana ;
+  late tz.Location ghana;
+  Future<void> inittz() async {
+    tz.initializeTimeZones();
+    ghana = tz.local;
+  }
+
   @override
   void initState() {
     super.initState();
+    inittz().then((value) {
+      print("Time zone initiallzed");
+    });
     FirebaseMessaging.instance.getInitialMessage().then((value) {
       if (value != null) {
         print(value.data);
       }
-      
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -296,15 +306,14 @@ class _NotifiesState extends State<Notifies> {
                     TextButton(
                         onPressed: () async {
                           setState(() {
-                             ghana=tz.local;
+                            ghana = tz.local;
                           });
-                         
+
                           await flutterLocalNotificationsPlugin.zonedSchedule(
                               2,
-                              "It is ",
+                              body1.text,
                               "Hi the time for your reminder is due",
-                              tz.TZDateTime.parse(
-                                 ghana, "2021-8-30 $hour:$min:00"),
+                              tz.TZDateTime.from(DateTime(yr,mnt,day,hour,min), ghana),
                               NotificationDetails(
                                   android: AndroidNotificationDetails(
                                       Channel1.id,

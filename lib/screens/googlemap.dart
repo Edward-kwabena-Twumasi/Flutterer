@@ -18,25 +18,7 @@ class _MymapState extends State<Mymap> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: Text(
-              "Map View",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            elevation: 0,
-            leading: IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => UserInfoClass()),
-                  );
-                },
-                icon: Icon(Icons.arrow_back_ios, color: Colors.black)),
-            backgroundColor: Colors.transparent,
-          ),
-          body: Showmap()),
+      home: Showmap(),
     );
   }
 }
@@ -60,6 +42,7 @@ class _ShowmapState extends State<Showmap> {
     return await GeocodingPlatform.instance.placemarkFromCoordinates(lat, long);
   }
 
+  List stationcitycords = [];
   Future<List<dynamic>> stationcity() async {
     var docs = await FirebaseFirestore.instance
         .collection("appstrings")
@@ -93,6 +76,9 @@ class _ShowmapState extends State<Showmap> {
     });
 
     stationcity().then((value) {
+      setState(() {
+        stationcitycords = value;
+      });
       for (var item in value) {
         print(item["name"]);
       }
@@ -100,45 +86,85 @@ class _ShowmapState extends State<Showmap> {
     // print(_center);
   }
 
-  //late GoogleMapController mapController;
+  late GoogleMapController mapcontroller;
 
   void _onMapCreated(GoogleMapController controller) {
+    mapcontroller = controller;
     controller.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(target: _center, zoom: 22),
+      CameraPosition(target: _center, zoom: 16),
     ));
+
+    for (var item in stationcitycords) {
+      Marker marker = Marker(
+          markerId: MarkerId(item["name"]),
+          position: LatLng(item["cordinates"][0], item["cordinates"][1]),
+          infoWindow: InfoWindow(
+          title:item["city"],
+          snippet:item["name"],
+        ),
+        icon: BitmapDescriptor.defaultMarker,
+          );
+      setState(() {
+        markers.add(marker);
+      });
+    }
     setState(() {
-      Marker destinationMarker = Marker(
+      Marker marker = Marker(
         markerId: MarkerId("Current loc"),
         position: LatLng(lat, long),
         infoWindow: InfoWindow(
           title: city,
-          snippet: "you are currently here",
+          snippet: "My current location",
         ),
         icon: BitmapDescriptor.defaultMarker,
       );
-      markers.add(destinationMarker);
+      markers.add(marker);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return loading
-        ? Center(
-            child: Column(
-              children: [
-                CircularProgressIndicator(),
-                Text("Loading map view...")
-              ],
+    return Scaffold(
+      floatingActionButton: IconButton(onPressed: (){
+mapcontroller.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(target: _center, zoom: 16),
+    ));
+      }, icon:Icon(Icons.map)),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          "Map View",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => UserInfoClass()),
+              );
+            },
+            icon: Icon(Icons.arrow_back_ios, color: Colors.black)),
+        backgroundColor: Colors.transparent,
+      ),
+      body: loading
+          ? Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(),
+                  Text("Loading map view...")
+                ],
+              ),
+            )
+          : GoogleMap(
+              mapType: MapType.normal,
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: LatLng(0, 0),
+                zoom: 16.0,
+              ),
+              markers: Set<Marker>.from(markers),
             ),
-          )
-        : GoogleMap(
-            mapType: MapType.normal,
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _center,
-              zoom: 19.0,
-            ),
-            markers: Set<Marker>.from(markers),
-          );
+    );
   }
 }

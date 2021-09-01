@@ -249,9 +249,9 @@ class DashAppState extends State<DashApp> {
                         onPressed: _closeDrawer,
                         icon: Icon(Icons.arrow_back_ios)),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(3.0),
                       child: TextButton(
-                        child: Text("register " + companytype),
+                        child: Text("register " + companytype,style:TextStyle(fontWeight:FontWeight.bold ,fontSize: 20) ),
                         onPressed: () {
                           setState(() {
                             foldername = companytype;
@@ -314,8 +314,15 @@ class DashAppState extends State<DashApp> {
                                                   "about": about.text
                                                 }
                                               ])
-                                            }).then((value) => print(
-                                                    "Vehicle registered"));
+                                            }).then((value) {
+                                               showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Vehicle registereedsuccesfully"));
+                                        });
+                                            });
                                           },
                                           icon: Icon(Icons.add)),
                                     ]),
@@ -325,14 +332,14 @@ class DashAppState extends State<DashApp> {
                         },
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 10),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(3.0),
                       child: TextButton(
                         child: Text(
                           "register driver",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 30),
+                              fontWeight: FontWeight.bold, fontSize: 20),
                         ),
                         onPressed: () {
                           setState(() {
@@ -393,8 +400,16 @@ class DashAppState extends State<DashApp> {
                                                     "about": about.text
                                                   }
                                                 ])
-                                              }).then((value) =>
-                                                      print("Hello"));
+                                              }).then((value) {
+                                                 showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Driver added to system"));
+                                        });
+
+                                              });
                                             },
                                             icon: Icon(Icons.add)),
                                       ])),
@@ -403,370 +418,410 @@ class DashAppState extends State<DashApp> {
                         },
                       ),
                     ),
-                    FloatingActionButton.extended(
-                        heroTag: "addregion",
-                        onPressed: () {
-                          showModalBottomSheet(
-                              barrierColor: Colors.indigo[300],
-                              backgroundColor: Colors.indigo[200],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(10),
-                                      topRight: Radius.circular(10))),
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (BuildContext context) {
-                                return FractionallySizedBox(
-                                  heightFactor: 0.5,
-                                  child: SingleChildScrollView(
-                                      child: Column(
-                                    children: [
-                                      MenuButton(
-                                          regioncontroller: regioncontroller),
-                                      Text(showregions),
-                                      FloatingActionButton.extended(
-                                          onPressed: () {
-                                            selectregions
-                                                .add(regioncontroller.text);
-                                            showregions = '';
-                                            for (var i in selectregions) {
-                                              showregions +=
-                                                  i.toString() + " ,";
-                                            }
-                                            setState(() {
-                                              //showregions;
-                                            });
-
-                                            print(showregions);
-                                          },
-                                          label: Icon(Icons.add)),
-                                      TextButton(
-                                          onPressed: () {
-                                            FirebaseFirestore.instance
-                                                .collection('companies')
-                                                .doc(widget.companytype)
-                                                .collection(
-                                                    'Registered Companies')
-                                                .doc(FirebaseAuth
-                                                    .instance.currentUser!.uid)
-                                                .update({
-                                              "regions": FieldValue.arrayUnion(
-                                                  selectregions)
-                                            }).then((value) => print("Hello"));
-                                          },
-                                          child: Text("Submit"))
-                                    ],
-                                  )),
-                                );
-                              });
-                        },
-                        label: Text("Add region")),
-                    FloatingActionButton.extended(
-                        heroTag: "addstation",
-                        onPressed: () {
-                          showModalBottomSheet(
-                              barrierColor: Colors.indigo[300],
-                              backgroundColor: Colors.indigo[200],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(50),
-                                      topRight: Radius.circular(50))),
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (BuildContext context) {
-                                return FractionallySizedBox(
-                                  heightFactor: 0.95,
-                                  child: Form(
-                                    key: form1,
+                    SizedBox(
+                      height:10
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: TextButton(
+                          
+                          onPressed: () {
+                            showModalBottomSheet(
+                                barrierColor: Colors.indigo[300],
+                                backgroundColor: Colors.indigo[200],
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10))),
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (BuildContext context) {
+                                  return FractionallySizedBox(
+                                    heightFactor: 0.5,
                                     child: SingleChildScrollView(
-                                      child: Column(children: [
-                                        Padding(
-                                            padding: EdgeInsets.all(10),
-                                            child: Text("Station Details",
-                                                style: TextStyle(
-                                                    fontSize: 30,
-                                                    fontWeight:
-                                                        FontWeight.bold))),
-                                        InputFields("name", namecontroller,
-                                            Icons.input, TextInputType.text),
-                                        Text("Station Location"),
-                                        Text("Region"),
-                                        InputFields("Region", regioncontroller,
-                                            Icons.input, TextInputType.text),
-                                        InputFields("id", idcontroller,
-                                            Icons.input, TextInputType.text),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: InputFields(
-                                                  "City",
-                                                  citycontroller,
-                                                  Icons.input,
-                                                  TextInputType.text),
-                                            ),
-                                            Expanded(
-                                              child: TextButton(
-                                                  onPressed: () async {
-                                                    await GeocodingPlatform
-                                                        .instance
-                                                        .locationFromAddress(
-                                                            namecontroller
-                                                                    .text +
-                                                                "," +
-                                                                citycontroller
-                                                                    .text)
-                                                        .then((value) {
-                                                      setState(() {
-                                                        latitude.text = value
-                                                            .first.latitude
-                                                            .toString();
-                                                        longitude.text = value
-                                                            .first.longitude
-                                                            .toString();
-                                                      });
-
-                                                      print(value);
-                                                    }).catchError((e) {
-                                                      print(e);
-                                                    });
-                                                  },
-                                                  child: Text("GET COORDINATES",
-                                                      style: TextStyle(
-                                                          color:
-                                                              Colors.green))),
-                                            )
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: InputFields(
-                                                  "Latitude",
-                                                  latitude,
-                                                  Icons.input,
-                                                  TextInputType.text),
-                                            ),
-                                            Expanded(
-                                              child: InputFields(
-                                                  "Longitude",
-                                                  longitude,
-                                                  Icons.input,
-                                                  TextInputType.text),
-                                            ),
-                                          ],
-                                        ),
+                                        child: Column(
+                                      children: [
+                                        MenuButton(
+                                            regioncontroller: regioncontroller),
+                                        Text(showregions),
                                         FloatingActionButton.extended(
                                             onPressed: () {
-                                              if (form1.currentState!
-                                                  .validate()) {
-                                                FirebaseFirestore.instance
-                                                    .collection('companies')
-                                                    .doc(widget.companytype)
-                                                    .collection(
-                                                        'Registered Companies')
-                                                    .doc(FirebaseAuth.instance
-                                                        .currentUser!.uid)
-                                                    .update({
-                                                  "stations":
-                                                      FieldValue.arrayUnion([
-                                                    {
-                                                      "name":
-                                                          namecontroller.text,
-                                                      "region": regioncontroller
-                                                          .text
-                                                          .toUpperCase(),
-                                                      "city":
-                                                          citycontroller.text,
-                                                      "cordinates": [
-                                                        double.parse(
-                                                            latitude.text),
-                                                        double.parse(
-                                                            longitude.text)
-                                                      ],
-                                                      "id": idcontroller.text,
-                                                      "destinations":
-                                                          destcontroller.text
-                                                              .toLowerCase()
-                                                              .split(","),
-                                                    }
-                                                  ]),
-                                                  "destinations":
-                                                      FieldValue.arrayUnion(
-                                                          [citycontroller.text])
-                                                }).then((value) =>
-                                                        print("Station added"));
-                                                //add this in appstrings
-                                                FirebaseFirestore.instance
-                                                    .collection("appstrings")
-                                                    .doc("cordinates")
-                                                    .collection("stations")
-                                                    .add({
-                                                  "city": citycontroller.text,
-                                                  "cordinates": [
-                                                    double.parse(latitude.text),
-                                                    double.parse(longitude.text)
-                                                  ]
-                                                });
-
-                                                print({
-                                                  namecontroller.text,
-                                                  regioncontroller.text,
-                                                  idcontroller.text
-                                                });
+                                              selectregions
+                                                  .add(regioncontroller.text);
+                                              showregions = '';
+                                              for (var i in selectregions) {
+                                                showregions +=
+                                                    i.toString() + " ,";
                                               }
+                                              setState(() {
+                                                //showregions;
+                                              });
+
+                                              print(showregions);
                                             },
-                                            label: Text("Add station"))
-                                      ]),
-                                    ),
-                                  ),
-                                );
-                              });
-                        },
-                        label: Text("Add Station")),
-                    SizedBox(),
-                    FloatingActionButton.extended(
-                        heroTag: "schedule",
-                        onPressed: () {
-                          showModalBottomSheet(
-                              barrierColor: Colors.indigo[300],
-                              backgroundColor: Colors.indigo[200],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(50),
-                                      topRight: Radius.circular(50))),
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (BuildContext context) {
-                                return FractionallySizedBox(
-                                  heightFactor: 0.95,
-                                  child: Form(
-                                    key: form2,
-                                    child: SingleChildScrollView(
-                                      child: Column(children: [
-                                        Padding(
-                                            padding: EdgeInsets.all(10),
-                                            child: Text("Trip Details",
-                                                style: TextStyle(
-                                                    fontSize: 30,
-                                                    fontWeight:
-                                                        FontWeight.bold))),
-                                        SearchLocs(
-                                          direction: 'from',
-                                          locations: places,
-                                          searchcontrol: searchfrom,
-                                        ),
-                                        SearchLocs(
-                                          direction: 'to',
-                                          locations: places,
-                                          searchcontrol: searchto,
-                                        ),
-                                        SizedBox(),
-                                        interroutes(),
-                                        StatefulBuilder(builder:
-                                            (BuildContext context, setstate) {
-                                          return OptionButton(
-                                              options: vehivles,
-                                              onchange: changed,
-                                              dropdownValue: initialval);
-                                        }),
-                                        InputFields("Seats", seatcontroller,
-                                            Icons.input, TextInputType.number),
-                                        InputFields("fare", fare, Icons.input,
-                                            TextInputType.number),
-                                        InputFields(
-                                            "distance/km",
-                                            distcontroller,
-                                            Icons.input,
-                                            TextInputType.number),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: InputFields(
-                                                  "Date : YYYY/MM/DD",
-                                                  datecontroller,
-                                                  Icons.input,
-                                                  TextInputType.datetime),
-                                            ),
-                                            Expanded(
-                                              child: InputFields(
-                                                  "Time : 00:00",
-                                                  timecontroller,
-                                                  Icons.input,
-                                                  TextInputType.datetime),
-                                            )
-                                          ],
-                                        ),
-                                        StatefulBuilder(builder:
-                                            (BuildContext context, setstate) {
-                                          return OptionButton(
-                                              options: drivers,
-                                              onchange: changed1,
-                                              dropdownValue: initialval1);
-                                        }),
-                                        InputFields(
-                                            "Please describe Trip to traveller",
-                                            about,
-                                            Icons.input,
-                                            TextInputType.text),
-                                        FloatingActionButton.extended(
+                                            label: Icon(Icons.add)),
+                                        TextButton(
                                             onPressed: () {
                                               FirebaseFirestore.instance
-                                                  .collection("trips")
-                                                  .add({
-                                                "from": searchfrom.text,
-                                                "to": searchto.text,
-                                                "interoutes": route,
-                                                "distance": int.parse(
-                                                    distcontroller.text),
-                                                "date": DateTime.parse(
-                                                    datecontroller.text +
-                                                        " " +
-                                                        timecontroller.text),
-                                                "seats": int.parse(
-                                                    seatcontroller.text),
-                                                "company": companyname,
-                                                "vehid": initialval,
-                                                "full": false,
-                                                "chosen": [],
-                                                "stars":0,
-                                                "fare": int.parse(fare.text),
-                                                "driverid": initialval1,
-                                                "triptype": companytype,
-                                                "abouttrip": about.text,
-                                                "status": "pending"
+                                                  .collection('companies')
+                                                  .doc(widget.companytype)
+                                                  .collection(
+                                                      'Registered Companies')
+                                                  .doc(FirebaseAuth
+                                                      .instance.currentUser!.uid)
+                                                  .update({
+                                                "regions": FieldValue.arrayUnion(
+                                                    selectregions)
                                               }).then((value) {
-                                                showDialog(
-                                                    context: context,
-                                                    builder: (builder) {
-                                                      return AlertDialog(
-                                                        content: Text(
-                                                            "Trip added successfully"),
-                                                      );
-                                                    });
-                                                setState(() {
-                                                  feedback =
-                                                      "Trip added successfullly";
-                                                });
-                                                print(
-                                                    "Trip added successfullly");
+                                                 showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Station added to system"));
+                                        });
                                               });
                                             },
-                                            label: Text("Add Trip")),
-                                        Text(feedback,
-                                            style:
-                                                TextStyle(color: Colors.green))
-                                      ]),
-                                    ),
-                                  ),
-                                );
-                              });
-                        },
-                        label: Text("Schedule Trip")),
-                    SizedBox(height: 15),
+                                            child: Text("Submit"))
+                                      ],
+                                    )),
+                                  );
+                                });
+                          },
+                          child: Text("Add region",style:TextStyle(fontWeight:FontWeight.bold ,fontSize: 20) )),
+                    ),
+                        SizedBox(
+                          height: 10,
+                        ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(3.0),
                       child: TextButton(
-                        child: Text("Add rest stops"),
+                         
+                          onPressed: () {
+                            showModalBottomSheet(
+                                barrierColor: Colors.indigo[300],
+                                backgroundColor: Colors.indigo[200],
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(50),
+                                        topRight: Radius.circular(50))),
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (BuildContext context) {
+                                  return FractionallySizedBox(
+                                    heightFactor: 0.95,
+                                    child: Form(
+                                      key: form1,
+                                      child: SingleChildScrollView(
+                                        child: Column(children: [
+                                          Padding(
+                                              padding: EdgeInsets.all(10),
+                                              child: Text("Station Details",
+                                                  style: TextStyle(
+                                                      fontSize: 30,
+                                                      fontWeight:
+                                                          FontWeight.bold))),
+                                          InputFields("name", namecontroller,
+                                              Icons.input, TextInputType.text),
+                                          Text("Station Location"),
+                                          Text("Region"),
+                                          InputFields("Region", regioncontroller,
+                                              Icons.input, TextInputType.text),
+                                          InputFields("id", idcontroller,
+                                              Icons.input, TextInputType.text),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: InputFields(
+                                                    "City",
+                                                    citycontroller,
+                                                    Icons.input,
+                                                    TextInputType.text),
+                                              ),
+                                              Expanded(
+                                                child: TextButton(
+                                                    onPressed: () async {
+                                                      await GeocodingPlatform
+                                                          .instance
+                                                          .locationFromAddress(
+                                                              namecontroller
+                                                                      .text +
+                                                                  "," +
+                                                                  citycontroller
+                                                                      .text)
+                                                          .then((value) {
+                                                        setState(() {
+                                                          latitude.text = value
+                                                              .first.latitude
+                                                              .toString();
+                                                          longitude.text = value
+                                                              .first.longitude
+                                                              .toString();
+                                                        });
+
+                                                         showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Cordinated fetched succesfully"));
+                                        });
+                                                      }).catchError((e) {
+                                                        print(e);
+                                                      });
+                                                    },
+                                                    child: Text("GET COORDINATES",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.green))),
+                                              )
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: InputFields(
+                                                    "Latitude",
+                                                    latitude,
+                                                    Icons.input,
+                                                    TextInputType.text),
+                                              ),
+                                              Expanded(
+                                                child: InputFields(
+                                                    "Longitude",
+                                                    longitude,
+                                                    Icons.input,
+                                                    TextInputType.text),
+                                              ),
+                                            ],
+                                          ),
+                                          FloatingActionButton.extended(
+                                              onPressed: () {
+                                                if (form1.currentState!
+                                                    .validate()) {
+                                                  FirebaseFirestore.instance
+                                                      .collection('companies')
+                                                      .doc(widget.companytype)
+                                                      .collection(
+                                                          'Registered Companies')
+                                                      .doc(FirebaseAuth.instance
+                                                          .currentUser!.uid)
+                                                      .update({
+                                                    "stations":
+                                                        FieldValue.arrayUnion([
+                                                      {
+                                                        "name":
+                                                            namecontroller.text,
+                                                        "region": regioncontroller
+                                                            .text
+                                                            .toUpperCase(),
+                                                        "city":
+                                                            citycontroller.text,
+                                                        "cordinates": [
+                                                          double.parse(
+                                                              latitude.text),
+                                                          double.parse(
+                                                              longitude.text)
+                                                        ],
+                                                        "id": idcontroller.text,
+                                                        "destinations":
+                                                            destcontroller.text
+                                                                .toLowerCase()
+                                                                .split(","),
+                                                      }
+                                                    ]),
+                                                    "destinations":
+                                                        FieldValue.arrayUnion(
+                                                            [citycontroller.text])
+                                                  }).then((value) {
+                                                     showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Station added succesfully"));
+                                        });
+
+                                                  });
+                                                  //add this in appstrings
+                                                  FirebaseFirestore.instance
+                                                      .collection("appstrings")
+                                                      .doc("cordinates")
+                                                      .collection("stations")
+                                                      .add({
+                                                    "city": citycontroller.text,
+                                                    "cordinates": [
+                                                      double.parse(latitude.text),
+                                                      double.parse(longitude.text)
+                                                    ]
+                                                  });
+
+                                                  print({
+                                                    namecontroller.text,
+                                                    regioncontroller.text,
+                                                    idcontroller.text
+                                                  });
+                                                }
+                                              },
+                                              label: Text("Add station",style:TextStyle(fontWeight:FontWeight.bold,fontSize:20 ) ,))
+                                        ]),
+                                      ),
+                                    ),
+                                  );
+                                });
+                          },
+                         child: Text("Add Station")),
+                    ),
+                    SizedBox(
+                      height:10
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: TextButton(
+                          
+                          onPressed: () {
+                            showModalBottomSheet(
+                                barrierColor: Colors.indigo[300],
+                                backgroundColor: Colors.indigo[200],
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(50),
+                                        topRight: Radius.circular(50))),
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (BuildContext context) {
+                                  return FractionallySizedBox(
+                                    heightFactor: 0.95,
+                                    child: Form(
+                                      key: form2,
+                                      child: SingleChildScrollView(
+                                        child: Column(children: [
+                                          Padding(
+                                              padding: EdgeInsets.all(10),
+                                              child: Text("Trip Details",
+                                                  style: TextStyle(
+                                                      fontSize: 30,
+                                                      fontWeight:
+                                                          FontWeight.bold))),
+                                          SearchLocs(
+                                            direction: 'from',
+                                            locations: places,
+                                            searchcontrol: searchfrom,
+                                          ),
+                                          SearchLocs(
+                                            direction: 'to',
+                                            locations: places,
+                                            searchcontrol: searchto,
+                                          ),
+                                          SizedBox(),
+                                          interroutes(),
+                                          StatefulBuilder(builder:
+                                              (BuildContext context, setstate) {
+                                            return OptionButton(
+                                                options: vehivles,
+                                                onchange: changed,
+                                                dropdownValue: initialval);
+                                          }),
+                                          InputFields("Seats", seatcontroller,
+                                              Icons.input, TextInputType.number),
+                                          InputFields("fare", fare, Icons.input,
+                                              TextInputType.number),
+                                          InputFields(
+                                              "distance/km",
+                                              distcontroller,
+                                              Icons.input,
+                                              TextInputType.number),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: InputFields(
+                                                    "Date : YYYY/MM/DD",
+                                                    datecontroller,
+                                                    Icons.input,
+                                                    TextInputType.datetime),
+                                              ),
+                                              Expanded(
+                                                child: InputFields(
+                                                    "Time : 00:00",
+                                                    timecontroller,
+                                                    Icons.input,
+                                                    TextInputType.datetime),
+                                              )
+                                            ],
+                                          ),
+                                          StatefulBuilder(builder:
+                                              (BuildContext context, setstate) {
+                                            return OptionButton(
+                                                options: drivers,
+                                                onchange: changed1,
+                                                dropdownValue: initialval1);
+                                          }),
+                                          InputFields(
+                                              "Please describe Trip to traveller",
+                                              about,
+                                              Icons.input,
+                                              TextInputType.text),
+                                          FloatingActionButton.extended(
+                                              onPressed: () {
+                                                FirebaseFirestore.instance
+                                                    .collection("trips")
+                                                    .add({
+                                                  "from": searchfrom.text,
+                                                  "to": searchto.text,
+                                                  "interoutes": route,
+                                                  "distance": int.parse(
+                                                      distcontroller.text),
+                                                  "date": DateTime.parse(
+                                                      datecontroller.text +
+                                                          " " +
+                                                          timecontroller.text),
+                                                  "seats": int.parse(
+                                                      seatcontroller.text),
+                                                  "company": companyname,
+                                                  "vehid": initialval,
+                                                  "full": false,
+                                                  "chosen": [],
+                                                  "stars":0,
+                                                  "booked":[],
+                                                  "fare": int.parse(fare.text),
+                                                  "driverid": initialval1,
+                                                  "triptype": companytype,
+                                                  "abouttrip": about.text,
+                                                  "status": "pending"
+                                                }).then((value) {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (builder) {
+                                                        return AlertDialog(
+                                                          content: Text(
+                                                              "Trip added successfully"),
+                                                        );
+                                                      });
+                                                  setState(() {
+                                                    feedback =
+                                                        "Trip added successfullly";
+                                                  });
+                                                  print(
+                                                      "Trip added successfullly");
+                                                });
+                                              },
+                                              label: Text("Add Trip")),
+                                          Text(feedback,
+                                              style:
+                                                  TextStyle(color: Colors.green))
+                                        ]),
+                                      ),
+                                    ),
+                                  );
+                                });
+                          },
+                         child: Text("Schedule Trip",style:TextStyle(fontWeight:FontWeight.bold,fontSize:20 ))),
+                    ),
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: TextButton(
+                        child: Text("Add rest stops",style:TextStyle(fontWeight:FontWeight.bold ,fontSize: 20) ),
                         onPressed: () {
                           setState(() {
                             foldername = "Reststop";
@@ -817,8 +872,15 @@ class DashAppState extends State<DashApp> {
                                                   distcontroller.text),
                                               "image": imageurl,
                                               "about": about.text
-                                            }).then((value) => print(
-                                                    "Vehicle registered"));
+                                            }).then((value) => {
+                                               showDialog(
+                                        context: context,
+                                        builder: (builder) {
+                                          return AlertDialog(
+                                              content: Text(
+                                                  "Rest stop added"));
+                                        })
+                                            });
                                           },
                                           icon: Icon(Icons.add)),
                                     ]),

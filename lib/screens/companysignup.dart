@@ -47,7 +47,7 @@ class CompanySignupFormState extends State<CompanySignupForm> {
         currentStep: currentstep,
         onStepContinue: () {
           setState(() {
-            tonext == true ? currentstep++ :currentstep+=0 ;
+            tonext == true ? currentstep++ : currentstep += 0;
           });
         },
         onStepTapped: (int step) {
@@ -268,9 +268,15 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                       .collection("appstrings")
                                       .doc("companynamestrings")
                                       .update({
-                                        "companynamestrings":FieldValue.arrayUnion([{"name": name.text.toString(),
-                                        "type":companytype}])
-                                      });
+                                    "companynamestrings":
+                                        FieldValue.arrayUnion([
+                                      {
+                                        "name": name.text.toString(),
+                                        "type": companytype,
+                                        "stars": 0
+                                      }
+                                    ])
+                                  });
                                   setState(() {
                                     errormesg =
                                         "Info Addition complete.Lets get through verification";
@@ -278,12 +284,11 @@ class CompanySignupFormState extends State<CompanySignupForm> {
                                   showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
-                                        return Material(
-                                          child: Center(
-                                            child: Text(errormesg),
-                                          ),
-                                        );
+                                        return AlertDialog(
+                                            content: Text(
+                                                "Registration completeted.Please check and verify your email"));
                                       });
+                                  Navigator.pushNamed(context, "/home");
                                 }
                               });
                             }

@@ -6,8 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:myapp/components/ticket.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
 import 'completebook.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 const AndroidNotificationChannel Channel = AndroidNotificationChannel(
     "interval", "sendinterval", "channel for sending at interval",
@@ -41,9 +42,23 @@ class WebViewpg extends StatefulWidget {
 
 class WebViewpgState extends State<WebViewpg> {
   bool hide = true;
+  late tz.Location ghana;
+  int yr = DateTime.now().year;
+  int mnt = DateTime.now().month;
+  int day = DateTime.now().day;
+  int hour = TimeOfDay.now().hour;
+  int min = TimeOfDay.now().minute;
+  Future<void> inittz() async {
+    tz.initializeTimeZones();
+    ghana = tz.local;
+  }
+
   @override
   void initState() {
     super.initState();
+    inittz().then((value) {
+      print("Time zone initiallzed");
+    });
     // Enable hybrid composition.
     if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
   }
@@ -87,17 +102,60 @@ class WebViewpgState extends State<WebViewpg> {
               javascriptMode: JavascriptMode.unrestricted,
               navigationDelegate: (navigation) {
                 print(navigation.url);
+                setState(() {
+                  if (TimeOfDay.fromDateTime(widget.ticketinfo.time!).minute >
+                      30) {
+                    hour = TimeOfDay.fromDateTime(widget.ticketinfo.time!).hour;
+                    min =
+                        TimeOfDay.fromDateTime(widget.ticketinfo.time!).minute -
+                            30;
+                    print("$hour: $min");
+                  } else {
+                    hour = TimeOfDay.fromDateTime(widget.ticketinfo.time!).hour;
+                    min =
+                        TimeOfDay.fromDateTime(widget.ticketinfo.time!).minute -
+                            hour;
+                    hour = 0;
+                  }
+                });
                 flutterLocalNotificationsPlugin.show(
                     1,
-                    "New notification",
-                    "Your payment was successful.See bookings menu for details",
+                    "Payment status",
+                    "Your payment was successful.See bookings menu for details.",
                     NotificationDetails(
                         android: AndroidNotificationDetails(
                             Channel.id, Channel.name, Channel.description,
                             color: Colors.lightBlue,
                             playSound: true,
                             icon: '@mipmap/ic_launcher')),
-                    payload: "received");
+                    payload: "payment");
+                showDialog(
+                    context: context,
+                    builder: (builder) {
+                      return AlertDialog(
+                          content: Column(
+                        children: [
+                          Text("You wiil be notified 30 minutes to trip."),
+                          Text(
+                              "You can set different reminders on profile menu"),
+                        ],
+                      ));
+                    });
+                flutterLocalNotificationsPlugin.zonedSchedule(
+                    2,
+                    "Reminder",
+                    "Hi ,please be reminded of your trip",
+                    tz.TZDateTime.from(
+                        DateTime(yr, mnt, day, hour, min), ghana),
+                    NotificationDetails(
+                        android: AndroidNotificationDetails(
+                            Channel1.id, Channel1.name, Channel1.description,
+                            color: Colors.lightBlue,
+                            playSound: true,
+                            icon: '@mipmap/ic_launcher')),
+                    uiLocalNotificationDateInterpretation:
+                        UILocalNotificationDateInterpretation.absoluteTime,
+                    androidAllowWhileIdle: true);
                 FirebaseFirestore.instance.collection("bookings").add({
                   "tripid": widget.ticketinfo.tripid,
                   "transactor": widget.ticketinfo.booker,
@@ -119,8 +177,8 @@ class WebViewpgState extends State<WebViewpg> {
                     .collection("trips")
                     .doc(widget.ticketinfo.tripid)
                     .update({
-                      "booked":FieldValue.arrayUnion(widget.ticketinfo.chosen)
-                    });
+                  "booked": FieldValue.arrayUnion(widget.ticketinfo.chosen)
+                });
                 if (navigation.url.contains('https://successful.com')) {
                   print("yes");
 
